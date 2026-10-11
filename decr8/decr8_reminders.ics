@@ -1,18 +1,18 @@
 BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//DECR8 plan//EN
+PRODID:-//DECR8 reminders//EN
 CALSCALE:GREGORIAN
 BEGIN:VEVENT
-UID:decr8-0@plan
+UID:decr8-oct-0@reminders
 DTSTAMP:20261011T000000Z
-DTSTART;TZID=Asia/Kolkata:20261013T190000
-DTEND;TZID=Asia/Kolkata:20261013T193000
-SUMMARY:POST DECR8 [Static]: Brand intro: Premium Laminates for Every Space
-DESCRIPTION:Hero shot of best sheet + logo. Caption: who we are\, Mumbai showroom\, DM to book a visit.\n\n#decr8 #laminates #mumbaiinteriors\n\nPost on @decr_8in at 7 PM.
+DTSTART;TZID=Asia/Kolkata:20261012T190000
+DTEND;TZID=Asia/Kolkata:20261012T193000
+SUMMARY:POST DECR8 [Reel]: Studio walkthrough: Italian walnut arrivals
+DESCRIPTION:Script: decr8/reel_scripts.md (Reel 1). Film showroom + walnut close-ups.\nPost on @decr_8in at 7 PM.
 BEGIN:VALARM
 ACTION:EMAIL
 SUMMARY:Post DECR8 today
-DESCRIPTION:Reminder: DECR8 post at 7 PM
+DESCRIPTION:DECR8 post at 7 PM
 TRIGGER:-PT3H
 END:VALARM
 BEGIN:VALARM
@@ -22,16 +22,16 @@ TRIGGER:-PT1H
 END:VALARM
 END:VEVENT
 BEGIN:VEVENT
-UID:decr8-1@plan
+UID:decr8-oct-1@reminders
 DTSTAMP:20261011T000000Z
-DTSTART;TZID=Asia/Kolkata:20261015T190000
-DTEND;TZID=Asia/Kolkata:20261015T193000
-SUMMARY:POST DECR8 [Reel]: Showroom walkthrough (15-20s)
-DESCRIPTION:Walk past sheet racks\, panels\, texture wall. Text overlay: Sheets | Panels | Texture Designs.\n\n#showroom #laminatedesign #andheri\n\nPost on @decr_8in at 7 PM.
+DTSTART;TZID=Asia/Kolkata:20261014T190000
+DTEND;TZID=Asia/Kolkata:20261014T193000
+SUMMARY:POST DECR8 [Carousel]: Matte vs High-Gloss for Mumbai apartments
+DESCRIPTION:Prepare 5-6 slides: pros, cons, best rooms, CTA.\nPost on @decr_8in at 7 PM.
 BEGIN:VALARM
 ACTION:EMAIL
 SUMMARY:Post DECR8 today
-DESCRIPTION:Reminder: DECR8 post at 7 PM
+DESCRIPTION:DECR8 post at 7 PM
 TRIGGER:-PT3H
 END:VALARM
 BEGIN:VALARM
@@ -41,16 +41,16 @@ TRIGGER:-PT1H
 END:VALARM
 END:VEVENT
 BEGIN:VEVENT
-UID:decr8-2@plan
+UID:decr8-oct-2@reminders
 DTSTAMP:20261011T000000Z
-DTSTART;TZID=Asia/Kolkata:20261017T190000
-DTEND;TZID=Asia/Kolkata:20261017T193000
-SUMMARY:POST DECR8 [Carousel]: 5 wood-grain laminates for living rooms
-DESCRIPTION:5 slides\, one finish each with design name/code. Last slide: DM for samples.\n\n#woodgrain #livingroomdesign #interiordesign\n\nPost on @decr_8in at 7 PM.
+DTSTART;TZID=Asia/Kolkata:20261016T190000
+DTEND;TZID=Asia/Kolkata:20261016T193000
+SUMMARY:POST DECR8 [Static]: Living room feature wall with fluted wood-grain
+DESCRIPTION:Use the image prompt from the app.\nPost on @decr_8in at 7 PM.
 BEGIN:VALARM
 ACTION:EMAIL
 SUMMARY:Post DECR8 today
-DESCRIPTION:Reminder: DECR8 post at 7 PM
+DESCRIPTION:DECR8 post at 7 PM
 TRIGGER:-PT3H
 END:VALARM
 BEGIN:VALARM
@@ -60,16 +60,16 @@ TRIGGER:-PT1H
 END:VALARM
 END:VEVENT
 BEGIN:VEVENT
-UID:decr8-3@plan
+UID:decr8-oct-3@reminders
 DTSTAMP:20261011T000000Z
-DTSTART;TZID=Asia/Kolkata:20261020T190000
-DTEND;TZID=Asia/Kolkata:20261020T193000
-SUMMARY:POST DECR8 [Static]: Design of the Week
-DESCRIPTION:One standout sheet\, close-up\, name + suggested use (wardrobe/TV unit).\n\n#designoftheweek #laminates #homedecor\n\nPost on @decr_8in at 7 PM.
+DTSTART;TZID=Asia/Kolkata:20261019T190000
+DTEND;TZID=Asia/Kolkata:20261019T193000
+SUMMARY:POST DECR8 [Reel]: Edge-banding techniques for carpenters
+DESCRIPTION:Script: decr8/reel_scripts.md (Reel 2).\nPost on @decr_8in at 7 PM.
 BEGIN:VALARM
 ACTION:EMAIL
 SUMMARY:Post DECR8 today
-DESCRIPTION:Reminder: DECR8 post at 7 PM
+DESCRIPTION:DECR8 post at 7 PM
 TRIGGER:-PT3H
 END:VALARM
 BEGIN:VALARM
@@ -79,16 +79,16 @@ TRIGGER:-PT1H
 END:VALARM
 END:VEVENT
 BEGIN:VEVENT
-UID:decr8-4@plan
+UID:decr8-oct-4@reminders
 DTSTAMP:20261011T000000Z
-DTSTART;TZID=Asia/Kolkata:20261022T190000
-DTEND;TZID=Asia/Kolkata:20261022T193000
-SUMMARY:POST DECR8 [Reel]: Texture close-up / sheet reveal
-DESCRIPTION:Slow pan over textures\, hand touching surface\, trending audio.\n\n#texture #surfaces #interiorinspiration\n\nPost on @decr_8in at 7 PM.
+DTSTART;TZID=Asia/Kolkata:20261021T190000
+DTEND;TZID=Asia/Kolkata:20261021T193000
+SUMMARY:POST DECR8 [Carousel]: Compact bedrooms with pastel and marble laminates
+DESCRIPTION:Prepare 5-6 slides with before/after or design names.\nPost on @decr_8in at 7 PM.
 BEGIN:VALARM
 ACTION:EMAIL
 SUMMARY:Post DECR8 today
-DESCRIPTION:Reminder: DECR8 post at 7 PM
+DESCRIPTION:DECR8 post at 7 PM
 TRIGGER:-PT3H
 END:VALARM
 BEGIN:VALARM
@@ -98,16 +98,16 @@ TRIGGER:-PT1H
 END:VALARM
 END:VEVENT
 BEGIN:VEVENT
-UID:decr8-5@plan
+UID:decr8-oct-5@reminders
 DTSTAMP:20261011T000000Z
-DTSTART;TZID=Asia/Kolkata:20261024T190000
-DTEND;TZID=Asia/Kolkata:20261024T193000
-SUMMARY:POST DECR8 [Carousel]: Matte vs Gloss vs Textured: how to choose
-DESCRIPTION:Pros\, cons\, best rooms for each. Ends with visit CTA.\n\n#laminatesguide #interiortips #mumbaihomes\n\nPost on @decr_8in at 7 PM.
+DTSTART;TZID=Asia/Kolkata:20261023T190000
+DTEND;TZID=Asia/Kolkata:20261023T193000
+SUMMARY:POST DECR8 [Static]: Scratch-resistant, anti-bacterial laminates for kitchens
+DESCRIPTION:Use the image prompt from the app.\nPost on @decr_8in at 7 PM.
 BEGIN:VALARM
 ACTION:EMAIL
 SUMMARY:Post DECR8 today
-DESCRIPTION:Reminder: DECR8 post at 7 PM
+DESCRIPTION:DECR8 post at 7 PM
 TRIGGER:-PT3H
 END:VALARM
 BEGIN:VALARM
@@ -117,111 +117,16 @@ TRIGGER:-PT1H
 END:VALARM
 END:VEVENT
 BEGIN:VEVENT
-UID:decr8-6@plan
+UID:decr8-oct-6@reminders
 DTSTAMP:20261011T000000Z
-DTSTART;TZID=Asia/Kolkata:20261027T190000
-DTEND;TZID=Asia/Kolkata:20261027T193000
-SUMMARY:POST DECR8 [Static]: Wardrobe finish inspiration
-DESCRIPTION:Photo of a wardrobe/sample board combo. Ask followers which they'd pick.\n\n#wardrobedesign #modularwardrobe #laminates\n\nPost on @decr_8in at 7 PM.
+DTSTART;TZID=Asia/Kolkata:20261026T190000
+DTEND;TZID=Asia/Kolkata:20261026T193000
+SUMMARY:POST DECR8 [Reel]: Pre-festive refresh: vibrant solids and metallics
+DESCRIPTION:Script: decr8/reel_scripts.md (Reel 3).\nPost on @decr_8in at 7 PM.
 BEGIN:VALARM
 ACTION:EMAIL
 SUMMARY:Post DECR8 today
-DESCRIPTION:Reminder: DECR8 post at 7 PM
-TRIGGER:-PT3H
-END:VALARM
-BEGIN:VALARM
-ACTION:DISPLAY
-DESCRIPTION:Post DECR8 in 1 hour
-TRIGGER:-PT1H
-END:VALARM
-END:VEVENT
-BEGIN:VEVENT
-UID:decr8-7@plan
-DTSTAMP:20261011T000000Z
-DTSTART;TZID=Asia/Kolkata:20261029T190000
-DTEND;TZID=Asia/Kolkata:20261029T193000
-SUMMARY:POST DECR8 [Reel]: Sample board matching (before/after)
-DESCRIPTION:Show a space idea\, then the laminate combo that creates the look.\n\n#interiorreel #beforeafter #homerenovation\n\nPost on @decr_8in at 7 PM.
-BEGIN:VALARM
-ACTION:EMAIL
-SUMMARY:Post DECR8 today
-DESCRIPTION:Reminder: DECR8 post at 7 PM
-TRIGGER:-PT3H
-END:VALARM
-BEGIN:VALARM
-ACTION:DISPLAY
-DESCRIPTION:Post DECR8 in 1 hour
-TRIGGER:-PT1H
-END:VALARM
-END:VEVENT
-BEGIN:VEVENT
-UID:decr8-8@plan
-DTSTAMP:20261011T000000Z
-DTSTART;TZID=Asia/Kolkata:20261031T190000
-DTEND;TZID=Asia/Kolkata:20261031T193000
-SUMMARY:POST DECR8 [Carousel]: Kitchen laminate combos that work
-DESCRIPTION:4-5 colour/finish pairs for modular kitchens.\n\n#modularkitchen #kitchendesign #laminates\n\nPost on @decr_8in at 7 PM.
-BEGIN:VALARM
-ACTION:EMAIL
-SUMMARY:Post DECR8 today
-DESCRIPTION:Reminder: DECR8 post at 7 PM
-TRIGGER:-PT3H
-END:VALARM
-BEGIN:VALARM
-ACTION:DISPLAY
-DESCRIPTION:Post DECR8 in 1 hour
-TRIGGER:-PT1H
-END:VALARM
-END:VEVENT
-BEGIN:VEVENT
-UID:decr8-9@plan
-DTSTAMP:20261011T000000Z
-DTSTART;TZID=Asia/Kolkata:20261103T190000
-DTEND;TZID=Asia/Kolkata:20261103T193000
-SUMMARY:POST DECR8 [Static]: Pre-Diwali: refresh your home with new finishes
-DESCRIPTION:Festive-toned image\, soft CTA to book a showroom visit.\n\n#diwali2026 #homerefresh #decr8\n\nPost on @decr_8in at 7 PM.
-BEGIN:VALARM
-ACTION:EMAIL
-SUMMARY:Post DECR8 today
-DESCRIPTION:Reminder: DECR8 post at 7 PM
-TRIGGER:-PT3H
-END:VALARM
-BEGIN:VALARM
-ACTION:DISPLAY
-DESCRIPTION:Post DECR8 in 1 hour
-TRIGGER:-PT1H
-END:VALARM
-END:VEVENT
-BEGIN:VEVENT
-UID:decr8-10@plan
-DTSTAMP:20261011T000000Z
-DTSTART;TZID=Asia/Kolkata:20261105T190000
-DTEND;TZID=Asia/Kolkata:20261105T193000
-SUMMARY:POST DECR8 [Reel]: Top 3 Diwali refresh picks
-DESCRIPTION:Quick cuts of 3 designs with names\, end card: DM to book a visit.\n\n#diwalidecor #newarrivals #laminates\n\nPost on @decr_8in at 7 PM.
-BEGIN:VALARM
-ACTION:EMAIL
-SUMMARY:Post DECR8 today
-DESCRIPTION:Reminder: DECR8 post at 7 PM
-TRIGGER:-PT3H
-END:VALARM
-BEGIN:VALARM
-ACTION:DISPLAY
-DESCRIPTION:Post DECR8 in 1 hour
-TRIGGER:-PT1H
-END:VALARM
-END:VEVENT
-BEGIN:VEVENT
-UID:decr8-11@plan
-DTSTAMP:20261011T000000Z
-DTSTART;TZID=Asia/Kolkata:20261107T190000
-DTEND;TZID=Asia/Kolkata:20261107T193000
-SUMMARY:POST DECR8 [Carousel]: Diwali refresh checklist + visit us
-DESCRIPTION:Checklist slides\, last slide: showroom location + DM to book. Diwali greeting.\n\n#happydiwali #mumbaishowroom #decr8\n\nPost on @decr_8in at 7 PM.
-BEGIN:VALARM
-ACTION:EMAIL
-SUMMARY:Post DECR8 today
-DESCRIPTION:Reminder: DECR8 post at 7 PM
+DESCRIPTION:DECR8 post at 7 PM
 TRIGGER:-PT3H
 END:VALARM
 BEGIN:VALARM
