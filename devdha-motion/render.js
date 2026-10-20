@@ -5,10 +5,13 @@ const { chromium } = require('playwright');
 const path = require('path');
 const fs = require('fs');
 
-const url = 'file://' + path.join(__dirname, 'index.html');
+// FILE=vertical.html W=1080 H=1920 node render.js ...   (defaults: index.html 1920x1080)
+const FILE = process.env.FILE || 'index.html';
+const VW = +(process.env.W || 1920), VH = +(process.env.H || 1080);
+const url = 'file://' + path.join(__dirname, FILE);
 
 async function open(browser) {
-  const ctx = await browser.newContext({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 });
+  const ctx = await browser.newContext({ viewport: { width: VW, height: VH }, deviceScaleFactor: 1 });
   const page = await ctx.newPage();
   await page.goto(url);
   await page.evaluate(() => document.fonts.ready);

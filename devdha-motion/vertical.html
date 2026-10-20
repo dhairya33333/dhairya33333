@@ -1,0 +1,387 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Devdha — Web Design (9:16)</title>
+<style>
+:root{--navy:#12324F;--deep:#0B2238;--mid:#1E5B94;--sky:#6FB1F0;--ice:#E8F1FB;--white:#FBFCFC}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#12324F}
+body{font-family:'Inter Display','Inter',sans-serif;font-weight:800;color:var(--white)}
+#stage{position:relative;width:1080px;height:1920px;overflow:hidden}
+.scene{position:absolute;inset:0;overflow:hidden;visibility:hidden}
+.abs{position:absolute}
+.dots{position:absolute;inset:-60px;background-image:radial-gradient(circle,rgba(111,177,240,.55) 2px,transparent 2.6px);background-size:60px 60px;opacity:.28;
+  -webkit-mask-image:radial-gradient(ellipse at center,#000 25%,transparent 80%);mask-image:radial-gradient(ellipse at center,#000 25%,transparent 80%)}
+.label{position:absolute;font-size:26px;letter-spacing:.3em;font-weight:700;color:var(--sky);text-transform:uppercase;white-space:nowrap}
+.rise{position:absolute;display:block;overflow:hidden;line-height:1.04;padding:.08em 0;white-space:nowrap}
+.rise .w{display:inline-block;will-change:transform}
+.letters{position:absolute;white-space:nowrap;display:flex;justify-content:center}
+.letters span{display:inline-block}
+.line{position:absolute;background:var(--sky);border-radius:2px;transform-origin:left center}
+.panel{position:absolute;inset:0;will-change:transform}
+.card{position:absolute;left:60px;width:960px;height:150px;border-radius:36px;background:#fff;box-shadow:0 18px 44px rgba(18,50,79,.12);display:flex;align-items:center;gap:28px;padding:0 36px 0 30px;color:var(--navy)}
+.card .ic{width:92px;height:92px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;flex:none}
+.card .ic svg{width:44px;height:44px;fill:none;stroke:#fff;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.card .tt{font-size:42px;letter-spacing:.02em;line-height:1.05}
+.card .ss{font-size:28px;font-weight:600;color:var(--mid);margin-top:8px}
+.card .nn{margin-left:auto;font-size:34px;font-weight:700;color:#9DBDE0;letter-spacing:.1em}
+.chip{position:absolute;height:80px;border-radius:40px;padding:0 34px 0 18px;display:flex;align-items:center;gap:14px;background:var(--sky);color:var(--deep);font-size:30px;letter-spacing:.08em;font-weight:800;white-space:nowrap}
+.chip .d{width:44px;height:44px;border-radius:50%;background:rgba(11,34,56,.16);display:flex;align-items:center;justify-content:center}
+.chip svg{width:24px;height:24px;fill:none;stroke:var(--deep);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.chip.dk{background:#fff}
+svg{display:block}
+#prog{position:absolute;left:0;bottom:0;height:8px;background:var(--sky);width:0}
+</style>
+</head>
+<body>
+<div id="stage">
+
+<!-- ===== S1 HOOK ===== -->
+<div class="scene" id="s1" style="background:var(--navy)">
+  <div class="dots" id="s1dots"></div>
+  <div class="label" id="s1lab" style="left:80px;top:250px;text-transform:none;letter-spacing:.22em">Devdha &nbsp;/&nbsp; Web design</div>
+  <div class="rise" id="s1a" style="left:80px;top:470px;font-size:196px"><span class="t">YOUR</span></div>
+  <div class="rise" id="s1b" style="left:80px;top:665px;font-size:196px"><span class="t">WEBSITE</span></div>
+  <div class="rise" id="s1c" style="left:80px;top:860px;font-size:196px"><span class="t">HAS 3</span></div>
+  <div class="rise" id="s1d" style="left:80px;top:1055px;font-size:196px;color:var(--sky)"><span class="t">SECONDS.</span></div>
+  <svg id="s1ring" class="abs" style="left:420px;top:1330px" width="240" height="240" viewBox="0 0 240 240">
+    <circle cx="120" cy="120" r="104" fill="none" stroke="rgba(111,177,240,.2)" stroke-width="10"/>
+    <circle id="s1arc" pathLength="1" cx="120" cy="120" r="104" fill="none" stroke="#6FB1F0" stroke-width="10" stroke-linecap="round" transform="rotate(-90 120 120)"/>
+  </svg>
+  <div class="abs" id="s1num" style="left:420px;top:1330px;width:240px;height:240px;display:flex;align-items:center;justify-content:center;font-size:130px">3</div>
+</div>
+
+<!-- ===== S2 PROBLEM ===== -->
+<div class="scene" id="s2" style="background:var(--navy)">
+  <div class="dots" id="s2dots"></div>
+  <div class="label" id="s2lab" style="left:80px;top:250px">The problem</div>
+  <div class="rise" id="s2a" style="left:80px;top:470px;font-size:132px"><span class="t">SLOW.</span></div>
+  <div class="abs" id="s2bar" style="left:80px;top:650px;width:920px;height:16px;border-radius:8px;background:rgba(111,177,240,.2);overflow:hidden"><div id="s2fill" class="abs" style="left:0;top:0;height:16px;width:0;border-radius:8px;background:var(--sky)"></div></div>
+  <div class="rise" id="s2b" style="left:80px;top:790px;font-size:132px"><span class="t">CLUTTERED.</span></div>
+  <svg id="s2clut" class="abs" style="left:80px;top:970px" width="920" height="80" viewBox="0 0 920 80"></svg>
+  <div class="rise" id="s2c" style="left:80px;top:1110px;font-size:132px"><span class="t">FORGETTABLE.</span></div>
+  <svg id="s2forg" class="abs" style="left:80px;top:1290px" width="920" height="80" viewBox="0 0 920 80"></svg>
+  <div id="s2strikes"></div>
+</div>
+
+<!-- ===== S3 INTRO ===== -->
+<div class="scene" id="s3" style="background:var(--navy)">
+  <div class="dots" id="s3dots"></div>
+  <div class="abs" id="s3ring" style="left:390px;top:420px;width:300px;height:300px;border:4px solid var(--sky);border-radius:50%;opacity:0"></div>
+  <div class="abs" id="s3logo" style="left:0;top:380px;width:1080px;display:flex;justify-content:center"></div>
+  <div class="letters" id="s3word" style="left:0;width:1080px;top:880px;font-size:210px;letter-spacing:.02em"></div>
+  <div class="line" id="s3line" style="left:300px;top:1130px;width:480px;height:4px"></div>
+  <div class="abs" id="s3tag" style="left:0;width:1080px;text-align:center;top:1160px;font-size:36px;font-weight:700;color:var(--sky);white-space:nowrap">WEB DESIGN STUDIO</div>
+  <div class="rise" id="s3t1" style="left:0;width:1080px;text-align:center;top:1290px;font-size:54px;font-weight:600"><span class="t">Websites that look sharp,</span></div>
+  <div class="rise" id="s3t2" style="left:0;width:1080px;text-align:center;top:1362px;font-size:54px;font-weight:600"><span class="t">load fast and win customers.</span></div>
+</div>
+
+<!-- ===== S4 SERVICES ===== -->
+<div class="scene" id="s4" style="background:var(--ice);color:var(--navy)">
+  <div class="label" id="s4lab" style="left:80px;top:250px;color:var(--mid)">01 — What we build</div>
+  <div class="rise" id="s4a" style="left:80px;top:320px;font-size:128px"><span class="t">WHAT WE</span></div>
+  <div class="rise" id="s4b" style="left:80px;top:440px;font-size:128px;color:var(--mid)"><span class="t">BUILD.</span></div>
+  <div id="s4cards"></div>
+</div>
+
+<!-- ===== S5 SCREENS ===== -->
+<div class="scene" id="s5" style="background:var(--deep)">
+  <div class="dots" id="s5dots"></div>
+  <div class="label" id="s5lab" style="left:80px;top:250px">02 — Every screen</div>
+  <div class="rise" id="s5a" style="left:80px;top:320px;font-size:112px"><span class="t">DESIGNED FOR</span></div>
+  <div class="rise" id="s5b" style="left:80px;top:430px;font-size:112px;color:var(--sky)"><span class="t">EVERY SCREEN.</span></div>
+  <div class="abs" id="phone" style="left:310px;top:640px;width:460px;height:840px;border-radius:72px;border:9px solid var(--sky);background:#fff;overflow:hidden">
+    <div class="abs" style="left:150px;top:18px;width:150px;height:28px;border-radius:14px;background:#12324F"></div>
+    <div class="abs" id="ph1" style="left:26px;top:76px;width:390px;height:46px;border-radius:23px;background:#EAF2FB"></div>
+    <div class="abs" id="ph2" style="left:26px;top:142px;width:390px;height:250px;border-radius:28px;background:linear-gradient(120deg,#12324F,#1E5B94);overflow:hidden">
+      <div class="abs" id="phorb" style="right:-50px;top:-50px;width:210px;height:210px;border-radius:50%;background:rgba(111,177,240,.38)"></div>
+      <div class="abs" id="phh1" style="left:30px;top:70px;width:230px;height:26px;border-radius:13px;background:#fff;transform-origin:left"></div>
+      <div class="abs" id="phh2" style="left:30px;top:116px;width:170px;height:26px;border-radius:13px;background:var(--sky);transform-origin:left"></div>
+      <div class="abs" id="phh3" style="left:30px;top:170px;width:120px;height:12px;border-radius:6px;background:rgba(255,255,255,.55);transform-origin:left"></div>
+    </div>
+    <div class="abs phc" style="left:26px;top:420px;width:186px;height:170px;border-radius:24px;background:#EAF2FB"><div class="abs" style="left:22px;top:22px;width:50px;height:50px;border-radius:14px;background:var(--sky)"></div><div class="abs" style="left:22px;top:100px;width:130px;height:14px;border-radius:7px;background:#B9D3EE"></div><div class="abs" style="left:22px;top:128px;width:88px;height:14px;border-radius:7px;background:#CFE1F4"></div></div>
+    <div class="abs phc" style="left:230px;top:420px;width:186px;height:170px;border-radius:24px;background:#EAF2FB"><div class="abs" style="left:22px;top:22px;width:50px;height:50px;border-radius:50%;background:var(--mid)"></div><div class="abs" style="left:22px;top:100px;width:130px;height:14px;border-radius:7px;background:#B9D3EE"></div><div class="abs" style="left:22px;top:128px;width:88px;height:14px;border-radius:7px;background:#CFE1F4"></div></div>
+    <div class="abs phc" style="left:26px;top:612px;width:390px;height:60px;border-radius:30px;background:#EAF2FB"></div>
+    <div class="abs" id="phbtn" style="left:26px;top:700px;width:300px;height:84px;border-radius:42px;background:var(--navy);color:#fff;font-size:28px;letter-spacing:.06em;display:flex;align-items:center;justify-content:center">Get started</div>
+  </div>
+  <div id="s5chips"></div>
+</div>
+
+<!-- ===== S6 PROCESS ===== -->
+<div class="scene" id="s6" style="background:var(--ice);color:var(--navy)">
+  <div class="label" id="s6lab" style="left:80px;top:250px;color:var(--mid)">03 — How it works</div>
+  <div class="rise" id="s6a" style="left:80px;top:320px;font-size:128px"><span class="t">SIMPLE</span></div>
+  <div class="rise" id="s6b" style="left:80px;top:440px;font-size:128px;color:var(--mid)"><span class="t">AS 1-2-3.</span></div>
+  <div class="abs" id="s6track" style="left:128px;top:830px;width:8px;height:560px;border-radius:4px;background:rgba(30,91,148,.18)"></div>
+  <div class="abs" id="s6prog" style="left:128px;top:830px;width:8px;height:560px;border-radius:4px;background:var(--mid);transform-origin:top"></div>
+  <div id="s6steps"></div>
+</div>
+
+<!-- ===== S7 CTA ===== -->
+<div class="scene" id="s7" style="background:var(--navy)">
+  <div class="dots" id="s7dots"></div>
+  <svg id="s7deco" class="abs" style="left:0;top:0" width="1080" height="1920" viewBox="0 0 1080 1920"></svg>
+  <div class="rise" id="s7a" style="left:80px;top:300px;font-size:140px"><span class="t">LET'S BUILD</span></div>
+  <div class="rise" id="s7b" style="left:80px;top:430px;font-size:140px;color:var(--sky)"><span class="t">YOURS.</span></div>
+  <div class="abs" id="s7ring" style="left:390px;top:610px;width:300px;height:300px;border:4px solid var(--sky);border-radius:50%;opacity:0"></div>
+  <div class="abs" id="s7logo" style="left:0;top:590px;width:1080px;display:flex;justify-content:center"></div>
+  <div class="letters" id="s7word" style="left:0;width:1080px;top:960px;font-size:170px;letter-spacing:.02em"></div>
+  <div class="abs" id="s7btn" style="left:150px;top:1230px;width:780px;height:120px;border-radius:60px;background:var(--sky);color:var(--deep);font-size:44px;letter-spacing:.04em;display:flex;align-items:center;justify-content:center">Book a free consultation</div>
+  <div class="abs" id="s7glow" style="left:150px;top:1230px;width:780px;height:120px;border-radius:60px;border:4px solid var(--sky);opacity:0"></div>
+  <div class="abs" id="s7sub" style="left:0;width:1080px;text-align:center;top:1390px;font-size:32px;font-weight:600;color:var(--sky);letter-spacing:.06em">Message us to get started</div>
+</div>
+
+<!-- transition panels (vertical sweeps) -->
+<div class="panel" id="p1" style="background:var(--sky);transform:translateY(1920px)"></div>
+<div class="panel" id="p2" style="background:var(--mid);transform:translateY(1920px)"></div>
+<div class="panel" id="p3" style="background:var(--navy);transform:translateY(1920px)"></div>
+<div id="prog"></div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const clamp=x=>Math.min(1,Math.max(0,x));
+const E={
+  io:x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2,
+  out:x=>1-Math.pow(1-x,4),
+  expo:x=>x>=1?1:1-Math.pow(2,-10*x),
+  back:x=>{const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2)}
+};
+const P=(t,a,b,e=E.io)=>e(clamp((t-a)/(b-a)));
+const lerp=(a,b,p)=>a+(b-a)*p;
+const COL={navy:'#12324F',deep:'#0B2238',mid:'#1E5B94',sky:'#6FB1F0',ice:'#E8F1FB',white:'#FBFCFC'};
+const DUR=42;
+
+$$('.rise').forEach(el=>{
+  const t=el.querySelector('.t');
+  t.innerHTML=t.textContent.trim().split(/\s+/).map(w=>`<span class="w">${w}</span>`).join(' ');
+});
+function rise(el,t,start,stag=.08,dur=.9){
+  el.querySelectorAll('.w').forEach((w,i)=>{
+    const p=P(t,start+i*stag,start+i*stag+dur,E.out);
+    w.style.transform=`translateY(${(1-p)*118}%)`;
+  });
+}
+function mkLetters(el,text){el.innerHTML=[...text].map(c=>`<span>${c}</span>`).join('')}
+function letters(el,t,start,stag=.06,dur=.9){
+  el.querySelectorAll('span').forEach((s,i)=>{
+    const p=P(t,start+i*stag,start+i*stag+dur,E.out);
+    s.style.transform=`translateY(${(1-p)*80}px)`; s.style.opacity=clamp(p*2.2);
+  });
+}
+function draw(path,p){path.style.strokeDasharray='1';path.style.strokeDashoffset=String(1-p)}
+function dots(id,t){$(id).style.transform=`translate(${(t*7)%60}px,${(t*4)%60}px)`}
+
+const LT='M243 360 L243 208.75 A118.75 118.75 0 0 1 480 208.75 L480 445 L437 408 L437 208.75 A74.75 74.75 0 0 0 287 208.75 L287 325 Z';
+function logoSVG(h,color){
+  return `<svg viewBox="170 80 320 495" height="${h}" width="${h*320/495}" style="overflow:visible"><path class="lt" d="${LT}" fill="${color}"/><path class="lb" d="${LT}" fill="${color}" transform="rotate(180 329 327.5)"/></svg>`;
+}
+function setLogo(el,topDy,botDy,op,scale=1){
+  el.querySelector('.lt').setAttribute('transform',`translate(0 ${topDy})`);
+  el.querySelector('.lb').setAttribute('transform',`translate(0 ${botDy}) rotate(180 329 327.5)`);
+  el.style.opacity=op; el.style.transform=`scale(${scale})`;
+}
+
+/* ---- build ---- */
+mkLetters($('#s3word'),'Devdha'); mkLetters($('#s7word'),'Devdha');
+$('#s3logo').innerHTML=logoSVG(330,'#FBFCFC');
+$('#s7logo').innerHTML=logoSVG(330,'#FBFCFC');
+
+// S2 visuals
+const clut=$('#s2clut'); const clutSpec=[];
+for(let i=0;i<22;i++){const r=((i*7919)%97)/97; clutSpec.push({x:10+i*40,w:16+((i*13)%5)*8,h:14+((i*29)%6)*9,ph:r*6})}
+clut.innerHTML=clutSpec.map((c,i)=>`<rect class="cl" x="${c.x}" y="${40-c.h/2}" width="${c.w}" height="${c.h}" rx="4" fill="${i%3?'#6FB1F0':'#1E5B94'}"/>`).join('');
+const forg=$('#s2forg');
+forg.innerHTML=[0,1,2,3,4,5].map(i=>`<circle class="fg" cx="${60+i*150}" cy="40" r="30" fill="#6FB1F0" opacity="${.85-i*.15}"/>`).join('');
+$('#s2strikes').innerHTML=[[470,132,'SLOW.',0],[790,132,'CLUTTERED.',0],[1110,132,'FORGETTABLE.',0]].map((s,i)=>`<div class="line st" style="left:70px;top:${s[0]+92}px;width:${[360,820,980][i]}px;height:12px;background:#fff;transform:scaleX(0)"></div>`).join('');
+
+// S4 cards
+const SV=[
+ ['WEBSITE DESIGN','Custom, responsive layouts','<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9H21"/><circle cx="6" cy="6.5" r=".6"/>'],
+ ['LANDING PAGES','Built to turn clicks into leads','<path d="M3 5H21L14 13V20L10 18V13Z"/>'],
+ ['E-COMMERCE','Online stores that sell','<path d="M5 8H19L18 20H6Z"/><path d="M9 8V6a3 3 0 0 1 6 0V8"/>'],
+ ['BRANDING','Logos and visual identity','<path d="M12 3 L19 12 L12 21 L5 12 Z"/><path d="M12 3 V13"/><circle cx="12" cy="14" r="1.2"/>'],
+ ['PRINT & SOCIAL','Cards, packaging and posts','<rect x="3" y="3" width="8" height="8"/><circle cx="17" cy="7" r="4"/><path d="M4 15H20M4 19H14"/>']
+];
+const CARD_TOP=620, CARD_STEP=168;
+$('#s4cards').innerHTML=SV.map((s,i)=>`<div class="card" id="cd${i}" style="top:${CARD_TOP+i*CARD_STEP}px"><div class="ic"><svg viewBox="0 0 24 24">${s[2]}</svg></div><div><div class="tt">${s[0].replace('&','&amp;')}</div><div class="ss">${s[1]}</div></div><div class="nn">0${i+1}</div></div>`).join('');
+
+// S5 chips
+const CH=[
+ ['FAST',90,740,'<path d="M13 3 L5 14 H11 L10 21 L19 9 H13 Z"/>',0],
+ ['MOBILE-FIRST',590,930,'<rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18H13"/>',1],
+ ['SEO-READY',70,1150,'<circle cx="11" cy="11" r="7"/><path d="M16 16L21 21"/>',0],
+ ['SECURE',640,1260,'<path d="M12 3 L20 6 V12 C20 17 16 20 12 21 C8 20 4 17 4 12 V6 Z"/><path d="M9 12 L11 14 L15 10"/>',1]
+];
+$('#s5chips').innerHTML=CH.map((c,i)=>`<div class="chip${c[4]?' dk':''}" id="ch${i}" style="left:${c[1]}px;top:${c[2]}px"><span class="d"><svg viewBox="0 0 24 24">${c[3]}</svg></span>${c[0]}</div>`).join('');
+
+// S6 steps
+const ST=[['TALK','Share your goals and ideas'],['DESIGN','Layouts, visuals and feedback'],['LAUNCH','Go live — fast and mobile-ready']];
+const STEP_Y=[830,1090,1350];
+$('#s6steps').innerHTML=ST.map((s,i)=>`<div class="abs" id="sn${i}" style="left:84px;top:${STEP_Y[i]-48}px;width:96px;height:96px;border-radius:50%;background:#fff;border:6px solid var(--mid);display:flex;align-items:center;justify-content:center;font-size:40px;color:var(--mid)">${i+1}</div>
+<div class="abs" id="st${i}" style="left:230px;top:${STEP_Y[i]-62}px"><div style="font-size:78px;line-height:1.05">${s[0]}</div><div style="font-size:34px;font-weight:600;color:var(--mid);margin-top:6px">${s[1]}</div></div>`).join('');
+
+// S7 deco shapes
+const spec7=[
+ {k:'s',r:44,col:COL.sky,x:140,y:1620},{k:'c',r:56,col:COL.sky,x:930,y:1640},{k:'f',r:20,col:COL.mid,x:280,y:1760},
+ {k:'p',r:28,col:COL.sky,x:820,y:1790},{k:'c',r:28,col:COL.white,x:90,y:1480,w:2},{k:'s',r:30,col:COL.white,x:990,y:1500,w:2},
+ {k:'f',r:14,col:COL.sky,x:540,y:1700},{k:'c',r:34,col:COL.mid,x:500,y:140}
+];
+$('#s7deco').innerHTML=spec7.map((s,i)=>{
+  const c=s.k=='c'?`<circle r="${s.r}" fill="none" stroke="${s.col}" stroke-width="${s.w||3}"/>`
+   :s.k=='s'?`<rect x="${-s.r}" y="${-s.r}" width="${2*s.r}" height="${2*s.r}" fill="none" stroke="${s.col}" stroke-width="${s.w||3}"/>`
+   :s.k=='f'?`<rect x="${-s.r}" y="${-s.r}" width="${2*s.r}" height="${2*s.r}" fill="${s.col}"/>`
+   :`<path d="M${-s.r} 0 H${s.r} M0 ${-s.r} V${s.r}" stroke="${s.col}" stroke-width="${s.w||3}"/>`;
+  return `<g class="ds" data-i="${i}">${c}</g>`}).join('');
+
+/* ---- scenes (absolute seconds) ---- */
+function scene1(t){
+  dots('#s1dots',t);
+  $('#s1lab').style.opacity=P(t,.2,.9);
+  rise($('#s1a'),t,.5,0,.9); rise($('#s1b'),t,.75,0,.9); rise($('#s1c'),t,1.0,0,.9); rise($('#s1d'),t,1.25,0,.9);
+  const rp=P(t,1.2,4.3,x=>x);
+  draw($('#s1arc'),1-rp);
+  const n=t<2.2?3:(t<3.2?2:1);
+  const el=$('#s1num'); el.textContent=n;
+  const phase=(t-1.2)%1; const pop=1+.18*Math.max(0,1-phase*4);
+  el.style.transform=`scale(${pop})`;
+  const ringOp=P(t,1.0,1.5); $('#s1ring').style.opacity=ringOp; el.style.opacity=ringOp;
+}
+function scene2(t){
+  dots('#s2dots',t);
+  $('#s2lab').style.opacity=P(t,5.2,5.9);
+  rise($('#s2a'),t,5.4,0,.8); rise($('#s2b'),t,6.2,0,.8); rise($('#s2c'),t,7.0,0,.8);
+  // slow loading bar
+  const bp=P(t,5.6,8.2,x=>1-Math.pow(1-x,3)); $('#s2fill').style.width=(bp*.3*920)+'px';
+  $('#s2bar').style.opacity=P(t,5.5,6);
+  // clutter jitter
+  $$('#s2clut .cl').forEach((r,i)=>{const c=clutSpec[i];const a=P(t,6.3+i*.02,6.9+i*.02,E.back);
+    r.setAttribute('transform',`translate(0 ${Math.sin(t*5+c.ph)*6}) scale(1 ${a})`);r.style.transformOrigin='center';r.style.transformBox='fill-box';r.style.opacity=clamp(a)});
+  $$('#s2forg .fg').forEach((c,i)=>{const a=P(t,7.1+i*.08,7.7+i*.08,E.back);c.setAttribute('transform',`translate(${(1-a)*-40} 0)`);c.style.transformBox='fill-box';c.style.opacity=clamp(a)*(.85-i*.15)});
+  // strike-through + fade
+  const sk=$$('#s2strikes .st');
+  sk.forEach((l,i)=>{l.style.transform=`scaleX(${P(t,8.15+i*.16,8.6+i*.16,E.expo)})`});
+  const fa=P(t,8.3,9.0); [$('#s2a'),$('#s2b'),$('#s2c')].forEach(e=>e.style.opacity=1-.6*fa);
+}
+function scene3(t){
+  dots('#s3dots',t);
+  const logo=$('#s3logo'); const p=P(t,9.9,10.8,E.expo);
+  const pulse=1+.045*Math.sin(clamp((t-10.8)/.5)*Math.PI);
+  setLogo(logo,lerp(-640,0,p),lerp(640,0,p),clamp((t-9.9)/.3),pulse);
+  const rp=P(t,10.8,12.1,E.out), ring=$('#s3ring');
+  ring.style.opacity=t>10.8?(1-rp)*.7:0; ring.style.transform=`scale(${lerp(.7,2.4,rp)})`;
+  letters($('#s3word'),t,10.9,.07,.9);
+  $('#s3line').style.transform=`scaleX(${P(t,11.5,12.3,E.expo)})`;
+  const tg=$('#s3tag'),tp=P(t,11.8,12.6,E.out); tg.style.opacity=tp; tg.style.letterSpacing=`${lerp(.5,.26,tp)}em`;
+  rise($('#s3t1'),t,12.4,.05,.9); rise($('#s3t2'),t,12.8,.05,.9);
+}
+function scene4(t){
+  $('#s4lab').style.opacity=P(t,15.0,15.7);
+  rise($('#s4a'),t,15.2,.08,.9); rise($('#s4b'),t,15.45,.08,.9);
+  SV.forEach((_,i)=>{
+    const e=$('#cd'+i);
+    const p=P(t,15.7+i*.2,16.5+i*.2,E.out);
+    const hs=17.0+i*1.3, he=hs+1.3;
+    const act=P(t,hs,hs+.25)*(1-P(t,he,he+.25));
+    e.style.transform=`translateX(${(1-p)*1100}px) scale(${1+.03*act})`;
+    e.style.opacity=clamp(p*3);
+    e.style.background=act>.5?COL.navy:'#fff'; e.style.color=act>.5?'#fff':COL.navy;
+    e.querySelector('.ic').style.background=act>.5?COL.sky:COL.navy;
+    e.querySelector('.ic svg').style.stroke=act>.5?COL.deep:'#fff';
+    e.querySelector('.ss').style.color=act>.5?COL.sky:COL.mid;
+    e.querySelector('.nn').style.color=act>.5?'#6FB1F0':'#9DBDE0';
+  });
+}
+function scene5(t){
+  dots('#s5dots',t);
+  $('#s5lab').style.opacity=P(t,24.9,25.6);
+  rise($('#s5a'),t,25.0,.08,.9); rise($('#s5b'),t,25.3,.08,.9);
+  const ph=$('#phone'),pp=P(t,25.5,26.5,E.out), bob=Math.sin(t*1.1)*8;
+  ph.style.opacity=clamp(pp*2); ph.style.transform=`translateY(${(1-pp)*140+bob}px) scale(${lerp(.92,1,pp)})`;
+  const sx=(el,p)=>{el.style.transform=`scaleX(${p})`};
+  $('#ph1').style.opacity=P(t,26.2,26.6);
+  sx($('#phh1'),P(t,26.4,27.0,E.out)); sx($('#phh2'),P(t,26.6,27.2,E.out)); sx($('#phh3'),P(t,26.8,27.4,E.out));
+  $('#phorb').style.transform=`scale(${lerp(.4,1,P(t,26.3,27.2,E.back))})`;
+  $$('.phc').forEach((e,i)=>{const p=P(t,27.0+i*.18,27.7+i*.18,E.out);e.style.opacity=p;e.style.transform=`translateY(${(1-p)*40}px)`});
+  const b=$('#phbtn'),bp=P(t,27.9,28.5,E.back); b.style.opacity=clamp(bp*1.5); b.style.transform=`scale(${lerp(.8,1,bp)})`;
+  CH.forEach((c,i)=>{
+    const e=$('#ch'+i),p=P(t,26.5+i*.45,27.2+i*.45,E.back);
+    e.style.opacity=clamp(p*1.6);
+    e.style.transform=`translate(${Math.sin(t*1.2+i)*8}px,${Math.cos(t*1.0+i*1.7)*12}px) scale(${p})`;
+  });
+}
+function scene6(t){
+  $('#s6lab').style.opacity=P(t,30.7,31.3);
+  rise($('#s6a'),t,30.8,.08,.9); rise($('#s6b'),t,31.05,.08,.9);
+  const times=[31.9,32.7,33.5];
+  $('#s6prog').style.transform=`scaleY(${P(t,31.9,33.9,E.io)})`;
+  times.forEach((ts,i)=>{
+    const p=P(t,ts,ts+.6,E.back), n=$('#sn'+i), s=$('#st'+i);
+    n.style.transform=`scale(${p})`; n.style.opacity=clamp(p*2);
+    const done=t>ts+.35; n.style.background=done?COL.mid:'#fff'; n.style.color=done?'#fff':COL.mid;
+    const q=P(t,ts+.1,ts+.8,E.out); s.style.opacity=q; s.style.transform=`translateX(${(1-q)*60}px)`;
+  });
+}
+function scene7(t){
+  dots('#s7dots',t);
+  rise($('#s7a'),t,36.1,.1,.95); rise($('#s7b'),t,36.4,.1,.95);
+  const logo=$('#s7logo'), p=P(t,36.7,37.6,E.expo);
+  const pulse=1+.045*Math.sin(clamp((t-37.6)/.5)*Math.PI);
+  setLogo(logo,lerp(-640,0,p),lerp(640,0,p),clamp((t-36.7)/.3),pulse*(1+Math.max(0,t-38)*.003));
+  const rp=P(t,37.6,38.9,E.out); $('#s7ring').style.opacity=t>37.6?(1-rp)*.7:0; $('#s7ring').style.transform=`scale(${lerp(.7,2.4,rp)})`;
+  letters($('#s7word'),t,37.7,.07,.9);
+  const bp=P(t,38.6,39.4,E.back), b=$('#s7btn');
+  b.style.opacity=clamp(bp*1.5);
+  const beat=1+.025*Math.sin(Math.max(0,t-39.4)*5);
+  b.style.transform=`scale(${lerp(.8,1,bp)*beat})`;
+  const g=$('#s7glow'), gp=((t-39.4)%1.2)/1.2;
+  g.style.opacity=t>39.4?(1-gp)*.8:0; g.style.transform=`scale(${1+gp*.12})`;
+  $('#s7sub').style.opacity=P(t,39.2,40);
+  $$('#s7deco .ds').forEach(g=>{
+    const i=+g.dataset.i,s=spec7[i];
+    const a=P(t,36.2+i*.1,37.0+i*.1,E.back);
+    g.setAttribute('transform',`translate(${s.x+Math.sin(t*.7+i)*14} ${s.y+Math.cos(t*.6+i*1.3)*12}) rotate(${(t-36)*8*(i%2?1:-1)}) scale(${a})`);
+    g.style.opacity=clamp(a)*.9;
+  });
+}
+
+function render(t){
+  const S=n=>$('#s'+n);
+  const vis=(el,a,b)=>{el.style.visibility=(t>=a&&t<b)?'visible':'hidden'};
+  vis(S(1),0,4.6); vis(S(2),4.4,10.4); vis(S(3),8.9,15.4); vis(S(4),13.9,25.2); vis(S(5),23.9,30.7); vis(S(6),29.4,36.4); vis(S(7),35.2,99);
+  // T1 panels sweep up (cover at 4.5)
+  [[1,3.7],[2,3.77],[3,3.84]].forEach(([n,a])=>{
+    const inn=P(t,a,a+.7), out=P(t,a+.8,a+1.5);
+    $('#p'+n).style.transform=`translateY(${1920-1920*inn-1920*out}px)`;
+  });
+  // T6 panels sweep down (cover at ~35.5)
+  [[1,34.9],[2,34.97],[3,35.04]].forEach(([n,a])=>{
+    const inn=P(t,a,a+.7), out=P(t,a+.8,a+1.5);
+    if(t>=34.5){$('#p'+n).style.transform=`translateY(${-1920+1920*inn+1920*out}px)`}
+  });
+  // T2 iris from logo centre
+  S(3).style.clipPath=`circle(${P(t,9.0,10.2,E.io)*2300}px at 540px 560px)`;
+  // T3 vertical slats
+  const cols=6,W=1080/cols; let d='';
+  for(let i=0;i<cols;i++){const p=P(t,14.0+i*.06,14.0+i*.06+.8,E.io);const w=(W+2)*p,x=i*W+W/2-w/2;d+=`M${x} 0H${x+w}V1920H${x}Z`}
+  S(4).style.clipPath=`path('${d}')`;
+  // T4 inset reveal
+  const ip=P(t,24.0,25.1,E.io);
+  S(5).style.clipPath=`inset(${(1-ip)*960}px ${(1-ip)*540}px ${(1-ip)*960}px ${(1-ip)*540}px round ${(1-ip)*200}px)`;
+  // T5 iris from bottom
+  S(6).style.clipPath=`circle(${P(t,29.5,30.6,E.io)*2500}px at 540px 1500px)`;
+  if(t<4.6)scene1(t);
+  if(t>=4.4&&t<10.4)scene2(t);
+  if(t>=8.9&&t<15.4)scene3(t);
+  if(t>=13.9&&t<25.2)scene4(t);
+  if(t>=23.9&&t<30.7)scene5(t);
+  if(t>=29.4&&t<36.4)scene6(t);
+  if(t>=35.2)scene7(t);
+  $('#prog').style.width=(t/DUR*1080)+'px';
+}
+window.render=render;
+render(0);
+</script>
+</body>
+</html>
