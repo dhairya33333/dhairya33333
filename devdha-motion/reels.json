@@ -1,0 +1,36 @@
+{
+ "mistakes": {"title":"3 mistakes that kill a startup website","scenes":[
+  {"type":"hook","dur":3.4,"theme":"navy","label":"Devdha / Web tips","lines":[{"t":"3 MISTAKES"},{"t":"KILLING YOUR"},{"t":"STARTUP"},{"t":"WEBSITE.","c":"s"}]},
+  {"type":"tip","dur":5.2,"theme":"ice","label":"01 — Speed","num":"01","title":["SLOW","LOADING."],"body":["Visitors leave when a page drags.","Compress images, keep code lean."],"icon":"clock"},
+  {"type":"tip","dur":5.2,"theme":"navy","label":"02 — Direction","num":"02","title":["NO CLEAR","NEXT STEP."],"body":["Every page needs one obvious","action: call, book or buy."],"icon":"target"},
+  {"type":"tip","dur":5.2,"theme":"ice","label":"03 — Mobile","num":"03","title":["NOT","MOBILE-FIRST."],"body":["Many visitors arrive on a phone.","Design small first, then scale up."],"icon":"phone"},
+  {"type":"cta","dur":6.0,"theme":"navy","lines":["WANT IT FIXED?","LET'S BUILD IT."],"url":"devdha.in","sub":"Websites & brands for startups"}
+ ]},
+ "fivepages": {"title":"5 pages every startup site needs","scenes":[
+  {"type":"hook","dur":3.4,"theme":"navy","label":"Devdha / Web tips","lines":[{"t":"5 PAGES"},{"t":"EVERY"},{"t":"STARTUP SITE"},{"t":"NEEDS.","c":"s"}]},
+  {"type":"list","dur":9.0,"theme":"ice","label":"The checklist","title":["THE","CHECKLIST."],"items":[["HOME","One clear promise","home"],["ABOUT","Who you are, why you care","user"],["SERVICES","What you offer, in plain words","grid"],["WORK","Proof: projects and results","star"],["CONTACT","Make it easy to reach you","mail"]]},
+  {"type":"cta","dur":6.0,"theme":"navy","lines":["NEED THEM","ALL BUILT?"],"url":"devdha.in","sub":"Websites & brands for startups"}
+ ]},
+ "brand": {"title":"A logo is not a brand","scenes":[
+  {"type":"hook","dur":3.4,"theme":"navy","label":"Devdha / Branding","lines":[{"t":"A LOGO"},{"t":"IS NOT A"},{"t":"BRAND.","c":"s"}]},
+  {"type":"steps","dur":6.6,"theme":"ice","label":"What makes a brand","title":["WHAT MAKES","A BRAND."],"steps":[["LOGO","The symbol people remember"],["COLOUR","The mood you create"],["TYPE","The voice on every page"],["SYSTEM","Used the same everywhere"]]},
+  {"type":"cta","dur":6.0,"theme":"navy","lines":["BUILD A BRAND","THAT STICKS."],"url":"devdha.in","sub":"Logos, identity & websites"}
+ ]},
+ "launch": {"title":"From idea to launch in 4 steps","scenes":[
+  {"type":"hook","dur":3.4,"theme":"navy","label":"Devdha / How we work","lines":[{"t":"IDEA TO"},{"t":"LAUNCH"},{"t":"IN 4 STEPS.","c":"s"}]},
+  {"type":"steps","dur":6.6,"theme":"navy","label":"Our process","title":["SIMPLE","AS 1-2-3-4."],"steps":[["DISCOVER","We learn your goals"],["DESIGN","Layouts and visuals"],["BUILD","Fast, mobile-ready code"],["LAUNCH","Go live and grow"]]},
+  {"type":"cta","dur":6.0,"theme":"navy","lines":["READY TO","START?"],"url":"devdha.in","sub":"Websites & brands for startups"}
+ ]},
+ "work": {"title":"Our work, in motion (concepts)","scenes":[
+  {"type":"hook","dur":3.4,"theme":"navy","label":"Devdha / Portfolio","lines":[{"t":"OUR WORK,"},{"t":"IN MOTION.","c":"s"}],"sub":"Concept designs"},
+  {"type":"mock","dur":5.6,"theme":"navy","label":"Web design — concept 01","caption":["A CAFÉ","WEBSITE."],"name":"Brew & Co.","tag":"Fresh coffee, daily","cta":"Order now","c1":"#7A4B2B","c2":"#D08A4A"},
+  {"type":"mock","dur":5.6,"theme":"ice","label":"Web design — concept 02","caption":["A FITNESS","BRAND."],"name":"FitLab","tag":"Train smarter","cta":"Join today","c1":"#0E6B5C","c2":"#3CC4A0"},
+  {"type":"mock","dur":5.6,"theme":"navy","label":"Web design — concept 03","caption":["A STARTUP","LAUNCH PAGE."],"name":"Nova","tag":"Launch faster","cta":"Get started","c1":"#1E5B94","c2":"#6FB1F0"},
+  {"type":"cta","dur":6.0,"theme":"navy","lines":["SEE MORE","OF OUR WORK."],"url":"devdha.in","sub":"Websites & brands for startups"}
+ ]},
+ "print": {"title":"From screen to something real","scenes":[
+  {"type":"hook","dur":3.4,"theme":"navy","label":"Devdha / Print","lines":[{"t":"FROM"},{"t":"SCREEN TO"},{"t":"SOMETHING"},{"t":"REAL.","c":"s"}]},
+  {"type":"list","dur":7.8,"theme":"navy","label":"Print & packaging","title":["WE ALSO","PRINT."],"items":[["BUSINESS CARDS","Sharp, premium finishes","card"],["PACKAGING","Boxes that sell the brand","box"],["STICKERS","Custom cut, any shape","sticker"],["CUSTOM MERCH","Your brand on everything","shirt"]]},
+  {"type":"cta","dur":6.0,"theme":"navy","lines":["DESIGN IT.","PRINT IT."],"url":"devdha.in","sub":"Websites, brands & print"}
+ ]}
+}

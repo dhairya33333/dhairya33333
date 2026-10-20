@@ -15,6 +15,10 @@ async function open(browser) {
   const page = await ctx.newPage();
   await page.goto(url);
   await page.evaluate(() => document.fonts.ready);
+  if (process.env.REEL) {   // reels.html: inject the script for this reel
+    const spec = JSON.parse(fs.readFileSync(path.join(__dirname, 'reels.json'), 'utf8'))[process.env.REEL];
+    await page.evaluate(s => window.init(s), spec);
+  }
   return page;
 }
 
@@ -31,7 +35,10 @@ async function open(browser) {
     await browser.close(); return;
   }
   const [fps, a, b, out, workers = '4'] = args;
-  const F = +fps, start = Math.round(+a * F), end = Math.round(+b * F), W = +workers;
+  const F = +fps, start = Math.round(+a * F), W = +workers;
+  let endSec = +b;
+  if (b === 'auto') { const p0 = await open(browser); endSec = await p0.evaluate(() => window.TOTAL); }
+  const end = Math.round(endSec * F);
   fs.mkdirSync(out, { recursive: true });
   let next = start;
   async function worker() {
