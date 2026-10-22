@@ -14,9 +14,20 @@ VIEW, OUT = sys.argv[sys.argv.index('--') + 1:][:2]
 RES = int(os.environ.get('RES', 1200))
 SAMPLES = int(os.environ.get('SAMPLES', 64))
 L.reset()
-L.setup_render(res=RES, samples=SAMPLES, transparent=True)
-L.set_world((1, 1, 1), float(os.environ.get('WORLD', 0.14)))
-L.shadow_catcher()
+BG = os.environ.get('BG', 'white')
+BGS = {   # name: (backdrop linear colour, world colour, world strength, key power)
+    'white': ((0.9, 0.9, 0.9), (1, 1, 1), 0.14, 32),
+    'sky':   ((0.20, 0.42, 0.78), (0.6, 0.75, 1.0), 0.30, 85),
+    'navy':  ((0.018, 0.058, 0.115), (0.4, 0.55, 0.8), 0.35, 110),
+    'sand':  ((0.60, 0.46, 0.33), (1.0, 0.88, 0.74), 0.30, 85),
+}
+_bg, _wc, _ws, _key = BGS[BG]
+L.setup_render(res=RES, samples=SAMPLES, transparent=(BG == 'white'))
+L.set_world(_wc, float(os.environ.get('WORLD', _ws)))
+if BG == 'white':
+    L.shadow_catcher()
+else:
+    L.backdrop(_bg, rough=0.9)
 
 BLUE = (0.035, 0.20, 0.55)
 two_tone = VIEW.startswith('blue')
@@ -33,7 +44,7 @@ def cam(elev_deg, az_deg=0.0, dist=DIST, lens=LENS, fstop=18, target=TARGET):
 
 
 # softbox rig: big key left/front, fill right, top, and a bounce card in front for the glaze highlight
-L.studio_lights((0, 0, 0.05), key_power=float(os.environ.get('KEY', 32)))
+L.studio_lights((0, 0, 0.05), key_power=float(os.environ.get('KEY', _key)))
 _k = L.bpy.data.objects['key']
 _k.location = (-1.2, -0.9, 2.5)
 _k.data.size, _k.data.size_y = 2.4, 2.0
@@ -56,7 +67,10 @@ elif VIEW == 'top':
     m.rotation_euler = (0, 0, math.radians(-30))
     cam(38, dist=0.9, lens=120)
 
-png = OUT.replace('.jpg', '.png')
-L.render(png)
-L.white_composite(png, OUT)
-os.remove(png)
+if BG == 'white':
+    png = OUT.replace('.jpg', '.png')
+    L.render(png)
+    L.white_composite(png, OUT)
+    os.remove(png)
+else:
+    L.render(OUT)
