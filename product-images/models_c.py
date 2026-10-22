@@ -52,8 +52,8 @@ def cards(job):
     L.parent_to(body, root)
     L.parent_to(_card('front', finish, (0, 0, stack_h), (0, 0, math.radians(2)), 'top'), root)
     if view in ('stack', 'flat', 'macro'):
-        L.parent_to(_card('back', finish, (0.080, -0.035, 0.0), (0, 0, math.radians(-16)), 'loose1'), root)
-        L.parent_to(_card('front', finish, (-0.095, 0.030, 0.0), (0, 0, math.radians(11)), 'loose2'), root)
+        L.parent_to(_card('back', finish, (0.064, -0.036, 0.0), (0, 0, math.radians(-16)), 'loose1'), root)
+        L.parent_to(_card('front', finish, (-0.074, 0.032, 0.0), (0, 0, math.radians(11)), 'loose2'), root)
     if view == 'fan':
         for i in range(6):
             face = 'back' if i % 2 else 'front'
@@ -63,9 +63,9 @@ def cards(job):
     tgt = (0.0, 0.0, 0.012)
     if view == 'stack':
         root.rotation_euler = (0, 0, math.radians(-16))
-        C.cam_fit(tgt, 0.27, az=0, el=32, lens=100, fill=0.84)
+        C.cam_fit(tgt, 0.215, az=0, el=32, lens=100, fill=0.86)
     elif view == 'flat':
-        C.cam_fit(tgt, 0.27, az=0, el=80, lens=100, fill=0.84)
+        C.cam_fit(tgt, 0.215, az=0, el=80, lens=100, fill=0.86)
     elif view == 'fan':
         C.cam_fit((0.0, 0.0, 0.025), 0.20, az=0, el=38, lens=100, fill=0.84)
     elif view == 'macro':

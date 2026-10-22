@@ -224,7 +224,7 @@ def bookmark(job):
     elif view == 'angled':
         C.cam_fit(tgt, 0.26, az=-22, el=34, lens=85, fill=0.80)
     elif view == 'detail':
-        C.cam_fit((0.0, 0.07, 0.035), 0.12, az=-16, el=28, lens=100, fill=0.80, fstop=10)
+        C.cam_fit((0.0, 0.07, 0.035), 0.12, az=-16, el=28, lens=100, fill=0.80, fstop=16)
     C.finish(job['out'], job.get('alt'))
 
 

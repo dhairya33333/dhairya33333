@@ -123,9 +123,9 @@ def polaroid(job):
         C.cam_fit(tgt, span, az=0, el=34, lens=85, fill=0.84)
     elif view == 'side':
         root.rotation_euler = (0, 0, math.radians(-14))
-        C.cam_fit((0, 0, stack_h / 2), span * 0.8, az=-10, el=14, lens=100, fill=0.84, fstop=7)
+        C.cam_fit((0, 0, stack_h / 2), span * 0.8, az=-10, el=14, lens=100, fill=0.84, fstop=14)
     elif view == 'detail':
-        C.cam_fit((0.0, 0.0, stack_h + 0.002), 0.13 * s + 0.03, az=-8, el=36, lens=100, fill=0.80, fstop=12)
+        C.cam_fit((0.0, 0.0, stack_h + 0.002), 0.13 * s + 0.03, az=-8, el=36, lens=100, fill=0.80, fstop=16)
     C.finish(job['out'], job.get('alt'))
 
 
