@@ -18,16 +18,22 @@ def _arc(cx, cz, r, a0, a1, n=8):
 def mug(wrap='mug_wrap_devdha.png', body=WHITE, inner=None, trim=None, name='mug', handle_dir=1, wrap_mat=None, h=0.095, r=0.040, magic=False):
     root = L.group(name)
     t = 0.0038
+    def wall(r_, z0, z1, step=0.006):
+        n_ = max(1, int(abs(z1 - z0) / step))
+        return [(r_, z0 + (z1 - z0) * i / n_) for i in range(1, n_ + 1)]
+
     prof = [(0.0, 0.006), (r - t - 0.004, 0.006)]
     prof += _arc(r - t - 0.004, 0.010, 0.004, -math.pi / 2, 0, 5)[1:]
-    prof += [(r - t, h - 0.003)]
-    prof += _arc(r - t / 2, h - 0.003, t / 2, math.pi, 0, 8)[1:]
-    prof += [(r, 0.009)]
+    prof += wall(r - t, 0.010, h - 0.003)
+    rim = _arc(r - t / 2, h - 0.003, t / 2, math.pi, 0, 8)[1:]
+    apex = len(prof) + 3
+    prof += rim
+    prof += wall(r, h - 0.003, 0.009)
     prof += _arc(r - 0.004, 0.009, 0.004, 0, -math.pi / 2, 6)[1:]
     prof += [(0.0, 0.0)]
     body_m = L.ceramic(body) if not magic else L.principled('magic', (0.015, 0.015, 0.018), 0.05, **{'Coat_Weight': 0.5})
     trim_m = L.ceramic(trim) if trim else body_m
-    mugb = L.lathe(prof, name + '_body', body_m, seg=160, mats=[body_m, trim_m], split=11 if trim else None)
+    mugb = L.lathe(prof, name + '_body', body_m, seg=160, mats=[body_m, trim_m], split=apex if trim else None)
     L.parent_to(mugb, root)
     if inner is not None:
         pass
@@ -63,7 +69,7 @@ def mug(wrap='mug_wrap_devdha.png', body=WHITE, inner=None, trim=None, name='mug
                 vi = me.loops[li].vertex_index
                 j, i = divmod(vi, nx + 1)
                 uv.data[li].uv = (i / nx, j / ny)
-        mat = wrap_mat or L.textured(name + '_printmat', wrap, rough=0.1, clearcoat=0.5, spec=0.5)
+        mat = wrap_mat or L.textured(name + '_printmat', wrap, rough=0.1, clearcoat=0.5, spec=0.5, alpha=wrap.endswith('.png'))
         pr = L.to_obj(me, name + '_print', mat, True)
         L.parent_to(pr, root)
     root.rotation_euler = (0, 0, math.radians(90) if handle_dir == 1 else math.radians(-90))

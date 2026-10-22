@@ -294,7 +294,7 @@ def devdha_logo(h=800, color=(255, 255, 255, 255), ss=3):
 
 def mug_wrap_devdha(w=2400, h=1000):
     """Plain-mug print: Devdha branding + 'customise your design' message."""
-    im = Image.new('RGB', (w, h), (255, 255, 255))
+    im = Image.new('RGBA', (w, h), (255, 255, 255, 0))
     d = ImageDraw.Draw(im)
     lg = devdha_logo(470, NAVY + (255,))
     im.paste(lg, (700, 265), lg)
@@ -441,7 +441,247 @@ def build(out):
     lanyard_art().save(os.path.join(A, 'lanyard.png'))
     invitation_art().save(os.path.join(A, 'invitation.png'))
     print('assets ->', A, len(os.listdir(A)), 'files')
+    globals()['build_branded'](out)
+
+
+
+# ------------------------------------------------------------------ branded placeholders (customisable products)
+def ph_photo(w=1200, h=1200, hue=0, label='YOUR PHOTO HERE'):
+    """Brand-blue gradient 'photo' placeholder with the Devdha mark and a prompt."""
+    import colorsys
+    r = rng(100 + hue)
+    top = np.array([18, 50, 79]) + hue * np.array([6, 4, -4])
+    bot = np.array([60, 130, 200]) + hue * np.array([-8, 6, 10])
+    a = np.zeros((h, w, 3))
+    y = np.linspace(0, 1, h)[:, None]
+    for c in range(3):
+        a[:, :, c] = (top[c] * (1 - y) + bot[c] * y) * np.ones((1, w))
+    yy, xx = np.mgrid[0:h, 0:w]
+    glow = np.exp(-(((xx - w * .72) / (w * .5)) ** 2 + ((yy - h * .25) / (h * .5)) ** 2))
+    a += glow[:, :, None] * np.array([70, 90, 110])
+    img = _finish(np.clip(a, 0, 255), r, grain=0.012, vig=0.2)
+    d = ImageDraw.Draw(img)
+    lg = devdha_logo(int(h * .30), (255, 255, 255, 255))
+    img.paste(lg, ((w - lg.width) // 2, int(h * .22)), lg)
+    d.text((w // 2, int(h * .66)), label, font=font(int(h * .062)), fill=(255, 255, 255), anchor='mm')
+    d.text((w // 2, int(h * .75)), 'devdha.in', font=font(int(h * .038), 'SemiBold', False), fill=(170, 210, 250), anchor='mm')
+    return img
+
+
+def ink_design(w, h, color=NAVY, sub=True, aspect_lines=True):
+    """Transparent-background 'YOUR DESIGN HERE' ink artwork (logo + wordmark + prompt)."""
+    im = Image.new('RGBA', (w, h), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    lg = devdha_logo(int(h * .42), color + (255,))
+    im.paste(lg, ((w - lg.width) // 2, int(h * .08)), lg)
+    d.text((w // 2, int(h * .62)), 'Devdha', font=font(int(h * .16)), fill=color + (255,), anchor='mm')
+    d.text((w // 2, int(h * .78)), 'YOUR DESIGN HERE', font=font(int(h * .075)), fill=MID + (255,) if color == NAVY else SKY + (255,), anchor='mm')
+    if sub:
+        d.text((w // 2, int(h * .88)), 'Customise with your photo, name or logo', font=font(int(h * .042), 'SemiBold', False), fill=color + (255,), anchor='mm')
+    return im
+
+
+def patch_wrap(w=2400, h=1000):
+    """White rounded print patch with branded ink (for patch mugs)."""
+    im = Image.new('RGBA', (w, h), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    d.rounded_rectangle([w * .26, h * .12, w * .74, h * .88], radius=60, fill=(255, 255, 255, 255))
+    ink = ink_design(int(w * .40), int(h * .70))
+    im.paste(ink, (int(w * .30), int(h * .17)), ink)
+    return im
+
+
+def magic_hot(w=2400, h=1000):
+    im = Image.new('RGBA', (w, h), (0, 0, 0, 0))
+    ink = ink_design(int(w * .42), int(h * .78), color=(255, 255, 255))
+    im.paste(ink, (int(w * .29), int(h * .11)), ink)
+    return im
+
+
+def calendar_branded(w=1600, h=1200):
+    im = Image.new('RGB', (w, h), (252, 252, 250))
+    ph = ph_photo(w - 160, int(h * .52))
+    im.paste(ph, (80, 70))
+    d = ImageDraw.Draw(im)
+    d.text((80, h * .67), 'MONTH', font=font(80), fill=NAVY, anchor='lm')
+    d.text((w - 80, h * .67), 'YEAR', font=font(80, 'Medium'), fill=SKY, anchor='rm')
+    cw = (w - 160) / 7
+    for i, dn in enumerate('MTWTFSS'):
+        d.text((80 + cw * (i + .5), h * .75), dn, font=font(30, 'Bold', False), fill=MID, anchor='mm')
+    n = 0
+    for row in range(5):
+        for col in range(7):
+            n += 1
+            if n > 31:
+                break
+            d.text((80 + cw * (col + .5), h * (.81 + row * .052)), str(n), font=font(34, 'Medium', False), fill=(200, 60, 60) if col == 6 else NAVY, anchor='mm')
+    return im
+
+
+def bookmark_branded(w=500, h=1600):
+    im = ph_photo(w, h)
+    return im
+
+
+def build_branded(out):
+    A = os.path.join(out, 'assets')
+    for hue in range(6):
+        ph_photo(1200, 1200, hue).save(os.path.join(A, f'ph_photo_{hue}.jpg'), quality=93)
+    ph_photo(1600, 1200, 0).save(os.path.join(A, 'ph_photo_wide.jpg'), quality=93)
+    ph_photo(1400, 1000, 1, 'YOUR PHOTO HERE').save(os.path.join(A, 'ph_photo_land.jpg'), quality=93)
+    ink_design(1400, 1400).save(os.path.join(A, 'tee_ink_navy.png'))
+    ink_design(1400, 1400, color=(255, 255, 255)).save(os.path.join(A, 'tee_ink_white.png'))
+    _ink = ink_design(1100, 1250)
+    _cv = Image.new('RGBA', (2500, 1250), (0, 0, 0, 0))
+    _cv.paste(_ink, (700, 0), _ink)
+    _cv.save(os.path.join(A, 'sipper_wrap_devdha.png'))
+    ink_design(900, 560, sub=False).save(os.path.join(A, 'keychain_ink.png'))
+    patch_wrap().save(os.path.join(A, 'mug_wrap_patch.png'))
+    magic_hot().save(os.path.join(A, 'mug_wrap_magic_hot.png'))
+    calendar_branded().save(os.path.join(A, 'calendar_branded.png'))
+    bookmark_branded().save(os.path.join(A, 'bookmark_branded.jpg'), quality=93)
+    # lanyard strap: repeating wordmark
+    w, h = 3200, 180
+    im = Image.new('RGB', (w, h), NAVY)
+    d = ImageDraw.Draw(im)
+    x = 40
+    lg = devdha_logo(110, (255, 255, 255, 255))
+    while x < w:
+        im.paste(lg, (x, 35), lg)
+        x += lg.width + 30
+        d.text((x, h // 2), 'Devdha', font=font(100), fill=(255, 255, 255), anchor='lm')
+        x += int(d.textlength('Devdha', font=font(100))) + 50
+        d.ellipse([x - 22, h / 2 - 11, x, h / 2 + 11], fill=SKY)
+        x += 60
+    im.save(os.path.join(A, 'lanyard_devdha.png'))
+    print('branded assets ok')
+
+
+def card_front_devdha(w=1800, h=1050):
+    im = Image.new('RGB', (w, h), NAVY)
+    d = ImageDraw.Draw(im)
+    for i in range(6):
+        d.ellipse([w * .50 + i * 40, -h * .5 + i * 30, w * 1.4 + i * 40, h * .9 + i * 30], outline=(26 + i * 4, 66 + i * 5, 104 + i * 6), width=3)
+    lg = devdha_logo(560, (255, 255, 255, 255))
+    im.paste(lg, (int(w * .08), int(h * .10)), lg)
+    d.text((w * .30, h * .36), 'Devdha', font=font(190), fill=(255, 255, 255), anchor='lm')
+    d.text((w * .30, h * .58), 'YOUR DESIGN HERE', font=font(82), fill=SKY, anchor='lm')
+    d.text((w * .30, h * .74), 'devdha.in', font=font(54, 'SemiBold', False), fill=(200, 224, 250), anchor='lm')
+    return im
+
+
+def card_back_devdha(w=1800, h=1050):
+    im = Image.new('RGB', (w, h), (250, 250, 248))
+    d = ImageDraw.Draw(im)
+    d.rectangle([0, 0, w * .035, h], fill=SKY)
+    d.text((w * .10, h * .22), 'Your Name', font=font(100), fill=NAVY, anchor='lm')
+    d.text((w * .10, h * .34), 'Your title or business', font=font(46, 'Medium', False), fill=MID, anchor='lm')
+    for i, t in enumerate(['+91 00000 00000', 'you@yourbrand.in', 'www.yourbrand.in', 'Your address, City']):
+        y = h * (.52 + i * .1)
+        d.ellipse([w * .10, y - 22, w * .10 + 44, y + 22], fill=NAVY)
+        d.text((w * .10 + 80, y), t, font=font(44, 'Medium', False), fill=NAVY, anchor='lm')
+    lg = devdha_logo(300, NAVY + (255,))
+    im.paste(lg, (int(w * .74), int(h * .32)), lg)
+    d.text((w * .765, h * .88), 'devdha.in', font=font(40, 'SemiBold', False), fill=SKY, anchor='lm')
+    return im
+
+
+def card_uv_alpha(w=1800, h=1050):
+    im = Image.new('RGBA', (w, h), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    lg = devdha_logo(560, (255, 255, 255, 255))
+    im.paste(lg, (int(w * .08), int(h * .10)), lg)
+    d.text((w * .30, h * .36), 'Devdha', font=font(190), fill=(255, 255, 255, 255), anchor='lm')
+    return im
+
+
+def letterhead_devdha(w=1240, h=1754):
+    im = Image.new('RGB', (w, h), (252, 252, 250))
+    d = ImageDraw.Draw(im)
+    lg = devdha_logo(170, NAVY + (255,))
+    im.paste(lg, (90, 70), lg)
+    d.text((300, 120), 'Devdha', font=font(70), fill=NAVY, anchor='lm')
+    d.text((300, 180), 'YOUR LETTERHEAD HERE', font=font(26, 'Bold', False), fill=MID, anchor='lm')
+    d.rectangle([90, 280, w - 90, 285], fill=SKY)
+    y = 400
+    for i in range(18):
+        ln = w - 180 - (i % 5) * 90 - (60 if i in (5, 11) else 0)
+        d.rounded_rectangle([90, y, 90 + ln, y + 12], radius=6, fill=(214, 220, 228))
+        y += 44 if i not in (5, 11) else 90
+    d.rectangle([0, h - 110, w, h], fill=NAVY)
+    d.text((90, h - 55), 'devdha.in   •   Customise your letterhead with your logo and details', font=font(24, 'Medium', False), fill=(255, 255, 255), anchor='lm')
+    return im
+
+
+def flyer_devdha(w=1240, h=1754):
+    im = Image.new('RGB', (w, h), SKY)
+    d = ImageDraw.Draw(im)
+    d.rectangle([0, h * .55, w, h], fill=NAVY)
+    d.ellipse([w * .35, h * .08, w * 1.2, h * .8], fill=(140, 198, 248))
+    lg = devdha_logo(300, NAVY + (255,))
+    im.paste(lg, (90, 80), lg)
+    d.text((90, 520), 'YOUR', font=font(190), fill=NAVY, anchor='lm')
+    d.text((90, 700), 'DESIGN', font=font(190), fill=(255, 255, 255), anchor='lm')
+    d.text((90, 880), 'HERE', font=font(190), fill=NAVY, anchor='lm')
+    d.text((90, h * .64), 'Flyers, pamphlets and leaflets', font=font(56, 'Bold', False), fill=(255, 255, 255), anchor='lm')
+    d.rounded_rectangle([90, h * .72, 560, h * .72 + 120], radius=60, fill=SKY)
+    d.text((325, h * .72 + 60), 'devdha.in', font=font(46), fill=NAVY, anchor='mm')
+    return im
+
+
+def envelope_devdha(w=1800, h=800):
+    im = Image.new('RGB', (w, h), (250, 250, 246))
+    d = ImageDraw.Draw(im)
+    lg = devdha_logo(200, NAVY + (255,))
+    im.paste(lg, (70, 60), lg)
+    d.text((250, 110), 'Devdha', font=font(70), fill=NAVY, anchor='lm')
+    d.text((250, 170), 'YOUR LOGO & ADDRESS HERE', font=font(30, 'Bold', False), fill=MID, anchor='lm')
+    d.rectangle([0, h - 28, w, h], fill=SKY)
+    for i in range(3):
+        d.rounded_rectangle([w * .52, h * (.52 + i * .1), w * (.52 + .34 - i * .06), h * (.52 + i * .1) + 14], radius=7, fill=(205, 212, 222))
+    return im
+
+
+def banner_devdha(w=2400, h=800, text='YOUR BANNER HERE'):
+    im = Image.new('RGB', (w, h), NAVY)
+    d = ImageDraw.Draw(im)
+    for i in range(8):
+        d.ellipse([w * (.6 + i * .03), -h * .6, w * 1.5, h * 1.3], outline=(26 + i * 4, 66 + i * 5, 104 + i * 6), width=4)
+    lg = devdha_logo(380, (255, 255, 255, 255))
+    im.paste(lg, (110, int(h * .5 - 190)), lg)
+    d.text((520, h * .38), text, font=font(150), fill=(255, 255, 255), anchor='lm')
+    d.text((524, h * .70), 'Devdha  •  devdha.in', font=font(66, 'SemiBold', False), fill=SKY, anchor='lm')
+    return im
+
+
+def greeting_card(w=1000, h=1400):
+    im = Image.new('RGB', (w, h), (250, 248, 242))
+    d = ImageDraw.Draw(im)
+    d.rectangle([40, 40, w - 40, h - 40], outline=NAVY, width=6)
+    lg = devdha_logo(360, NAVY + (255,))
+    im.paste(lg, ((w - lg.width) // 2, 200), lg)
+    d.text((w // 2, 760), 'YOUR MESSAGE', font=font(96), fill=NAVY, anchor='mm')
+    d.text((w // 2, 880), 'HERE', font=font(96), fill=SKY, anchor='mm')
+    d.text((w // 2, 1100), 'Custom card by Devdha', font=font(46, 'Medium', False), fill=MID, anchor='mm')
+    return im
+
+
+def build_print(out):
+    A = os.path.join(out, 'assets')
+    card_front_devdha().save(os.path.join(A, 'card_front_devdha.png'))
+    card_back_devdha().save(os.path.join(A, 'card_back_devdha.png'))
+    card_uv_alpha().save(os.path.join(A, 'card_uv_alpha.png'))
+    letterhead_devdha().save(os.path.join(A, 'letterhead_devdha.png'))
+    flyer_devdha().save(os.path.join(A, 'flyer_devdha.png'))
+    envelope_devdha().save(os.path.join(A, 'envelope_devdha.png'))
+    banner_devdha().save(os.path.join(A, 'banner_devdha.png'))
+    banner_devdha(2400, 1600, 'YOUR BOARD HERE').save(os.path.join(A, 'board_devdha.png'))
+    greeting_card().save(os.path.join(A, 'greeting_card.png'))
+    v = ink_design(2000, 1000, color=(255, 255, 255))
+    v.save(os.path.join(A, 'vinyl_devdha.png'))
+    print('print assets ok')
 
 
 if __name__ == '__main__':
     build(sys.argv[1])
+    build_print(sys.argv[1])

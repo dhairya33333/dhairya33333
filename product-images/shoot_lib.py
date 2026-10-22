@@ -132,7 +132,8 @@ def textured(name, img, rough=0.45, metal=0.0, bump=0.0, scale=(1, 1), offset=(0
         _set(b, 'Emission Strength', emission)
     if alpha:
         nt.links.new(tex.outputs['Alpha'], b.inputs['Alpha'])
-        m.blend_method = 'BLEND' if hasattr(m, 'blend_method') else None
+        if hasattr(m, 'blend_method'):
+            m.blend_method = 'BLEND'
     if bump:
         n = nt.nodes.new('ShaderNodeTexNoise')
         n.inputs['Scale'].default_value = 900
@@ -160,7 +161,7 @@ def rubber(color=(0.04, 0.04, 0.045), rough=0.75):
     return principled('rubber', color, rough)
 
 
-def fabric(color, rough=0.95, bump=0.35, name='fabric', weave=2200):
+def fabric(color, rough=0.95, bump=0.22, name='fabric', weave=2200):
     m = _mat(name)
     nt = m.node_tree
     b = nt.nodes['Principled BSDF']
@@ -176,7 +177,7 @@ def fabric(color, rough=0.95, bump=0.35, name='fabric', weave=2200):
     n1.inputs['Detail'].default_value = 8
     n1.inputs['Roughness'].default_value = 0.7
     br = nt.nodes.new('ShaderNodeTexBrick')
-    br.inputs['Scale'].default_value = weave * 0.012
+    br.inputs['Scale'].default_value = weave * 0.03
     br.inputs['Mortar Size'].default_value = 0.04
     br.inputs['Brick Width'].default_value = 0.5
     br.inputs['Row Height'].default_value = 0.25
@@ -424,7 +425,7 @@ def group(name='group'):
 
 
 # ----------------------------------------------------------------- studio
-def backdrop(color=(0.93, 0.93, 0.94), rough=0.85, width=14.0, curve_r=1.3, wall_h=5.0, depth=6.0, mat=None):
+def backdrop(color=(0.93, 0.93, 0.94), rough=0.85, width=14.0, curve_r=1.3, wall_h=5.0, depth=6.0, mat=None, flat=0.0):
     """Seamless cyclorama sweep: floor (z=0) curving up into a back wall at y=+depth."""
     me = bpy.data.meshes.new('cyc')
     prof = [(-depth + 3.0, 0.0), (0.0, 0.0)]
@@ -436,8 +437,8 @@ def backdrop(color=(0.93, 0.93, 0.94), rough=0.85, width=14.0, curve_r=1.3, wall
     prof.append((curve_r, wall_h))
     verts, faces = [], []
     for (y, z) in prof:
-        verts.append((-width / 2, y, z))
-        verts.append((width / 2, y, z))
+        verts.append((-width / 2, y + flat, z))
+        verts.append((width / 2, y + flat, z))
     for i in range(len(prof) - 1):
         a = i * 2
         faces.append((a, a + 1, a + 3, a + 2))
@@ -535,3 +536,44 @@ def white_composite(png, jpg, bg=(255, 255, 255), quality=93):
     base = Image.new('RGBA', im.size, bg + (255,))
     base.alpha_composite(im)
     base.convert('RGB').save(jpg, quality=quality, subsampling=0)
+
+
+def ellipsoid(sx, sy, sz, name='ell', mat=None, loc=(0, 0, 0), rot=(0, 0, 0), seg=48, rings=24):
+    me = bpy.data.meshes.new(name)
+    bm = bmesh.new()
+    bmesh.ops.create_uvsphere(bm, u_segments=seg, v_segments=rings, radius=1.0)
+    bmesh.ops.scale(bm, vec=(sx, sy, sz), verts=bm.verts)
+    bm.to_mesh(me)
+    bm.free()
+    return to_obj(me, name, mat, True, loc, rot)
+
+
+def ribbon(pts, width, thick=0.001, name='ribbon', mat=None, loc=(0, 0, 0), rot=(0, 0, 0), up=(0, 0, 1)):
+    """Flat strap along a polyline (list of (x,y,z)); UV u along the length, v across."""
+    me = bpy.data.meshes.new(name)
+    verts, faces = [], []
+    n = len(pts)
+    upv = Vector(up)
+    for i, p in enumerate(pts):
+        p = Vector(p)
+        t = (Vector(pts[min(i + 1, n - 1)]) - Vector(pts[max(i - 1, 0)])).normalized()
+        side = t.cross(upv).normalized() * (width / 2)
+        for dz in (0.0, thick):
+            verts.append(p + side + upv * dz)
+            verts.append(p - side + upv * dz)
+    # 4 verts per station: (L bottom, R bottom, L top, R top)
+    for i in range(n - 1):
+        a, b = i * 4, (i + 1) * 4
+        faces.append((a + 2, a + 3, b + 3, b + 2))      # top
+        faces.append((a + 1, a + 0, b + 0, b + 1))      # bottom
+        faces.append((a + 0, a + 2, b + 2, b + 0))      # edge L
+        faces.append((a + 3, a + 1, b + 1, b + 3))      # edge R
+    me.from_pydata(verts, [], faces)
+    uv = me.uv_layers.new(name='UV')
+    for k, poly in enumerate(me.polygons):
+        for li in poly.loop_indices:
+            vi = me.loops[li].vertex_index
+            st, j = divmod(vi, 4)
+            uv.data[li].uv = (st / (n - 1), 0.0 if j in (1, 3) else 1.0)
+    me.update()
+    return to_obj(me, name, mat, True, loc, rot)

@@ -34,7 +34,7 @@ two_tone = VIEW.startswith('blue')
 m = P.mug(trim=BLUE if two_tone else None)
 
 TARGET = (0.0, 0.0, 0.0475)
-DIST, LENS = 0.95, 135
+DIST, LENS = 0.60, 135
 
 
 def cam(elev_deg, az_deg=0.0, dist=DIST, lens=LENS, fstop=18, target=TARGET):
@@ -58,14 +58,14 @@ if VIEW in ('front', 'blue_front'):
     m.rotation_euler = (0, 0, 0)
     cam(11)
 elif VIEW in ('threequarter', 'blue_threequarter'):
-    m.rotation_euler = (0, 0, math.radians(-32))
+    m.rotation_euler = (0, 0, math.radians(24))
     cam(13)
 elif VIEW == 'back':
     m.rotation_euler = (0, 0, math.radians(180))
     cam(11)
 elif VIEW == 'top':
     m.rotation_euler = (0, 0, math.radians(-30))
-    cam(38, dist=0.9, lens=120)
+    cam(36, dist=0.52, lens=120)
 
 if BG == 'white':
     png = OUT.replace('.jpg', '.png')
