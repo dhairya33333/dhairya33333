@@ -63,9 +63,9 @@ def cards(job):
     tgt = (0.0, 0.0, 0.012)
     if view == 'stack':
         root.rotation_euler = (0, 0, math.radians(-16))
-        C.cam_fit(tgt, 0.21, az=0, el=32, lens=100, fill=0.84)
+        C.cam_fit(tgt, 0.27, az=0, el=32, lens=100, fill=0.84)
     elif view == 'flat':
-        C.cam_fit(tgt, 0.21, az=0, el=80, lens=100, fill=0.84)
+        C.cam_fit(tgt, 0.27, az=0, el=80, lens=100, fill=0.84)
     elif view == 'fan':
         C.cam_fit((0.0, 0.0, 0.025), 0.20, az=0, el=38, lens=100, fill=0.84)
     elif view == 'macro':
@@ -94,9 +94,9 @@ def _envelope(size, paper_col=(0.95, 0.94, 0.91), name='env', flap_open=False):
     bm.faces.new(vs)
     bm.to_mesh(fl)
     bm.free()
-    flap = L.to_obj(fl, name + '_flap', L.principled('flapm', tuple(c * 0.985 for c in paper_col), 0.6), True)
+    flap = L.to_obj(fl, name + '_flap', L.principled('flapm', tuple(c * 0.90 for c in paper_col), 0.6), True)
     sol = flap.modifiers.new('s', 'SOLIDIFY')
-    sol.thickness = 0.0006
+    sol.thickness = 0.0012
     hinge = L.group(name + '_hinge')
     hinge.location = (0, h / 2, -0.0001)
     L.parent_to(flap, hinge)
@@ -247,7 +247,7 @@ def flex(job):
     elif view == 'angled':
         C.cam_fit(cam, size, az=-24, el=14 if kind != 'vinyl' else 38, lens=85, fill=0.84)
     elif view == 'detail':
-        C.cam_fit((cam[0] - size * 0.28, cam[1], cam[2] + (0.18 if kind != 'vinyl' else 0.0)), size * 0.34, az=-18, el=12 if kind != 'vinyl' else 30, lens=100, fill=0.84, fstop=4.5)
+        C.cam_fit((cam[0] - size * 0.28, cam[1], cam[2] + (0.18 if kind != 'vinyl' else 0.0)), size * 0.34, az=-18, el=12 if kind != 'vinyl' else 30, lens=100, fill=0.84, fstop=9)
     elif view == 'side':
         C.cam_fit(cam, size, az=-52, el=10 if kind != 'vinyl' else 24, lens=85, fill=0.84)
     C.finish(job['out'], job.get('alt'))
@@ -320,9 +320,9 @@ def bundle(job):
         put(A.keychain_obj(), 0.12, -0.15, 12)
     tgt = (0, 0, 0.02)
     if view == 'top':
-        C.cam_fit(tgt, 0.54, az=0, el=80, lens=85, fill=0.88)
+        C.cam_fit(tgt, 0.42, az=0, el=80, lens=85, fill=0.88)
     elif view == 'angled':
-        C.cam_fit(tgt, 0.52, az=-16, el=34, lens=85, fill=0.90)
+        C.cam_fit(tgt, 0.40, az=-16, el=34, lens=85, fill=0.90)
     elif view == 'detail':
-        C.cam_fit((0.0, -0.02, 0.03), 0.34, az=14, el=26, lens=100, fill=0.88, fstop=6)
+        C.cam_fit((0.0, -0.02, 0.03), 0.28, az=14, el=26, lens=100, fill=0.88, fstop=10)
     C.finish(job['out'], job.get('alt'))

@@ -63,7 +63,7 @@ def frame(job):
         C.cam_fit(tgt, big * 1.08, az=0, el=12, lens=100, fill=0.82)
     elif view == 'detail':
         root.rotation_euler = (tilt, 0, math.radians(-22))
-        C.cam_fit((-w * 0.36, 0, h * 0.84), big * 0.42, az=14, el=10, lens=100, fill=0.82, fstop=4.5)
+        C.cam_fit((-w * 0.30, 0, h * 0.80), big * 0.55, az=14, el=10, lens=100, fill=0.82, fstop=11)
     elif view == 'side':
         root.rotation_euler = (tilt, 0, math.radians(-62))
         C.cam_fit(tgt, big * 1.05, az=0, el=8, lens=100, fill=0.82)
@@ -104,7 +104,7 @@ def polaroid_obj(n, root=None):
     t2 = L.box(0.088 * s + 0.003, 0.0035, stack_h + 0.0016, 0.0006, 'twine2', twine, loc=(0, 0.0, -0.0008))
     L.parent_to(t1, root)
     L.parent_to(t2, root)
-    return root, stack_h, 0.25 * s + 0.05
+    return root, stack_h, 0.20 * s + 0.05
 
 
 @register('polaroid')
@@ -125,7 +125,7 @@ def polaroid(job):
         root.rotation_euler = (0, 0, math.radians(-14))
         C.cam_fit((0, 0, stack_h / 2), span * 0.8, az=-10, el=14, lens=100, fill=0.84, fstop=7)
     elif view == 'detail':
-        C.cam_fit((0.0, 0.0, stack_h + 0.002), 0.10 * s + 0.03, az=-8, el=34, lens=100, fill=0.80, fstop=4.5)
+        C.cam_fit((0.0, 0.0, stack_h + 0.002), 0.13 * s + 0.03, az=-8, el=36, lens=100, fill=0.80, fstop=12)
     C.finish(job['out'], job.get('alt'))
 
 

@@ -99,13 +99,13 @@ def sipper(job):
     tgt = (0.0, 0.0, 0.155)
     if view == 'front':
         root.rotation_euler = (0, 0, 0)
-        C.cam_fit(tgt, 0.36, az=0, el=6, lens=135, fill=0.92)
+        C.cam_fit(tgt, 0.33, az=0, el=6, lens=135, fill=0.95)
     elif view == 'threequarter':
         root.rotation_euler = (0, 0, math.radians(18))
-        C.cam_fit(tgt, 0.36, az=0, el=12, lens=135, fill=0.92)
+        C.cam_fit(tgt, 0.33, az=0, el=12, lens=135, fill=0.95)
     elif view == 'back':
         root.rotation_euler = (0, 0, math.radians(150))
-        C.cam_fit(tgt, 0.36, az=0, el=8, lens=135, fill=0.92)
+        C.cam_fit(tgt, 0.33, az=0, el=8, lens=135, fill=0.95)
     elif view == 'detail':
         root.rotation_euler = (0, 0, math.radians(-12))
         C.cam_fit((0, 0, 0.24), 0.17, az=14, el=10, lens=135, fill=0.80, fstop=6)
@@ -144,7 +144,7 @@ def keychain_sub(job):
     elif view == 'angled':
         C.cam_fit(tgt, 0.095, az=10, el=32, lens=100, fill=0.82)
     elif view == 'detail':
-        C.cam_fit((0.0, 0, 0.003), 0.052, az=-10, el=24, lens=100, fill=0.82, fstop=5)
+        C.cam_fit((0.0, 0, 0.003), 0.060, az=-10, el=26, lens=100, fill=0.82, fstop=12)
     C.finish(job['out'], job.get('alt'))
 
 
@@ -169,7 +169,7 @@ def keychain_lan(job):
     elif view == 'angled':
         C.cam_fit((-0.03, 0.008, 0.002), 0.20, az=14, el=30, lens=100, fill=0.86)
     elif view == 'detail':
-        C.cam_fit((0.01, 0.008, 0.002), 0.095, az=-8, el=26, lens=100, fill=0.80, fstop=5)
+        C.cam_fit((0.01, 0.008, 0.002), 0.095, az=-8, el=26, lens=100, fill=0.80, fstop=10)
     C.finish(job['out'], job.get('alt'))
 
 
@@ -220,11 +220,11 @@ def bookmark(job):
     bmg.rotation_euler = (0, 0, math.radians(-24))
     tgt = (0.0, 0.02, 0.02)
     if view == 'top':
-        C.cam_fit(tgt, 0.30, az=0, el=80, lens=85, fill=0.78)
+        C.cam_fit(tgt, 0.25, az=0, el=80, lens=85, fill=0.80)
     elif view == 'angled':
-        C.cam_fit(tgt, 0.30, az=-22, el=34, lens=85, fill=0.78)
+        C.cam_fit(tgt, 0.26, az=-22, el=34, lens=85, fill=0.80)
     elif view == 'detail':
-        C.cam_fit((0.0, 0.07, 0.035), 0.11, az=-16, el=28, lens=100, fill=0.78, fstop=5)
+        C.cam_fit((0.0, 0.07, 0.035), 0.12, az=-16, el=28, lens=100, fill=0.80, fstop=10)
     C.finish(job['out'], job.get('alt'))
 
 
@@ -258,5 +258,5 @@ def calendar(job):
         C.cam_fit(tgt, 0.27, az=0, el=16, lens=100, fill=0.80)
     elif view == 'detail':
         root.rotation_euler = (tilt, 0, math.radians(-10))
-        C.cam_fit((0.0, 0.0, 0.16), 0.12, az=-18, el=10, lens=100, fill=0.80, fstop=5)
+        C.cam_fit((0.0, 0.0, 0.115), 0.17, az=-18, el=12, lens=100, fill=0.80, fstop=11)
     C.finish(job['out'], job.get('alt'))
