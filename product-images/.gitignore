@@ -1,0 +1,3 @@
+out/
+*.zip
+__pycache__/
