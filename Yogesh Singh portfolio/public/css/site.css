@@ -439,3 +439,13 @@ section.block.compact { padding: clamp(40px, 6vw, 80px) 0; }
 .coupon summary { cursor: pointer; color: var(--muted); }
 .coupon .row { display: flex; gap: 8px; margin-top: 8px; }
 .coupon input { flex: 1; min-width: 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 6px; text-transform: uppercase; background: #fff; color: var(--ink); }
+
+/* ---------- Language toggle & Hindi typography ---------- */
+.lang-btn { font: 500 13px var(--sans); letter-spacing: .04em; padding: 7px 12px; border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--ink); cursor: pointer; transition: background .3s, color .3s; }
+.lang-btn:hover { background: var(--ink); color: #fff; }
+html[lang="hi"] body { font-family: 'Noto Sans Devanagari', var(--sans); }
+html[lang="hi"] h1, html[lang="hi"] h2, html[lang="hi"] h3, html[lang="hi"] .serif, html[lang="hi"] .credits dd { font-family: 'Noto Serif Devanagari', var(--serif); letter-spacing: 0; line-height: 1.25; }
+html[lang="hi"] .eyebrow, html[lang="hi"] .chip, html[lang="hi"] .stat span, html[lang="hi"] .credits dt, html[lang="hi"] .credits-h { letter-spacing: 0; text-transform: none; }
+html[lang="hi"] em { font-style: normal; }
+@media (max-width: 860px) { .nav-links .lang-btn { align-self: flex-start; margin: 6px 0; } }
+html[lang="hi"] .prose p:first-child::first-letter, html[lang="hi"] .about .body p:first-child::first-letter { float: none; font-size: inherit; font-family: inherit; line-height: inherit; color: inherit; padding: 0; }

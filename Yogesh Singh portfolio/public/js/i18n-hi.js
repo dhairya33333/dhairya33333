@@ -1,0 +1,118 @@
+// Hindi interface text. Keys are the exact English strings shown on the site.
+// NOTE FOR THE SITE OWNER: these translations were written by an AI assistant. Have a native Hindi speaker read them once
+// (a line or two may be better said another way) and correct anything here, or tell the developer what to change.
+// Names, prices, film titles and the owner's own text are never touched; the biography and film descriptions have their own Hindi boxes in Admin.
+export const DICT = {
+  // navigation, footer
+  Films: 'फ़िल्में', About: 'परिचय', Gallery: 'गैलरी', Social: 'सोशल मीडिया', Contact: 'संपर्क', Home: 'मुख्य पृष्ठ', Legal: 'क़ानूनी', Main: 'मुख्य',
+  Privacy: 'गोपनीयता', Terms: 'शर्तें', Refunds: 'रिफ़ंड', 'Privacy Policy': 'गोपनीयता नीति', 'Terms of Use': 'उपयोग की शर्तें', 'Refund Policy': 'रिफ़ंड नीति',
+  'Sign in': 'साइन इन', 'Sign out': 'साइन आउट', Menu: 'मेनू', Close: 'बंद करें', Scroll: 'नीचे देखें', 'Back home': 'मुख्य पृष्ठ पर लौटें',
+  'Switch to English': 'English में देखें',
+  // home
+  'Watch the film': 'फ़िल्म देखें', 'Watch Kya Yahi Sach Hai': 'क्या यही सच है देखें', 'Read the full story': 'पूरी कहानी पढ़ें', Journey: 'सफ़र', 'The story': 'कहानी', 'The film': 'फ़िल्म',
+  'Articles & press': 'लेख और प्रेस', Discipline: 'अनुशासन', Cinema: 'सिनेमा', Purpose: 'उद्देश्य', Service: 'सेवा', Speaking: 'वक्तव्य', Book: 'पुस्तक', Article: 'लेख', Recognition: 'सम्मान',
+  'Read ↗': 'पढ़ें ↗', 'Let’s talk →': 'आइए बात करें →', 'Get in touch': 'संपर्क करें', 'Invite him to speak': 'उन्हें वक्ता के रूप में बुलाएँ', 'Speaking invitation': 'वक्ता के रूप में आमंत्रण',
+  'Send a message': 'संदेश भेजें', 'First 30 min free': 'पहले 30 मिनट मुफ़्त', 'First 30 minutes always free': 'पहले 30 मिनट हमेशा मुफ़्त',
+  'More from the feed': 'फ़ीड से और', 'Follow along': 'साथ जुड़ें', 'Follow on Instagram': 'इंस्टाग्राम पर फ़ॉलो करें', 'Open on Instagram': 'इंस्टाग्राम पर खोलें',
+  'New posts and reels appear here as they are shared.': 'नई पोस्ट और रील साझा होते ही यहाँ दिखाई देंगी।', 'Recent posts and reels from Instagram.': 'इंस्टाग्राम की हाल की पोस्ट और रील।',
+  'Loading from Instagram…': 'इंस्टाग्राम से लोड हो रहा है…', 'View the post': 'पोस्ट देखें', 'Watch the reel': 'रील देखें', 'All posts': 'सभी पोस्ट', Post: 'पोस्ट', Reel: 'रील', 'Filter posts': 'पोस्ट छाँटें',
+  'Previous post': 'पिछली पोस्ट', 'Next post': 'अगली पोस्ट', 'Previous photo': 'पिछली तस्वीर', 'Next photo': 'अगली तस्वीर', 'Photo viewer': 'तस्वीर देखें',
+  'Posts will appear here soon. In the meantime you can follow on Instagram.': 'पोस्ट जल्द ही यहाँ दिखाई देंगी। तब तक आप इंस्टाग्राम पर फ़ॉलो कर सकते हैं।',
+  'Photographs will appear here soon.': 'तस्वीरें जल्द ही यहाँ दिखाई देंगी।', 'See the social page': 'सोशल पेज देखें', 'No films are published yet. Please check back soon.': 'अभी कोई फ़िल्म प्रकाशित नहीं हुई है। कृपया जल्द दोबारा देखें।',
+  'The library could not be loaded.': 'लाइब्रेरी लोड नहीं हो सकी।', 'Try again': 'फिर कोशिश करें',
+  // film page
+  'Free preview': 'मुफ़्त झलक', 'Full film': 'पूरी फ़िल्म', 'Loading film…': 'फ़िल्म लोड हो रही है…', 'Buffering…': 'लोड हो रहा है…', 'Free preview ended': 'मुफ़्त झलक समाप्त हुई', 'End of free preview': 'मुफ़्त झलक का अंत',
+  'Unlock full film': 'पूरी फ़िल्म अनलॉक करें', 'Cast & crew': 'कलाकार और टीम', Director: 'निर्देशक',
+  "You've watched the free part of the film. Unlock the full film to keep watching right where you left off.": 'आपने फ़िल्म का मुफ़्त हिस्सा देख लिया है। जहाँ छोड़ा था वहीं से आगे देखने के लिए पूरी फ़िल्म अनलॉक करें।',
+  'The first part of every film is free to watch. Unlock the rest with a single one-time payment.': 'हर फ़िल्म का पहला हिस्सा मुफ़्त देखा जा सकता है। बाक़ी हिस्सा एक बार के भुगतान से अनलॉक करें।',
+  'One-time payment, no subscription': 'एक बार का भुगतान, कोई सब्सक्रिप्शन नहीं', 'Watch on any device': 'किसी भी डिवाइस पर देखें', 'Pick up where you left off': 'जहाँ छोड़ा था वहीं से शुरू करें',
+  '✓ You own this film': '✓ यह फ़िल्म आपकी है', 'You own this film. Your place is saved to your account.': 'यह फ़िल्म आपकी है। आपका देखा हुआ हिस्सा आपके खाते में सुरक्षित रहता है।',
+  'Enjoy the full film. Your place is saved automatically.': 'पूरी फ़िल्म का आनंद लें। आपका देखा हुआ हिस्सा अपने-आप सुरक्षित रहता है।',
+  'Network problem while loading the film.': 'फ़िल्म लोड करते समय नेटवर्क की समस्या हुई।', 'This video could not be played.': 'यह वीडियो चलाया नहीं जा सका।', 'The film could not be loaded.': 'फ़िल्म लोड नहीं हो सकी।',
+  'Your browser cannot play this video. Please try a current version of Chrome, Safari, Edge or Firefox.': 'आपका ब्राउज़र यह वीडियो नहीं चला सकता। कृपया Chrome, Safari, Edge या Firefox का नया संस्करण आज़माएँ।',
+  // checkout
+  'Almost there': 'बस थोड़ा और', 'Mobile number': 'मोबाइल नंबर', '10-digit mobile': '10 अंकों का मोबाइल नंबर', 'Close payment window': 'भुगतान विंडो बंद करें',
+  'Secure payment. UPI, cards and net banking accepted.': 'सुरक्षित भुगतान। UPI, कार्ड और नेट बैंकिंग स्वीकार्य।', 'Demo checkout (no real payment).': 'डेमो चेकआउट (कोई असली भुगतान नहीं)।',
+  'Demo mode: no real money is charged. Add Cashfree keys to go live.': 'डेमो मोड: कोई असली पैसा नहीं कटता।',
+  'Have a discount code?': 'क्या आपके पास डिस्काउंट कोड है?', Apply: 'लागू करें', CODE: 'कोड', 'I agree to the': 'मैं सहमत हूँ:', and: 'और', Pay: 'भुगतान करें',
+  'Please tick the box to accept the Terms, Privacy Policy and Refund Policy.': 'कृपया शर्तें, गोपनीयता नीति और रिफ़ंड नीति स्वीकार करने के लिए बॉक्स पर टिक करें।',
+  'Please accept the Terms of Use, Privacy Policy and Refund Policy to continue.': 'आगे बढ़ने के लिए कृपया उपयोग की शर्तें, गोपनीयता नीति और रिफ़ंड नीति स्वीकार करें।',
+  'This discount code is not valid for this film.': 'यह डिस्काउंट कोड इस फ़िल्म के लिए मान्य नहीं है।',
+  'Payment window closed. You have not been charged.': 'भुगतान विंडो बंद हो गई। आपसे कोई शुल्क नहीं लिया गया।', 'Something went wrong. You have not been charged.': 'कुछ गड़बड़ हुई। आपसे कोई शुल्क नहीं लिया गया।',
+  'The payment failed. You can try again.': 'भुगतान विफल रहा। आप दोबारा कोशिश कर सकते हैं।', 'Confirming your payment…': 'आपके भुगतान की पुष्टि हो रही है…', 'Unknown payment method.': 'अज्ञात भुगतान तरीक़ा।',
+  'We could not start the payment. You have not been charged. Please try again.': 'हम भुगतान शुरू नहीं कर सके। आपसे कोई शुल्क नहीं लिया गया। कृपया दोबारा कोशिश करें।',
+  'You already own this film.': 'यह फ़िल्म पहले से आपकी है।', 'This film is not available right now.': 'यह फ़िल्म अभी उपलब्ध नहीं है।', 'Payments are not configured yet. Please try again later.': 'भुगतान अभी चालू नहीं हुआ है। कृपया बाद में कोशिश करें।',
+  'Please enter a valid 10-digit mobile number.': 'कृपया 10 अंकों का सही मोबाइल नंबर दर्ज करें।', 'Payment could not be verified.': 'भुगतान की पुष्टि नहीं हो सकी।', 'Order not found.': 'ऑर्डर नहीं मिला।',
+  // payment return
+  'Confirming payment…': 'भुगतान की पुष्टि हो रही है…', "Please don't close this page.": 'कृपया यह पेज बंद न करें।', Continue: 'जारी रखें', 'Watch now →': 'अभी देखें →', 'Back to the film': 'फ़िल्म पर लौटें',
+  'Browse films': 'फ़िल्में देखें', 'My account': 'मेरा खाता', 'Payment confirmed': 'भुगतान की पुष्टि हो गई', 'The full film is unlocked. Enjoy.': 'पूरी फ़िल्म अनलॉक हो गई है। आनंद लें।',
+  'Payment cancelled': 'भुगतान रद्द हुआ', 'No payment was made.': 'कोई भुगतान नहीं हुआ।', 'Payment not completed': 'भुगतान पूरा नहीं हुआ',
+  'You have not been charged, or any amount debited will be refunded by your bank. You can try again.': 'आपसे कोई शुल्क नहीं लिया गया, या कटी हुई राशि आपका बैंक लौटा देगा। आप दोबारा कोशिश कर सकते हैं।',
+  'Still waiting for your bank': 'बैंक की पुष्टि का इंतज़ार है', 'If money was debited, access appears automatically once the payment is confirmed, usually within a few minutes. You do not need to pay again.': 'अगर पैसा कटा है, तो भुगतान की पुष्टि होते ही, आमतौर पर कुछ मिनटों में, पहुँच अपने-आप मिल जाएगी। दोबारा भुगतान करने की ज़रूरत नहीं है।',
+  'This payment was refunded': 'इस भुगतान का रिफ़ंड हो गया', 'Access to the full film has been removed.': 'पूरी फ़िल्म की पहुँच हटा दी गई है।', 'Order not found': 'ऑर्डर नहीं मिला', 'Nothing to confirm': 'पुष्टि के लिए कुछ नहीं',
+  'We could not find a payment to check.': 'जाँचने के लिए कोई भुगतान नहीं मिला।', 'This order does not belong to your account.': 'यह ऑर्डर आपके खाते का नहीं है।',
+  // sign in
+  'Welcome back': 'वापसी पर स्वागत है', 'Sign in to watch the full film.': 'पूरी फ़िल्म देखने के लिए साइन इन करें।', 'Create account': 'खाता बनाएँ', 'Create an account': 'खाता बनाएँ', 'Join to unlock the full film.': 'पूरी फ़िल्म अनलॉक करने के लिए जुड़ें।',
+  'Full name': 'पूरा नाम', Email: 'ईमेल', Password: 'पासवर्ड', 'New here?': 'यहाँ नए हैं?', 'Already have an account?': 'क्या आपका खाता पहले से है?', 'Forgot your password?': 'पासवर्ड भूल गए?',
+  'Ask the site admin for a one-time reset link.': 'साइट एडमिन से एक बार चलने वाला रीसेट लिंक माँगें।', 'Email me a reset link': 'मुझे रीसेट लिंक ईमेल करें', 'Signing you in…': 'साइन इन हो रहा है…',
+  'Type your email above first, then choose this again.': 'पहले ऊपर अपना ईमेल लिखें, फिर इसे दोबारा चुनें।', 'Incorrect email or password.': 'ईमेल या पासवर्ड ग़लत है।',
+  'An account with this email already exists. Try signing in.': 'इस ईमेल से खाता पहले से मौजूद है। साइन इन करके देखें।', 'Please enter a valid email.': 'कृपया सही ईमेल दर्ज करें।', 'Please enter your name.': 'कृपया अपना नाम दर्ज करें।',
+  'Two-step check': 'दो-चरणीय जाँच', 'Open your authenticator app and type the current code.': 'अपना ऑथेंटिकेटर ऐप खोलें और मौजूदा कोड लिखें।', '6-digit code from your authenticator app': 'ऑथेंटिकेटर ऐप का 6 अंकों का कोड',
+  'Lost your phone? Enter one of your recovery codes instead.': 'फ़ोन खो गया? इसके बदले अपना कोई रिकवरी कोड लिखें।', Verify: 'जाँचें',
+  'That code is not right. Check your authenticator app and try again.': 'यह कोड सही नहीं है। अपना ऑथेंटिकेटर ऐप देखें और दोबारा कोशिश करें।', 'Your sign-in expired. Please sign in again.': 'आपका साइन-इन समाप्त हो गया। कृपया दोबारा साइन इन करें।',
+  'Too many attempts. Try again in a few minutes.': 'बहुत ज़्यादा कोशिशें हुईं। कुछ मिनट बाद फिर कोशिश करें।', 'Too many requests. Please wait a few minutes.': 'बहुत ज़्यादा अनुरोध हुए। कृपया कुछ मिनट रुकें।',
+  'Please sign in to continue.': 'आगे बढ़ने के लिए कृपया साइन इन करें।', 'Please sign in again.': 'कृपया दोबारा साइन इन करें।',
+  'This account uses Google sign-in. Use the "Continue with Google" button.': 'इस खाते में Google से साइन-इन होता है। "Continue with Google" बटन का उपयोग करें।',
+  'If that address has an account, a reset link is on its way. It works once and expires in 60 minutes.': 'अगर इस पते पर खाता है, तो रीसेट लिंक भेजा जा रहा है। यह एक बार चलता है और 60 मिनट में समाप्त हो जाता है।',
+  'Email is not set up on this site yet. Please ask the site admin for a reset link.': 'इस साइट पर ईमेल अभी चालू नहीं है। कृपया साइट एडमिन से रीसेट लिंक माँगें।',
+  'Set a new password': 'नया पासवर्ड बनाएँ', 'New password': 'नया पासवर्ड', 'Save password': 'पासवर्ड सहेजें', 'Update password': 'पासवर्ड अपडेट करें', 'Current password': 'मौजूदा पासवर्ड',
+  'Use the link you received from the site admin. It works once and expires after an hour.': 'साइट एडमिन से मिला लिंक इस्तेमाल करें। यह एक बार चलता है और एक घंटे बाद समाप्त हो जाता है।',
+  'Password updated. Redirecting to sign in…': 'पासवर्ड अपडेट हो गया। साइन इन पेज पर भेजा जा रहा है…', 'Password updated. Other devices have been signed out.': 'पासवर्ड अपडेट हो गया। अन्य डिवाइस साइन आउट कर दिए गए हैं।',
+  'This reset link is invalid or has expired. Ask the site admin for a new one.': 'यह रीसेट लिंक अमान्य है या समाप्त हो चुका है। साइट एडमिन से नया लिंक माँगें।',
+  'Password must be at least 8 characters.': 'पासवर्ड कम से कम 8 अक्षरों का होना चाहिए।', 'Your current password is incorrect.': 'आपका मौजूदा पासवर्ड ग़लत है।',
+  // account
+  'Your films': 'आपकी फ़िल्में', 'Continue watching': 'देखना जारी रखें', 'Resume →': 'फिर शुरू करें →', 'Watch →': 'देखें →', 'Browse the films': 'फ़िल्में देखें', "You haven't unlocked a film yet.": 'आपने अभी तक कोई फ़िल्म अनलॉक नहीं की है।',
+  'Sign-in methods': 'साइन-इन के तरीक़े', 'Google connected.': 'Google जुड़ गया।', 'Google not connected': 'Google जुड़ा नहीं है', 'Google ✓': 'Google ✓', 'No password set yet': 'अभी पासवर्ड नहीं बना', 'Email and password ✓': 'ईमेल और पासवर्ड ✓',
+  // contact
+  'Send message': 'संदेश भेजें', 'Sending…': 'भेजा जा रहा है…', 'Message sent': 'संदेश भेज दिया गया', 'Send another': 'एक और भेजें', 'Name *': 'नाम *', 'Email *': 'ईमेल *', 'Message *': 'संदेश *', 'Phone (optional)': 'फ़ोन (वैकल्पिक)',
+  'Organisation (optional)': 'संस्था (वैकल्पिक)', 'What is this about?': 'यह किस बारे में है?', 'General enquiry': 'सामान्य पूछताछ', 'Speaking invitations': 'वक्ता के रूप में आमंत्रण', 'Press and media': 'प्रेस और मीडिया', Collaboration: 'सहयोग', 'Something else': 'कुछ और',
+  'Talks for universities, institutions and organisations.': 'विश्वविद्यालयों, संस्थानों और संगठनों के लिए व्याख्यान।', 'Screening, access and viewing questions.': 'स्क्रीनिंग, पहुँच और देखने से जुड़े प्रश्न।', 'Interviews, features and quotes.': 'साक्षात्कार, फ़ीचर और उद्धरण।', 'Projects, partnerships and events.': 'परियोजनाएँ, साझेदारियाँ और कार्यक्रम।',
+  'All fields marked * are required. You will get a reply by email.': '* वाले सभी क्षेत्र आवश्यक हैं। उत्तर आपको ईमेल से मिलेगा।', 'Thank you. Your message has been delivered and you will hear back by email.': 'धन्यवाद। आपका संदेश पहुँच गया है और उत्तर आपको ईमेल से मिलेगा।',
+  Website: 'वेबसाइट', Phone: 'फ़ोन', 'Based in': 'स्थान', Instagram: 'इंस्टाग्राम', YouTube: 'YouTube', Facebook: 'Facebook', LinkedIn: 'LinkedIn',
+  'Please enter a valid email address.': 'कृपया सही ईमेल पता दर्ज करें।', 'Please write at least 10 characters.': 'कृपया कम से कम 10 अक्षर लिखें।', 'Please enter a valid phone number or leave it empty.': 'कृपया सही फ़ोन नंबर दर्ज करें या ख़ाली छोड़ दें।',
+  'Please check the highlighted fields.': 'कृपया चिह्नित क्षेत्र जाँचें।', 'Please write a message of at least 10 characters.': 'कृपया कम से कम 10 अक्षरों का संदेश लिखें।',
+  'You have sent several messages recently. Please try again in an hour, or email directly.': 'आपने हाल में कई संदेश भेजे हैं। कृपया एक घंटे बाद कोशिश करें, या सीधे ईमेल करें।',
+  // 404 and misc
+  "That page doesn't exist.": 'यह पेज मौजूद नहीं है।', 'Page not found': 'पेज नहीं मिला', 'Cross-origin request blocked.': 'दूसरी साइट से आया अनुरोध रोका गया।',
+  // default site content shown before the owner edits anything
+  'Former IPS Officer': 'पूर्व आईपीएस अधिकारी', Author: 'लेखक', 'Film Director': 'फ़िल्म निर्देशक', 'Motivational Speaker': 'प्रेरक वक्ता',
+  'Indian Police Service': 'भारतीय पुलिस सेवा', 'Officer of the 1985 batch, Maharashtra cadre.': '1985 बैच के अधिकारी, महाराष्ट्र कैडर।', 'Lawyer & activist, Mumbai': 'वकील और कार्यकर्ता, मुंबई',
+  'After leaving the service, practised law and campaigned on public causes.': 'सेवा छोड़ने के बाद वकालत की और जनहित के मुद्दों पर अभियान चलाए।', 'Carnage by Angels': 'कार्नेज बाय एंजल्स',
+  'A novel exposing corruption and malpractice in the police force.': 'पुलिस बल में भ्रष्टाचार और कदाचार को उजागर करने वाला उपन्यास।', 'Kya Yahi Sach Hai': 'क्या यही सच है',
+  'Director. Silver Award, Narrative Film category, California Film Awards. Released in Indian cinemas in December 2011.': 'निर्देशक। कैलिफ़ोर्निया फ़िल्म अवॉर्ड्स की नैरेटिव फ़िल्म श्रेणी में सिल्वर अवॉर्ड। दिसंबर 2011 में भारतीय सिनेमाघरों में रिलीज़।',
+  'Motivational speaking': 'प्रेरक वक्तव्य', 'Talks on courage, integrity and standing up for what is right.': 'साहस, ईमानदारी और सही के लिए खड़े होने पर व्याख्यान।', 'After IPS': 'आईपीएस के बाद', Ongoing: 'जारी', '1985 onwards': '1985 से',
+  '1985 onwards · Service': '1985 से · सेवा', '2003 · Book': '2003 · पुस्तक', '2010–2011 · Cinema': '2010–2011 · सिनेमा', 'After IPS · Service': 'आईपीएस के बाद · सेवा', 'Ongoing · Speaking': 'जारी · वक्तव्य',
+  'IPS batch, Maharashtra cadre': 'आईपीएस बैच, महाराष्ट्र कैडर', 'Novel “Carnage by Angels”': 'उपन्यास “कार्नेज बाय एंजल्स”', 'Silver Award, California Film Awards': 'सिल्वर अवॉर्ड, कैलिफ़ोर्निया फ़िल्म अवॉर्ड्स', 'Cinema release of Kya Yahi Sach Hai': 'क्या यही सच है का सिनेमा में प्रदर्शन',
+  'Legal pages': 'क़ानूनी पेज', 'Lost the reel.': 'रील खो गई।', 'The story continues.': 'कहानी जारी है।', or: 'या', 'Yogesh Pratap Singh': 'योगेश प्रताप सिंह', '© Yogesh Pratap Singh': '© योगेश प्रताप सिंह',
+  // aria labels
+  'Open photo': 'तस्वीर खोलें',
+};
+
+// Strings that contain numbers or names. [pattern, replacement]. The replacement may use $1, $2...
+const dur = (t) => t.replace(/(\d+) minutes?/, '$1 मिनट').replace(/(\d+) seconds?/, '$1 सेकंड');
+export const PATTERNS = [
+  [/^Hello, (.+)$/, 'नमस्ते, $1'],
+  [/^Watch (.+)$/, '$1 देखें'],
+  [/^First (\d+) min free$/, 'पहले $1 मिनट मुफ़्त'], [/^First (\d+) minutes always free$/, 'पहले $1 मिनट हमेशा मुफ़्त'], [/^▶ Watch the free (\d+) minutes$/, '▶ पहले $1 मिनट मुफ़्त देखें'],
+  [/^(₹[\d,.]+) one-time$/, '$1 एक बार'],
+  [/^You are watching the free preview: the first (.+?)\. When it ends, a one-time payment of (₹[\d,.]+) unlocks the rest of the film\.$/, (_m, a, b) => `आप मुफ़्त झलक देख रहे हैं: पहले ${dur(a)}। इसके ख़त्म होने पर ${b} का एक बार का भुगतान बाक़ी फ़िल्म अनलॉक कर देता है।`],
+  [/^This film has no free preview\. A one-time payment of (₹[\d,.]+) unlocks it\.$/, 'इस फ़िल्म की कोई मुफ़्त झलक नहीं है। $1 का एक बार का भुगतान इसे अनलॉक करता है।'],
+  [/^Code (\S+) applied: you save (₹[\d,.]+)\.$/, 'कोड $1 लागू हुआ: आपकी बचत $2।'],
+  [/^(\d+) minutes?$/, '$1 मिनट'], [/^(\d+) seconds$/, '$1 सेकंड'],
+  [/^All \((\d+)\)$/, 'सभी ($1)'], [/^Reels \((\d+)\)$/, 'रील ($1)'], [/^Posts \((\d+)\)$/, 'पोस्ट ($1)'],
+  [/^(\d+) min watched( of (\d+))?$/, (_m, a, _b, c) => `${a} मिनट देखा${c ? ` (कुल ${c})` : ''}`],
+  [/^© (\d{4}) (.+?)\. All rights reserved\.$/, '© $1 $2। सर्वाधिकार सुरक्षित।'], [/^© (.+)$/, '© $1'],
+  [/^Watch (.+) →$/, '$1 देखें →'],
+  [/^Email and password ✓\s*·\s*(.+)$/, 'ईमेल और पासवर्ड ✓ · $1'],
+  [/^Open photo (\d+)$/, 'तस्वीर $1 खोलें'],
+];

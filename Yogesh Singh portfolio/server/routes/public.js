@@ -18,6 +18,7 @@ const movieCard = (m) => ({
   poster: m.poster, trailer: m.trailer, duration_sec: m.duration_sec, preview_sec: m.preview_sec,
   price_paise: m.price_paise, featured: !!m.featured, ready: m.status === 'ready',
   credits: parseCredits(m.credits),
+  title_hi: m.title_hi, tagline_hi: m.tagline_hi, description_hi: m.description_hi,
 });
 /** "Role|Name" per line, grouped for display. */
 export function parseCredits(text) {
@@ -31,7 +32,7 @@ export function publicSettings() {
 
 r.get('/site', (_req, res) => {
   const movies = db.prepare('SELECT * FROM movies WHERE published = 1 ORDER BY featured DESC, id DESC').all().map(movieCard);
-  const works = db.prepare('SELECT id, kind, title, subtitle, period, url FROM works ORDER BY sort, id').all();
+  const works = db.prepare('SELECT id, kind, title, subtitle, title_hi, subtitle_hi, period, url FROM works ORDER BY sort, id').all();
   const social = db.prepare('SELECT id, caption, media_type, thumb, permalink, posted_at FROM social_posts WHERE hidden = 0 AND thumb IS NOT NULL ORDER BY COALESCE(posted_at, \'\') DESC, id DESC LIMIT 12').all();
   res.json({ settings: publicSettings(), movies, works, social, paymentsMode: config.paymentsMode });
 });
@@ -106,7 +107,7 @@ r.get('/legal/:slug', (req, res) => {
 
 r.get('/gallery', (_req, res) => {
   const set = publicSettings();
-  res.json({ title: set.gallery_title, intro: set.gallery_intro, items: db.prepare('SELECT id, src, thumb, w, h, caption FROM gallery WHERE hidden = 0 ORDER BY sort, id').all() });
+  res.json({ title: set.gallery_title, intro: set.gallery_intro, title_hi: set.gallery_title_hi, intro_hi: set.gallery_intro_hi, items: db.prepare('SELECT id, src, thumb, w, h, caption FROM gallery WHERE hidden = 0 ORDER BY sort, id').all() });
 });
 
 // Social page data. Embeds are built from a validated shortcode only: the browser never receives a free-form URL.
@@ -115,7 +116,7 @@ r.get('/social', (_req, res) => {
   const embeds = db.prepare("SELECT id, ext_id, media_type, caption, author, thumb FROM social_posts WHERE source = 'embed' AND hidden = 0 ORDER BY id DESC LIMIT 60").all()
     .map((p) => ({ id: p.id, code: p.ext_id, kind: p.media_type === 'REEL' ? 'reel' : 'p', caption: p.caption || '', author: p.author || '', thumb: p.thumb || '' }));
   const posts = db.prepare("SELECT id, caption, media_type, thumb, permalink FROM social_posts WHERE hidden = 0 AND thumb IS NOT NULL AND source <> 'embed' ORDER BY COALESCE(posted_at, '') DESC, id DESC LIMIT 24").all();
-  res.json({ title: set.social_title, intro: set.social_intro, profile: set.social_instagram || '', embeds, posts });
+  res.json({ title: set.social_title, intro: set.social_intro, title_hi: set.social_title_hi, intro_hi: set.social_intro_hi, profile: set.social_instagram || '', embeds, posts });
 });
 
 r.get('/my/purchases', (req, res) => {

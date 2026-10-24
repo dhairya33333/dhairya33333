@@ -154,6 +154,11 @@ const MIGRATIONS = [
     db.exec(`CREATE TABLE IF NOT EXISTS audit_log (id INTEGER PRIMARY KEY, at TEXT NOT NULL DEFAULT (datetime('now')), admin_id INTEGER, admin_email TEXT, action TEXT NOT NULL, status INTEGER)`);
     db.exec('CREATE INDEX IF NOT EXISTS audit_at ON audit_log(at)');
   },
+  // 11: Hindi versions of editable content (empty = show the English text)
+  () => {
+    for (const c of ['title_hi', 'tagline_hi', 'description_hi']) addColumn('movies', c, "TEXT NOT NULL DEFAULT ''");
+    for (const c of ['title_hi', 'subtitle_hi']) addColumn('works', c, "TEXT NOT NULL DEFAULT ''");
+  },
 ];
 
 const current = db.prepare('PRAGMA user_version').get().user_version;

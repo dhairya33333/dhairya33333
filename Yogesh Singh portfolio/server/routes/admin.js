@@ -85,6 +85,7 @@ const movieFields = (b) => ({
   preview_sec: Math.max(0, Math.round(Number(b.preview_minutes) * 60)),
   published: b.published ? 1 : 0,
   featured: b.featured ? 1 : 0,
+  title_hi: String(b.title_hi || '').trim().slice(0, 120), tagline_hi: String(b.tagline_hi || '').trim().slice(0, 200), description_hi: String(b.description_hi || '').trim().slice(0, 4000),
   credits: String(b.credits ?? '').replace(/\r/g, '').split('\n').map((l) => l.trim()).filter(Boolean).slice(0, 60).map((l) => l.slice(0, 160)).join('\n'),
 });
 
@@ -110,8 +111,9 @@ r.put('/movies/:id', (req, res) => {
   if (f.published && !(m.status === 'ready' && m.validated)) return bad(res, 'Upload and process the film (and let it pass validation) before publishing it.');
   tx(() => {
     if (f.featured) db.prepare('UPDATE movies SET featured = 0').run();
-    db.prepare('UPDATE movies SET title=?, tagline=?, description=?, year=?, price_paise=?, preview_sec=?, published=?, featured=?, credits=? WHERE id=?')
-      .run(f.title, f.tagline, f.description, f.year, f.price_paise, f.preview_sec, f.published, f.featured, 'credits' in req.body ? f.credits : m.credits, m.id);
+    db.prepare('UPDATE movies SET title=?, tagline=?, description=?, year=?, price_paise=?, preview_sec=?, published=?, featured=?, credits=?, title_hi=?, tagline_hi=?, description_hi=? WHERE id=?')
+      .run(f.title, f.tagline, f.description, f.year, f.price_paise, f.preview_sec, f.published, f.featured, 'credits' in req.body ? f.credits : m.credits,
+        ...['title_hi', 'tagline_hi', 'description_hi'].map((k) => (k in req.body ? f[k] : m[k])), m.id);
   });
   res.json({ ok: true });
 });
@@ -323,6 +325,7 @@ const workFields = (b) => ({
   kind: KINDS.includes(b.kind) ? b.kind : 'career',
   title: String(b.title || '').trim().slice(0, 160),
   subtitle: String(b.subtitle || '').trim().slice(0, 400),
+  title_hi: String(b.title_hi || '').trim().slice(0, 200), subtitle_hi: String(b.subtitle_hi || '').trim().slice(0, 1000),
   period: String(b.period || '').trim().slice(0, 40),
   url: String(b.url || '').trim().slice(0, 400),
   sort: Number(b.sort) || 0,
@@ -332,13 +335,13 @@ r.post('/works', (req, res) => {
   const w = workFields(req.body); if (!w.title) return bad(res, 'Title is required.');
   if (w.url && !isUrl(w.url)) return bad(res, 'The link must start with http:// or https://');
   const max = db.prepare('SELECT COALESCE(MAX(sort),0) v FROM works').get().v;
-  const { lastInsertRowid } = db.prepare('INSERT INTO works (kind,title,subtitle,period,url,sort) VALUES (?,?,?,?,?,?)').run(w.kind, w.title, w.subtitle, w.period, w.url, w.sort || max + 1);
+  const { lastInsertRowid } = db.prepare('INSERT INTO works (kind,title,subtitle,title_hi,subtitle_hi,period,url,sort) VALUES (?,?,?,?,?,?,?,?)').run(w.kind, w.title, w.subtitle, w.title_hi, w.subtitle_hi, w.period, w.url, w.sort || max + 1);
   res.json({ id: Number(lastInsertRowid) });
 });
 r.put('/works/:id', (req, res) => {
   const w = workFields(req.body); if (!w.title) return bad(res, 'Title is required.');
   if (w.url && !isUrl(w.url)) return bad(res, 'The link must start with http:// or https://');
-  db.prepare('UPDATE works SET kind=?,title=?,subtitle=?,period=?,url=?,sort=? WHERE id=?').run(w.kind, w.title, w.subtitle, w.period, w.url, w.sort, Number(req.params.id));
+  db.prepare('UPDATE works SET kind=?,title=?,subtitle=?,title_hi=?,subtitle_hi=?,period=?,url=?,sort=? WHERE id=?').run(w.kind, w.title, w.subtitle, w.title_hi, w.subtitle_hi, w.period, w.url, w.sort, Number(req.params.id));
   res.json({ ok: true });
 });
 r.delete('/works/:id', (req, res) => { db.prepare('DELETE FROM works WHERE id = ?').run(Number(req.params.id)); res.json({ ok: true }); });

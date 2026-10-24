@@ -72,6 +72,7 @@ const views = {
           <label class="field"><span>Title</span><input id="f-title" value="${esc(m.title)}"></label>
           <label class="field"><span>Tagline</span><input id="f-tag" value="${esc(m.tagline)}"></label>
           <label class="field"><span>Description</span><textarea id="f-desc">${esc(m.description)}</textarea></label>
+          <details class="muted"><summary>Hindi text (optional)</summary><label class="field"><span>Title (Hindi)</span><input id="f-title-hi" value="${esc(m.title_hi)}"></label><label class="field"><span>Tagline (Hindi)</span><input id="f-tag-hi" value="${esc(m.tagline_hi)}"></label><label class="field"><span>Description (Hindi)</span><textarea id="f-desc-hi">${esc(m.description_hi)}</textarea></label></details>
           <label class="field"><span>Cast &amp; crew: one per line as  Role|Name  (for example  Director|Yogesh Pratap Singh)</span><textarea id="f-credits" rows="6">${esc(m.credits)}</textarea></label>
           <div class="cols"><label class="field"><span>Year</span><input id="f-year" value="${esc(m.year)}"></label>
             <label class="field"><span>Price (₹)</span><input id="f-price" type="number" min="1" step="any" value="${m.price_paise / 100}"></label></div>
@@ -108,7 +109,7 @@ const views = {
               ${m.trailer ? '<span class="pill pub">trailer set</span>' : ''}</div></div></div>
         </div>
       </div>`;
-    const body = () => ({ title: $('#f-title').value, tagline: $('#f-tag').value, description: $('#f-desc').value, year: $('#f-year').value, price_rupees: $('#f-price').value, preview_minutes: $('#f-prev').value, published: $('#f-pub').checked, featured: $('#f-feat').checked, credits: $('#f-credits').value });
+    const body = () => ({ title: $('#f-title').value, tagline: $('#f-tag').value, description: $('#f-desc').value, year: $('#f-year').value, price_rupees: $('#f-price').value, preview_minutes: $('#f-prev').value, published: $('#f-pub').checked, featured: $('#f-feat').checked, credits: $('#f-credits').value, title_hi: $('#f-title-hi').value, tagline_hi: $('#f-tag-hi').value, description_hi: $('#f-desc-hi').value });
     $('#save').onclick = () => act(() => api('/admin/movies/' + m.id, { method: 'PUT', body: body() }), 'Saved');
     $('#del').onclick = () => confirm('Delete this film permanently?') && act(async () => { await api('/admin/movies/' + m.id, { method: 'DELETE' }); location.hash = '#films'; });
     $('#cancelenc')?.addEventListener('click', () => confirm('Stop processing this film? The original file and any published version are not affected.') && act(async () => { await api(`/admin/movies/${m.id}/cancel-encode`, { method: 'POST' }); route(); }, 'Cancelled'));
@@ -174,7 +175,11 @@ const views = {
         <div class="panel"><h3>Quote</h3>${txt('quote', 'Pull quote', 3)}<h3 style="margin-top:20px">Speaking invitation</h3>${txt('speaking_title', 'Heading')}${txt('speaking_body', 'Text', 3)}</div>
         <div class="panel"><h3>Contact page &amp; social links</h3>${txt('contact_intro', 'Contact page intro', 3)}${txt('contact_email', 'Contact email (shown on the Contact page)')}${txt('contact_phone', 'Phone (optional)')}${txt('contact_location', 'Based in (optional)')}${txt('social_instagram', 'Instagram URL')}${txt('social_youtube', 'YouTube URL')}${txt('social_x', 'X / Twitter URL')}${txt('social_facebook', 'Facebook URL')}${txt('social_linkedin', 'LinkedIn URL')}
           <h3 style="margin-top:20px">Social page</h3>${txt('social_title', 'Heading')}${txt('social_intro', 'Intro text', 2)}<h3 style="margin-top:20px">SEO</h3>${txt('site_title', 'Browser title')}${txt('meta_description', 'Description for Google', 3)}</div>
-      </div><div class="row" style="margin-top:18px"><button class="btn gold" id="save">Save content</button></div>`;
+      </div>
+      <div class="panel" style="margin-top:16px"><h3>हिन्दी (Hindi) versions</h3><p class="muted small">Shown when a visitor switches the site to Hindi. Leave a box empty to show the English text. A starting translation is provided; please have a native Hindi speaker read it.</p>
+        <div class="grid g2"><div>${txt('hero_name_hi', 'Name')}${txt('hero_roles_hi', 'Roles (comma separated)')}${txt('hero_tagline_hi', 'Tagline', 3)}${txt('about_title_hi', 'About heading')}${txt('about_body_hi', 'Biography', 10)}${txt('stats_hi', 'Stats: number|label per line', 5)}</div>
+        <div>${txt('quote_hi', 'Pull quote', 3)}${txt('speaking_title_hi', 'Speaking heading')}${txt('speaking_body_hi', 'Speaking text', 3)}${txt('contact_intro_hi', 'Contact page intro', 3)}${txt('social_title_hi', 'Social heading')}${txt('social_intro_hi', 'Social intro', 2)}${txt('gallery_title_hi', 'Gallery heading')}${txt('gallery_intro_hi', 'Gallery intro')}</div></div></div>
+      <div class="row" style="margin-top:18px"><button class="btn gold" id="save">Save content</button></div>`;
     $('#save').onclick = () => act(() => api('/admin/settings', { method: 'PUT', body: Object.fromEntries($$('[data-k]').map((e) => [e.dataset.k, e.value])) }), 'Content saved');
   },
 
@@ -252,6 +257,7 @@ const views = {
       <label class="field"><span>Label (e.g. 2019–2023)</span><input data-f="period" value="${esc(w.period || '')}"></label></div>
       <label class="field"><span>Title</span><input data-f="title" value="${esc(w.title || '')}"></label>
       <label class="field"><span>Details</span><textarea data-f="subtitle" rows="2">${esc(w.subtitle || '')}</textarea></label>
+      <details class="muted"><summary>Hindi text (optional)</summary><label class="field"><span>Title (Hindi)</span><input data-f="title_hi" value="${esc(w.title_hi || '')}"></label><label class="field"><span>Details (Hindi)</span><textarea data-f="subtitle_hi" rows="2">${esc(w.subtitle_hi || '')}</textarea></label></details>
       <label class="field"><span>Link (optional, used for articles)</span><input data-f="url" type="url" placeholder="https://" value="${esc(w.url || '')}"></label>
       <label class="field"><span>Order (lower first)</span><input data-f="sort" type="number" value="${w.sort ?? ''}"></label>`;
     const read = (root) => Object.fromEntries($$('[data-f]', root).map((e) => [e.dataset.f, e.value]));

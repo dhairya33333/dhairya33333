@@ -1,3 +1,4 @@
+import { initI18n, localise } from './i18n.js';
 // Shared helpers: API calls, nav/auth state, formatting, scroll + motion effects.
 export async function api(path, { method = 'GET', body, form } = {}) {
   const res = await fetch('/api' + path, {
@@ -8,7 +9,7 @@ export async function api(path, { method = 'GET', body, form } = {}) {
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) { const e = new Error(data.error || 'Something went wrong.'); e.status = res.status; e.fields = data.fields; e.code = data.code; throw e; }
-  return data;
+  return localise(path, data);
 }
 
 export const $ = (s, el = document) => el.querySelector(s);
@@ -31,6 +32,7 @@ export async function mountNav(user) {
       ? `${user.role === 'admin' ? '<a href="/admin">Admin</a>' : ''}<a href="/account.html" class="btn">${esc(user.name.split(' ')[0])}</a>`
       : `<a href="/login.html" class="btn">Sign in</a>`;
   }
+  initI18n();
   const onScroll = () => nav.classList.toggle('stuck', scrollY > 40);
   onScroll(); addEventListener('scroll', onScroll, { passive: true });
   $('.burger')?.addEventListener('click', () => nav.classList.toggle('open'));
