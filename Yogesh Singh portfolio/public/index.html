@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yogesh Singh — Filmmaker · Speaker · Former IPS</title>
+<meta name="theme-color" content="#0a0a0b">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='16' fill='%230a0a0b'/%3E%3Ctext x='16' y='22' font-size='18' text-anchor='middle' fill='%23c9a96b' font-family='serif'%3EY%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<div class="loader" id="loader"><div class="mark" aria-hidden="true"></div><div class="bar"></div></div>
+<div class="rail"></div><div class="cursor"></div>
+
+<header class="nav">
+  <div class="wrap">
+    <a href="/" class="brand"><i></i>Yogesh Singh</a>
+    <nav class="nav-links">
+      <a href="#film">Film</a><a href="#about">About</a><a href="#journey">Journey</a><a href="#social">Social</a><a href="#contact">Contact</a>
+      <span id="nav-auth" style="display:contents"></span>
+    </nav>
+    <button class="burger" aria-label="Menu"><span></span><span></span></button>
+  </div>
+</header>
+
+<main>
+  <section class="hero" id="top">
+    <div class="glow"></div><div class="orb"></div>
+    <div class="wrap">
+      <h1 id="hero-name" aria-label="Yogesh Singh"></h1>
+      <div class="hero-meta">
+        <div>
+          <div class="hero-roles" id="hero-roles"></div>
+          <p class="lead" id="hero-tag" data-reveal></p>
+        </div>
+        <div class="hero-cta" data-reveal>
+          <a href="#film" class="btn primary">Watch the film <span class="arrow">→</span></a>
+          <a href="#about" class="btn">The story</a>
+        </div>
+      </div>
+    </div>
+    <div class="scroll-cue">Scroll</div>
+  </section>
+
+  <div class="marquee" aria-hidden="true"><div class="track" id="marquee"></div></div>
+
+  <section class="block" id="film">
+    <div class="wrap">
+      <span class="eyebrow" data-reveal>The film</span>
+      <div id="film-slot"></div>
+    </div>
+  </section>
+
+  <section class="block" id="about" style="padding-top:0">
+    <div class="wrap about">
+      <div class="sticky"><span class="eyebrow" data-reveal>About</span><h2 class="h2" id="about-title"></h2></div>
+      <div><div class="body" id="about-body" data-reveal></div><div class="stats" id="stats"></div></div>
+    </div>
+  </section>
+
+  <section class="quote"><div class="wrap"><blockquote id="quote" data-reveal></blockquote></div></section>
+
+  <section class="block" id="journey">
+    <div class="wrap">
+      <span class="eyebrow" data-reveal>Journey</span>
+      <h2 class="h2" data-reveal>Uniform. Camera. <em>Stage.</em></h2>
+      <div class="works" id="works"></div>
+    </div>
+  </section>
+
+  <section class="block" style="padding-top:0">
+    <div class="wrap"><div class="band" data-reveal>
+      <div><h3 id="speak-title"></h3><p id="speak-body"></p></div>
+      <a class="btn gold" id="speak-cta" href="#contact">Get in touch <span class="arrow">→</span></a>
+    </div></div>
+  </section>
+
+  <section class="block" id="social" hidden>
+    <div class="wrap">
+      <div class="ig-head">
+        <div><span class="eyebrow" data-reveal>Social</span><h2 class="h2" data-reveal>Behind the <em>frame</em></h2></div>
+        <a class="btn" id="ig-link" target="_blank" rel="noopener" hidden>Follow on Instagram <span class="arrow">↗</span></a>
+      </div>
+      <div class="ig" id="ig"></div>
+    </div>
+  </section>
+</main>
+
+<footer id="contact">
+  <div class="wrap">
+    <div class="foot-big" data-reveal><a id="foot-mail" href="mailto:">Let’s talk →</a></div>
+    <div class="foot-row"><span id="copy"></span><div class="socials" id="socials"></div></div>
+  </div>
+</footer>
+<script type="module" src="/js/home.js"></script>
+</body>
+</html>

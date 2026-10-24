@@ -1,0 +1,18 @@
+[Unit]
+Description=Yogesh Singh portfolio
+After=network.target
+
+[Service]
+Type=simple
+User=portfolio
+WorkingDirectory=/opt/yogesh-portfolio
+ExecStart=/usr/bin/node server/index.js
+Environment=NODE_ENV=production
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+ProtectSystem=full
+ReadWritePaths=/opt/yogesh-portfolio
+
+[Install]
+WantedBy=multi-user.target
