@@ -149,3 +149,10 @@ test('new site-content settings are editable by admin only and validated', async
   assert.equal(site.contact_phone, '+91 98765 43210'); assert.equal(site.contact_location, 'Mumbai, India');
   assert.equal((await t.client().put('/api/admin/settings', body)).status, 401);
 });
+
+test('the hidden attribute really hides elements (sign-in form must not show the registration-only name box)', async () => {
+  const css = (await t.client().get('/css/site.css')).text;
+  assert.match(css, /\[hidden\]\s*\{\s*display:\s*none\s*!important/);
+  const login = (await t.client().get('/login.html')).text;
+  assert.match(login, /id="f-name" hidden/, 'name field starts hidden and is only revealed by the Create account link');
+});
