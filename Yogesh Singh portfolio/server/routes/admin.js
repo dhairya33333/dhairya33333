@@ -3,15 +3,18 @@ import multer from 'multer';
 import fs from 'node:fs';
 import crypto from 'node:crypto';
 import path from 'node:path';
-import { db, allSettings, setSetting, tx } from '../db.js';
+import { db, allSettings, setSetting, getSetting, tx } from '../db.js';
 import { dirs, config } from '../config.js';
 import { requireAdmin, asyncHandler, randomId } from '../auth.js';
 import { hlsDir, usageReport } from '../storage.js';
 import { enqueueTranscode, cancelEncode, checkFfmpeg } from '../transcode.js';
 import { syncInstagram } from '../instagram.js';
 import { refreshEmbed } from '../instagram-meta.js';
+import { optimizeImage, removeUploaded } from '../images.js';
 import { SITE_DEFAULTS, EDITABLE_KEYS } from '../defaults.js';
 import uploadRoutes from './uploads.js';
+import { LEGAL_DEFAULTS, LEGAL_TITLES } from '../legal-defaults.js';
+
 import { adminRevoke } from '../payments/ledger.js';
 import { log } from '../log.js';
 
@@ -46,6 +49,7 @@ r.get('/stats', (_req, res) => {
     recent: db.prepare(`SELECT o.order_id, o.amount_paise, o.paid_at, u.name, m.title FROM orders o JOIN users u ON u.id=o.user_id JOIN movies m ON m.id=o.movie_id WHERE o.status='PAID' ORDER BY o.paid_at DESC LIMIT 8`).all(),
     paymentsMode: config.paymentsMode,
     googleConfigured: !!config.google.clientId,
+    legal_placeholders: Object.keys(LEGAL_TITLES).reduce((n, k) => n + placeholderCount(getSetting(`legal_${k}`, LEGAL_DEFAULTS[k])), 0),
     unread_messages: one('SELECT COUNT(*) v FROM messages WHERE is_read = 0').v,
     ffmpegOk: checkFfmpeg().ok,
   });
@@ -98,6 +102,11 @@ for (const kind of ['poster', 'trailer']) {
     const m = db.prepare('SELECT * FROM movies WHERE id = ?').get(Number(req.params.id));
     if (!m || !req.file) return bad(res, 'Choose an image (jpg, png, webp) or, for a trailer, mp4/webm.');
     unlink(m[kind]);
+    if (kind === 'poster') {                                            // posters are resized and stripped of camera metadata
+      return optimizeImage(req.file.path, { folder: 'posters', maxWidth: 1000, thumb: false }).then((img) => {
+        db.prepare('UPDATE movies SET poster = ? WHERE id = ?').run(img.src, m.id); res.json({ url: img.src });
+      }).catch((e) => bad(res, e.message));
+    }
     const rel = '/uploads/' + req.file.filename;
     db.prepare(`UPDATE movies SET ${kind} = ? WHERE id = ?`).run(rel, m.id);
     res.json({ url: rel });
@@ -193,6 +202,7 @@ r.post('/users/:id/role', (req, res) => {
 
 // ---------- Site content ----------
 const isUrl = (v) => { try { return ['http:', 'https:'].includes(new URL(v).protocol); } catch { return false; } };
+const READONLY = new Set(['portrait']);   // changed only through its own upload route, never as free text
 const URL_KEYS = new Set(['social_instagram', 'social_youtube', 'social_x', 'social_facebook', 'social_linkedin']);
 
 r.get('/settings', (_req, res) => {
@@ -209,7 +219,7 @@ r.put('/settings', (req, res) => {
     const v = String(req.body[k]).trim().slice(0, 8000);
     if (URL_KEYS.has(k) && v && !isUrl(v)) return bad(res, `${k.replace('social_', '')} must be a full http(s) link.`);
   }
-  for (const k of EDITABLE_KEYS) if (k in req.body) setSetting(k, String(req.body[k]).trim().slice(0, 8000));
+  for (const k of EDITABLE_KEYS) if (k in req.body && !READONLY.has(k)) setSetting(k, String(req.body[k]).trim().slice(0, 8000));
   res.json({ ok: true });
 });
 
@@ -238,6 +248,73 @@ r.put('/works/:id', (req, res) => {
   res.json({ ok: true });
 });
 r.delete('/works/:id', (req, res) => { db.prepare('DELETE FROM works WHERE id = ?').run(Number(req.params.id)); res.json({ ok: true }); });
+
+// ---------- Portrait and gallery ----------
+const photoUpload = multer({
+  storage: multer.diskStorage({ destination: dirs.tmp, filename: (_q, f, cb) => cb(null, 'img-' + randomId() + path.extname(f.originalname).toLowerCase()) }),
+  limits: { fileSize: 25 * 1024 * 1024, files: 20 },
+  fileFilter: (_q, f, cb) => cb(null, /\.(jpe?g|png|webp)$/i.test(f.originalname)),
+});
+
+r.post('/portrait', photoUpload.single('file'), asyncHandler(async (req, res) => {
+  if (!req.file) return bad(res, 'Choose a JPG, PNG or WebP photo (up to 25 MB).');
+  let img; try { img = await optimizeImage(req.file.path, { folder: 'site', maxWidth: 1400, thumb: false }); } catch (e) { return bad(res, e.message); }
+  const old = getSetting('portrait'); setSetting('portrait', img.src); removeUploaded(old);
+  res.json({ ok: true, url: img.src });
+}));
+r.delete('/portrait', (_req, res) => { removeUploaded(getSetting('portrait')); setSetting('portrait', ''); res.json({ ok: true }); });
+
+r.get('/gallery', (_req, res) => res.json({ items: db.prepare('SELECT * FROM gallery ORDER BY sort, id').all() }));
+r.post('/gallery', photoUpload.array('files', 20), asyncHandler(async (req, res) => {
+  if (!req.files?.length) return bad(res, 'Choose one or more JPG, PNG or WebP photos (up to 25 MB each).');
+  const caption = String(req.body.caption || '').slice(0, 300); let added = 0; const errors = [];
+  for (const f of req.files) {
+    try {
+      const img = await optimizeImage(f.path, { folder: 'gallery' });
+      const max = db.prepare('SELECT COALESCE(MAX(sort), 0) v FROM gallery').get().v;
+      db.prepare('INSERT INTO gallery (src, thumb, w, h, caption, sort) VALUES (?, ?, ?, ?, ?, ?)').run(img.src, img.thumb, img.w, img.h, caption, max + 1); added++;
+    } catch (e) { errors.push(e.message); }
+  }
+  if (!added) return bad(res, errors[0] || 'No photo could be added.');
+  res.json({ ok: true, added, errors });
+}));
+r.put('/gallery/:id', (req, res) => {
+  const id = Number(req.params.id), g = db.prepare('SELECT * FROM gallery WHERE id = ?').get(id);
+  if (!g) return bad(res, 'Not found.', 404);
+  if ('caption' in req.body) db.prepare('UPDATE gallery SET caption = ? WHERE id = ?').run(String(req.body.caption || '').slice(0, 300), id);
+  if ('hidden' in req.body) db.prepare('UPDATE gallery SET hidden = ? WHERE id = ?').run(req.body.hidden ? 1 : 0, id);
+  if (req.body.move === 'up' || req.body.move === 'down') {          // swap places with the neighbour
+    const n = req.body.move === 'up'
+      ? db.prepare('SELECT * FROM gallery WHERE (sort < ? OR (sort = ? AND id < ?)) ORDER BY sort DESC, id DESC LIMIT 1').get(g.sort, g.sort, g.id)
+      : db.prepare('SELECT * FROM gallery WHERE (sort > ? OR (sort = ? AND id > ?)) ORDER BY sort, id LIMIT 1').get(g.sort, g.sort, g.id);
+    if (n) tx(() => { db.prepare('UPDATE gallery SET sort = ? WHERE id = ?').run(n.sort === g.sort ? (req.body.move === 'up' ? g.sort - 1 : g.sort + 1) : n.sort, g.id); db.prepare('UPDATE gallery SET sort = ? WHERE id = ?').run(g.sort, n.id); });
+  }
+  res.json({ ok: true });
+});
+r.delete('/gallery/:id', (req, res) => {
+  const g = db.prepare('SELECT * FROM gallery WHERE id = ?').get(Number(req.params.id));
+  if (!g) return bad(res, 'Not found.', 404);
+  db.prepare('DELETE FROM gallery WHERE id = ?').run(g.id); removeUploaded(g.src, g.thumb);
+  res.json({ ok: true });
+});
+
+// ---------- Legal pages ----------
+export const placeholderCount = (t) => (String(t).match(/\[[^\]\n]{2,}\]/g) || []).length;
+r.get('/legal', (_req, res) => res.json({
+  updated: getSetting('legal_updated', ''),
+  pages: Object.keys(LEGAL_TITLES).map((slug) => { const body = getSetting(`legal_${slug}`, LEGAL_DEFAULTS[slug]); return { slug, title: LEGAL_TITLES[slug], body, placeholders: placeholderCount(body), customised: getSetting(`legal_${slug}`, null) !== null }; }),
+}));
+r.put('/legal', (req, res) => {
+  for (const slug of Object.keys(LEGAL_TITLES)) {
+    if (!(slug in req.body)) continue;
+    const v = String(req.body[slug]).replace(/\r\n/g, '\n').trim();
+    if (v.length < 100) return bad(res, `${LEGAL_TITLES[slug]} is too short.`);
+    if (v.length > 40000) return bad(res, `${LEGAL_TITLES[slug]} is too long.`);
+    setSetting(`legal_${slug}`, v);
+  }
+  setSetting('legal_updated', new Date().toISOString().slice(0, 10));
+  res.json({ ok: true });
+});
 
 // ---------- Contact inbox ----------
 r.get('/messages', (_req, res) => res.json({
@@ -280,13 +357,14 @@ const coverUpload = multer({
   limits: { fileSize: 8 * 1024 * 1024 },
   fileFilter: (_q, f, cb) => cb(null, /\.(jpe?g|png|webp)$/i.test(f.originalname)),
 });
-r.post('/social/:id/cover', coverUpload.single('file'), (req, res) => {
+r.post('/social/:id/cover', coverUpload.single('file'), asyncHandler(async (req, res) => {
   const p = db.prepare("SELECT * FROM social_posts WHERE id = ? AND source = 'embed'").get(Number(req.params.id));
   if (!p || !req.file) return bad(res, 'Choose a JPG, PNG or WebP image (up to 8 MB).');
-  if (p.cover_source === 'uploaded') unlink(p.thumb);
-  db.prepare("UPDATE social_posts SET thumb = ?, cover_source = 'uploaded' WHERE id = ?").run('/uploads/' + req.file.filename, p.id);
-  res.json({ ok: true, url: '/uploads/' + req.file.filename });
-});
+  let img; try { img = await optimizeImage(req.file.path, { folder: 'covers', maxWidth: 1000, thumb: false }); } catch (e) { return bad(res, e.message); }
+  if (p.cover_source === 'uploaded') removeUploaded(p.thumb);
+  db.prepare("UPDATE social_posts SET thumb = ?, cover_source = 'uploaded' WHERE id = ?").run(img.src, p.id);
+  res.json({ ok: true, url: img.src });
+}));
 r.put('/instagram', (req, res) => {
   if ('user_id' in req.body) setSetting('ig_user_id', String(req.body.user_id).trim());
   if (req.body.token) { setSetting('ig_token', String(req.body.token).trim()); setSetting('ig_token_refreshed_at', Date.now()); }

@@ -34,7 +34,7 @@ let seq = 5550000;
 const success = (orderId, over = {}) => ({ cf_payment_id: ++seq, payment_status: 'SUCCESS', payment_amount: 299, payment_currency: 'INR', ...over });
 async function buy(email) {
   const c = await signedUpUser(t, email);
-  const r = await c.post('/api/payments/checkout', { movieId: movieId(), phone: '9876543210' });
+  const r = await c.post('/api/payments/checkout', { agree: true, movieId: movieId(), phone: '9876543210' });
   assert.equal(r.status, 200, r.text);
   return { c, ...r.json };
 }
@@ -46,8 +46,8 @@ function hook(type, data, { secret = SECRET, ts = String(Date.now()) } = {}) {
 
 test('checkout: server price in rupees, bound to our order id, mobile number required, secrets not exposed', async () => {
   const c = await signedUpUser(t, 'cf0@example.com');
-  assert.equal((await c.post('/api/payments/checkout', { movieId: movieId() })).status, 400, 'phone required');
-  const r = await c.post('/api/payments/checkout', { movieId: movieId(), phone: '9876543210', amount: 1 });
+  assert.equal((await c.post('/api/payments/checkout', { agree: true, movieId: movieId() })).status, 400, 'phone required');
+  const r = await c.post('/api/payments/checkout', { agree: true, movieId: movieId(), phone: '9876543210', amount: 1 });
   assert.equal(r.status, 200);
   assert.equal(gw.lastOrder.order_amount, 299); assert.equal(gw.lastOrder.order_currency, 'INR');
   assert.equal(r.json.paymentSessionId, 'session_xyz');

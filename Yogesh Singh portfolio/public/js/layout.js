@@ -1,7 +1,7 @@
 // Shared header and footer for the inner pages (About, Contact, Social), so navigation stays identical everywhere.
 import { esc, getUser, mountNav } from './common.js';
 
-const LINKS = [['Films', '/films'], ['About', '/about'], ['Social', '/social'], ['Contact', '/contact']];
+const LINKS = [['Films', '/films'], ['About', '/about'], ['Gallery', '/gallery'], ['Social', '/social'], ['Contact', '/contact']];
 
 export async function mountChrome({ active = '', settings = {} } = {}) {
   const here = (href) => (href === active ? ' aria-current="page"' : '');
@@ -13,7 +13,7 @@ export async function mountChrome({ active = '', settings = {} } = {}) {
   document.getElementById('chrome-foot').outerHTML = `
     <footer class="slim"><div class="wrap"><div class="foot-row">
       <span>© ${new Date().getFullYear()} ${esc(settings.hero_name || 'Yogesh Pratap Singh')}. All rights reserved.</span>
-      <div class="foot-links"><a href="/">Home</a>${LINKS.map(([t, h]) => `<a href="${h}">${t}</a>`).join('')}</div>
+      <div class="foot-links"><a href="/">Home</a>${LINKS.map(([t, h]) => `<a href="${h}">${t}</a>`).join('')}<a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/refunds">Refunds</a></div>
       <div class="socials">${socials.map(([n, u]) => `<a href="${esc(u)}" target="_blank" rel="noopener">${n}</a>`).join('')}</div>
     </div></div></footer>`;
   mountNav(await getUser());

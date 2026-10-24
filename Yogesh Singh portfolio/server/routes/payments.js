@@ -7,6 +7,7 @@ import { requireAuth, asyncHandler } from '../auth.js';
 import { log } from '../log.js';
 import * as razorpay from '../payments/razorpay.js';
 import * as cashfree from '../payments/cashfree.js';
+import { legalVersion } from './public.js';
 import { getOrder, markPaid, markPending, markFailed, markCancelled, applyRefund, applyDispute, recordEvent, hasEvent } from '../payments/ledger.js';
 
 const r = Router();
@@ -24,6 +25,7 @@ r.post('/checkout', limit(config.rate.payments), requireAuth, asyncHandler(async
   if (!movie) return res.status(404).json({ error: 'This film is not available right now.' });
   if (db.prepare('SELECT 1 FROM purchases WHERE user_id = ? AND movie_id = ?').get(req.user.id, movie.id))
     return res.status(409).json({ error: 'You already own this film.' });
+  if (req.body.agree !== true) return res.status(400).json({ error: 'Please accept the Terms of Use, Privacy Policy and Refund Policy to continue.', code: 'consent_required' });
   if (mode === 'unconfigured') return res.status(503).json({ error: 'Payments are not configured yet. Please try again later.' });
 
   let phone = null;
@@ -38,8 +40,8 @@ r.post('/checkout', limit(config.rate.payments), requireAuth, asyncHandler(async
 
   const orderId = `ord_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
   // The order is bound to this user and this film, with the amount and currency taken from OUR database.
-  db.prepare('INSERT INTO orders (order_id, user_id, movie_id, amount_paise, currency, gateway, provider, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, datetime(\'now\'))')
-    .run(orderId, req.user.id, movie.id, movie.price_paise, 'INR', mode, mode);
+  db.prepare('INSERT INTO orders (order_id, user_id, movie_id, amount_paise, currency, gateway, provider, updated_at, consent_at, consent_version) VALUES (?, ?, ?, ?, ?, ?, ?, datetime(\'now\'), datetime(\'now\'), ?)')
+    .run(orderId, req.user.id, movie.id, movie.price_paise, 'INR', mode, mode, legalVersion());
   log('info', 'order.created', { order: orderId, user: req.user.id, movie: movie.id, amount: movie.price_paise, provider: mode });
   if (mode === 'demo') return res.json({ mode: 'demo', orderId });
 

@@ -48,7 +48,7 @@ test('an expired session cannot reach paid media or checkout', async () => {
   const mid = t.db.prepare("SELECT id FROM movies WHERE slug='auth-film'").get().id;
   const expired = jwt.sign({ uid: uid('victim@example.com'), tv: 0, jti: 'z' }, process.env.JWT_SECRET, { expiresIn: -5 });
   const c = t.client();
-  assert.equal((await c.post('/api/payments/checkout', { movieId: mid }, { headers: { cookie: `yp_session=${expired}` } })).status, 401);
+  assert.equal((await c.post('/api/payments/checkout', { agree: true, movieId: mid }, { headers: { cookie: `yp_session=${expired}` } })).status, 401);
 });
 
 test('demoting or promoting a user ends their existing sessions immediately', async () => {

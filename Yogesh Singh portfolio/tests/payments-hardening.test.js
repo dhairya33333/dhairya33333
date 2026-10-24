@@ -35,7 +35,7 @@ const order = (id) => t.db.prepare('SELECT * FROM orders WHERE order_id = ?').ge
 const pay = (id, rzOrder, o = {}) => (gw.payments[id] = { id, order_id: rzOrder, status: 'captured', amount: 29900, currency: 'INR', ...o });
 async function buy(email, slug = 'film') {
   const c = await signedUpUser(t, email);
-  const r = await c.post('/api/payments/checkout', { movieId: movie(slug) });
+  const r = await c.post('/api/payments/checkout', { agree: true, movieId: movie(slug) });
   assert.equal(r.status, 200, r.text);
   return { c, ...r.json };
 }
@@ -190,7 +190,7 @@ test('direct API calls cannot fabricate a purchase', async () => {
     c.post('/api/payments/demo/complete', { orderId: 'x', movieId: movie() }),
     c.post('/api/admin/grant', { email: 'faker@example.com', movieId: movie() }),
     c.post('/api/payments/razorpay/verify', { razorpay_order_id: 'order_x', razorpay_payment_id: 'pay_x', razorpay_signature: 'x' }),
-    c.post('/api/payments/checkout', { movieId: movie(), status: 'PAID', paid: true, amount_paise: 0, price: 1, user_id: 1 }),
+    c.post('/api/payments/checkout', { agree: true, movieId: movie(), status: 'PAID', paid: true, amount_paise: 0, price: 1, user_id: 1 }),
     c.put('/api/auth/me', { role: 'admin' }), c.post('/api/auth/register', { name: 'x', email: 'faker@example.com', password: 'password-12345', role: 'admin' }),
     t.client().post('/api/payments/webhook', { event: 'payment.captured' }),
   ];

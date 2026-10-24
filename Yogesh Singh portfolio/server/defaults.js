@@ -9,6 +9,9 @@ export const SITE_DEFAULTS = {
   about_body: 'Yogesh Pratap Singh, widely known as Y. P. Singh, is an Indian Police Service officer of the 1985 batch, Maharashtra cadre. After leaving the service he built a second career as a lawyer and activist in Mumbai.\n\nHis 2003 novel, Carnage by Angels, drew on his years inside the system to expose corruption and malpractice in the police force.\n\nHe then turned the book into cinema. As director of Kya Yahi Sach Hai, he won the Silver Award in the Narrative Film category at the California Film Awards (2010), and the film reached Indian cinemas in December 2011.\n\nToday he shares these experiences from the stage as a motivational speaker, on courage, integrity and standing up for what is right.',
   stats: '1985|IPS batch, Maharashtra cadre\n2003|Novel “Carnage by Angels”\n2010|Silver Award, California Film Awards\n2011|Cinema release of Kya Yahi Sach Hai',
   quote: '',
+  portrait: '',
+  gallery_title: 'Gallery',
+  gallery_intro: 'Moments from the sets, the stage and the road.',
   contact_email: '',
   contact_phone: '',
   contact_location: '',
@@ -30,5 +33,6 @@ export const WORKS_SEED = [
 ];
 
 // Keys the admin can edit through the content form (secrets are handled separately).
+export const LEGAL_KEYS = ['legal_privacy', 'legal_terms', 'legal_refunds'];
 export const EDITABLE_KEYS = Object.keys(SITE_DEFAULTS);
 export const SECRET_KEYS = ['ig_token'];

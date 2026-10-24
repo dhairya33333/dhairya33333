@@ -72,7 +72,7 @@ test('after a realistic mix of payments, refunds and disputes the data is still 
   try {
     for (let i = 0; i < 6; i++) {
       const c = await signedUpUser(t, `mix${i}@example.com`);
-      const o = (await c.post('/api/payments/checkout', { movieId: m })).json;
+      const o = (await c.post('/api/payments/checkout', { agree: true, movieId: m })).json;
       paymentsDb[`pay_i${i}`] = { id: `pay_i${i}`, order_id: o.razorpayOrderId, status: 'captured', amount: 29900, currency: 'INR' };
       if (i < 5) await hook({ event: 'payment.captured', payload: { payment: { entity: paymentsDb[`pay_i${i}`] } } });
       if (i === 1) await hook({ event: 'refund.processed', payload: { refund: { entity: { id: 'ri1', payment_id: 'pay_i1', amount: 29900 } }, payment: { entity: { id: 'pay_i1', order_id: o.razorpayOrderId } } } });

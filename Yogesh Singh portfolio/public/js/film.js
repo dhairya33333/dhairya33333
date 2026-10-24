@@ -85,7 +85,7 @@ function unlock() {
   $('#phone-field').hidden = !needsPhone;
   $('#gateway-copy').textContent = mode === 'demo' ? 'Demo checkout (no real payment).' : 'Secure payment. UPI, cards and net banking accepted.';
   $('#phone').value = user.phone || '';
-  $('#pay-go').disabled = false;
+  $('#pay-go').disabled = false; $('#agree').checked = false;
   say('');
   openModal();
 }
@@ -97,9 +97,11 @@ async function confirmPayment(orderId) {
 
 async function pay() {
   const btn = $('#pay-go');
-  say(''); btn.disabled = true;
+  say('');
+  if (!$('#agree').checked) { say('Please tick the box to accept the Terms, Privacy Policy and Refund Policy.'); $('#agree').focus(); return; }
+  btn.disabled = true;
   try {
-    const o = await api('/payments/checkout', { method: 'POST', body: { movieId: movie.id, phone: $('#phone').value } });
+    const o = await api('/payments/checkout', { method: 'POST', body: { movieId: movie.id, phone: $('#phone').value, agree: true } });
     if (o.mode === 'demo') {
       await api('/payments/demo/complete', { method: 'POST', body: { orderId: o.orderId } });
       location.hash = ''; location.reload(); return;

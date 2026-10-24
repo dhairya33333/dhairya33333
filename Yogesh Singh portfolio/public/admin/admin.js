@@ -31,6 +31,7 @@ const views = {
           <h3 style="margin-top:18px">Video tools</h3><span class="pill ${s.ffmpegOk ? 'PAID' : 'FAILED'}">ffmpeg ${s.ffmpegOk ? 'ok' : 'MISSING'}</span>
           ${s.ffmpegOk ? '' : '<span class="small" style="color:var(--danger);margin-left:8px">Films cannot be processed until ffmpeg is installed for the service user.</span>'}</div>
       </div>
+      ${s.legal_placeholders ? `<a class="panel" href="#legal" style="display:block;margin-top:16px;border-left:4px solid var(--danger)"><b>Legal pages still contain ${s.legal_placeholders} [placeholders].</b> <span class="muted small">Fill them in and have the text reviewed before launch →</span></a>` : ''}
       <div class="panel" style="margin-top:16px"><h3>Disk &amp; storage</h3><div id="storage" class="muted small">Loading…</div></div>
       <div class="panel" style="margin-top:16px"><h3>Recent sales</h3><div class="tablewrap"><table><tr><th>When</th><th>Viewer</th><th>Film</th><th>Amount</th></tr>
         ${s.recent.map((o) => `<tr><td>${fmt(o.paid_at)}</td><td>${esc(o.name)}</td><td>${esc(o.title)}</td><td>${rupees(o.amount_paise)}</td></tr>`).join('') || '<tr><td colspan="4" class="muted">No sales yet.</td></tr>'}</table></div></div>`;
@@ -166,6 +167,43 @@ const views = {
     $('#save').onclick = () => act(() => api('/admin/settings', { method: 'PUT', body: Object.fromEntries($$('[data-k]').map((e) => [e.dataset.k, e.value])) }), 'Content saved');
   },
 
+  async legal() {
+    const { pages, updated } = await api('/admin/legal');
+    view.innerHTML = head('Legal pages', 'Privacy Policy, Terms of Use and Refund Policy, shown on the website footer and agreed to at checkout. Payment providers ask for these before activating an account.') + `
+      <div class="panel" style="border-left:4px solid var(--danger);margin-bottom:16px"><b>These are starting templates, not legal advice.</b>
+        <p class="small muted" style="margin:6px 0 0">Replace every <b>[bracketed]</b> item with your real details (business name, address, email, refund periods, city for courts) and have a lawyer review the text before launch. Format: <code>## Heading</code>, <code>- list item</code>, blank line between paragraphs, <code>**bold**</code>.${updated ? ` Last saved: ${esc(updated)}.` : ' Not saved yet: the website shows the templates.'}</p></div>
+      ${pages.map((p) => `<div class="panel" style="margin-bottom:16px"><h3>${esc(p.title)} ${p.placeholders ? `<span class="pill FAILED" style="margin-left:8px">${p.placeholders} [placeholders] left</span>` : '<span class="pill PAID" style="margin-left:8px">no placeholders</span>'} <a class="link small" href="/${p.slug}" target="_blank" style="margin-left:10px">view page ↗</a></h3>
+        <textarea data-legal="${p.slug}" rows="14" style="width:100%;padding:12px;border:1px solid var(--line);border-radius:6px;font:13px/1.6 ui-monospace,Consolas,monospace;background:#fff;color:var(--ink)">${esc(p.body)}</textarea></div>`).join('')}
+      <button class="btn gold" id="save">Save legal pages</button>`;
+    $('#save').onclick = () => act(async () => { await api('/admin/legal', { method: 'PUT', body: Object.fromEntries($$('[data-legal]').map((t) => [t.dataset.legal, t.value])) }); route(); }, 'Saved');
+  },
+
+  async photos() {
+    const [{ settings: st }, { items }] = await Promise.all([api('/admin/settings'), api('/admin/gallery')]);
+    view.innerHTML = head('Photos', 'Portrait for the About page, and the public Gallery. Photos are resized, converted to WebP and stripped of camera location data automatically.') + `
+      <div class="panel" style="margin-bottom:16px"><h3>Portrait</h3><div class="row" style="align-items:flex-start;gap:18px">
+        ${st.portrait ? `<img src="${esc(st.portrait)}" alt="" style="width:120px;border-radius:6px">` : '<span class="muted small">No portrait yet.</span>'}
+        <div><label class="field"><span>Upload portrait (JPG, PNG or WebP, up to 25 MB)</span><input type="file" id="portrait" accept="image/jpeg,image/png,image/webp"></label>
+        ${st.portrait ? '<button class="btn" id="portrait-rm">Remove portrait</button>' : ''}</div></div></div>
+      <div class="panel" style="margin-bottom:16px"><h3>Gallery page text</h3>
+        <label class="field"><span>Heading</span><input id="g-title" value="${esc(st.gallery_title)}"></label>
+        <label class="field"><span>Intro</span><input id="g-intro" value="${esc(st.gallery_intro)}"></label>
+        <button class="btn gold" id="g-save">Save text</button></div>
+      <div class="panel"><h3>Add photos</h3><div class="row">
+        <input type="file" id="g-files" accept="image/jpeg,image/png,image/webp" multiple><input id="g-cap" placeholder="Caption (optional)" style="flex:1;min-width:160px"><button class="btn gold" id="g-add">Upload</button></div></div>
+      <div class="grid g4" style="margin-top:16px">${items.map((g) => `<div class="panel" style="padding:10px;${g.hidden ? 'opacity:.55' : ''}">
+        <img src="${esc(g.thumb)}" alt="" style="width:100%;border-radius:4px"><input data-cap="${g.id}" value="${esc(g.caption)}" placeholder="Caption" style="width:100%;margin:8px 0">
+        <div class="row" style="gap:6px;flex-wrap:wrap"><button class="btn" data-mv="up" data-id="${g.id}" aria-label="Move earlier">←</button><button class="btn" data-mv="down" data-id="${g.id}" aria-label="Move later">→</button>
+        <button class="btn" data-hid="${g.id}" data-h="${g.hidden ? 0 : 1}">${g.hidden ? 'Show' : 'Hide'}</button><button class="btn" data-del="${g.id}">Delete</button></div></div>`).join('') || '<p class="muted">No photos yet.</p>'}</div>`;
+    $('#portrait').onchange = (e) => e.target.files[0] && act(async () => { await upload('/admin/portrait', e.target.files[0]); route(); }, 'Portrait updated');
+    $('#portrait-rm')?.addEventListener('click', () => act(async () => { await api('/admin/portrait', { method: 'DELETE' }); route(); }, 'Removed'));
+    $('#g-save').onclick = () => act(() => api('/admin/settings', { method: 'PUT', body: { gallery_title: $('#g-title').value, gallery_intro: $('#g-intro').value } }), 'Saved');
+    $('#g-add').onclick = () => { const fs = $('#g-files').files; if (!fs.length) return toast('Choose photos first', true); const fd = new FormData(); fd.append('caption', $('#g-cap').value); [...fs].forEach((f) => fd.append('files', f)); act(async () => { await api('/admin/gallery', { method: 'POST', form: fd }); route(); }, 'Photos added'); };
+    $$('[data-cap]').forEach((i) => (i.onchange = () => act(() => api('/admin/gallery/' + i.dataset.cap, { method: 'PUT', body: { caption: i.value } }), 'Saved')));
+    $$('[data-mv]').forEach((b) => (b.onclick = () => act(async () => { await api('/admin/gallery/' + b.dataset.id, { method: 'PUT', body: { move: b.dataset.mv } }); route(); })));
+    $$('[data-hid]').forEach((b) => (b.onclick = () => act(async () => { await api('/admin/gallery/' + b.dataset.hid, { method: 'PUT', body: { hidden: b.dataset.h === '1' } }); route(); })));
+    $$('[data-del]').forEach((b) => (b.onclick = () => confirm('Delete this photo?') && act(async () => { await api('/admin/gallery/' + b.dataset.del, { method: 'DELETE' }); route(); }, 'Deleted')));
+  },
   async journey() {
     const { works } = await api('/admin/works');
     const kinds = ['career', 'book', 'film', 'talk', 'article', 'honour'];

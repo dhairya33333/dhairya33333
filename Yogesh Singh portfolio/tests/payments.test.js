@@ -37,7 +37,7 @@ const payment = (id, order, over = {}) => (gateway.payments[id] = { id, order_id
 
 async function startCheckout(email) {
   const c = await signedUpUser(t, email);
-  const r = await c.post('/api/payments/checkout', { movieId: movieId() });
+  const r = await c.post('/api/payments/checkout', { agree: true, movieId: movieId() });
   assert.equal(r.status, 200, r.text);
   return { c, ...r.json };
 }
@@ -48,9 +48,9 @@ function webhook(event, body, { secret = WH_SECRET, id } = {}) {
 const capturedEvent = (rzOrder, payId, amount = 29900) => ({ event: 'payment.captured', payload: { payment: { entity: { id: payId, order_id: rzOrder, amount, currency: 'INR', status: 'captured' } } } });
 
 test('checkout requires sign-in, uses the server price, and never exposes secrets', async () => {
-  assert.equal((await t.client().post('/api/payments/checkout', { movieId: movieId() })).status, 401);
+  assert.equal((await t.client().post('/api/payments/checkout', { agree: true, movieId: movieId() })).status, 401);
   const c = await signedUpUser(t, 'buyer1@example.com');
-  const r = await c.post('/api/payments/checkout', { movieId: movieId(), amount: 1, price_paise: 1, currency: 'USD' });
+  const r = await c.post('/api/payments/checkout', { agree: true, movieId: movieId(), amount: 1, price_paise: 1, currency: 'USD' });
   assert.equal(r.status, 200);
   assert.equal(r.json.amount, 29900, 'amount comes from the database, not the browser');
   assert.equal(r.json.currency, 'INR');
@@ -64,21 +64,21 @@ test('checkout requires sign-in, uses the server price, and never exposes secret
 
 test('checkout for an unpublished or unknown film is refused', async () => {
   const c = await signedUpUser(t, 'buyer2@example.com');
-  assert.equal((await c.post('/api/payments/checkout', { movieId: 9999 })).status, 404);
+  assert.equal((await c.post('/api/payments/checkout', { agree: true, movieId: 9999 })).status, 404);
   t.db.prepare("INSERT INTO movies (slug, title, status, validated, published) VALUES ('draft', 'Draft', 'draft', 0, 0)").run();
   const id = t.db.prepare("SELECT id FROM movies WHERE slug='draft'").get().id;
-  assert.equal((await c.post('/api/payments/checkout', { movieId: id })).status, 404);
+  assert.equal((await c.post('/api/payments/checkout', { agree: true, movieId: id })).status, 404);
 });
 
 test('gateway failure while creating the order: clear error, nothing unlocked, order marked failed', async () => {
   const c = await signedUpUser(t, 'buyer3@example.com');
   gateway.fail = true;
-  const r = await c.post('/api/payments/checkout', { movieId: movieId() });
+  const r = await c.post('/api/payments/checkout', { agree: true, movieId: movieId() });
   assert.equal(r.status, 502);
   assert.match(r.json.error, /not been charged/);
   assert.equal(t.db.prepare("SELECT status FROM orders o JOIN users u ON u.id=o.user_id WHERE u.email='buyer3@example.com'").get().status, 'FAILED');
   gateway.fail = false;
-  assert.equal((await c.post('/api/payments/checkout', { movieId: movieId() })).status, 200, 'retry works');
+  assert.equal((await c.post('/api/payments/checkout', { agree: true, movieId: movieId() })).status, 200, 'retry works');
 });
 
 test('payment signature: invalid signature never unlocks; valid signature + captured payment does', async () => {
@@ -103,7 +103,7 @@ test('verify is idempotent: repeating it keeps one purchase', async () => {
   const body = { razorpay_order_id: razorpayOrderId, razorpay_payment_id: 'pay_idem', razorpay_signature: sign(razorpayOrderId, 'pay_idem') };
   for (let i = 0; i < 3; i++) assert.equal((await c.post('/api/payments/razorpay/verify', body)).json.status, 'PAID');
   assert.equal(t.db.prepare("SELECT COUNT(*) c FROM purchases p JOIN users u ON u.id=p.user_id WHERE u.email='idem@example.com'").get().c, 1);
-  assert.equal((await c.post('/api/payments/checkout', { movieId: movieId() })).status, 409, 'cannot buy twice');
+  assert.equal((await c.post('/api/payments/checkout', { agree: true, movieId: movieId() })).status, 409, 'cannot buy twice');
 });
 
 test('a correctly signed payment that is only authorized, or has the wrong amount, does not unlock', async () => {
@@ -196,7 +196,7 @@ test('admin-granted access survives a refund of an unrelated order', async () =>
   const uid = t.db.prepare("SELECT id FROM users WHERE email='comp@example.com'").get().id;
   t.db.prepare('INSERT INTO purchases (user_id, movie_id, order_id) VALUES (?, ?, NULL)').run(uid, movieId());
   assert.equal(owns('comp@example.com'), true);
-  assert.equal((await c.post('/api/payments/checkout', { movieId: movieId() })).status, 409, 'already has access');
+  assert.equal((await c.post('/api/payments/checkout', { agree: true, movieId: movieId() })).status, 409, 'already has access');
 });
 
 test('webhook for an unknown order is acknowledged without side effects', async () => {
@@ -209,7 +209,7 @@ test('webhook for an unknown order is acknowledged without side effects', async 
 test('cancelled order, then a late successful payment still unlocks; a new checkout cancels the old open order', async () => {
   const a = await startCheckout('late@example.com');
   assert.equal((await a.c.post('/api/payments/cancel', { orderId: a.orderId })).json.status, 'CANCELLED');
-  const second = await a.c.post('/api/payments/checkout', { movieId: movieId() });
+  const second = await a.c.post('/api/payments/checkout', { agree: true, movieId: movieId() });
   assert.equal(second.status, 200);
   assert.equal(t.db.prepare("SELECT COUNT(*) c FROM orders o JOIN users u ON u.id=o.user_id WHERE u.email='late@example.com' AND o.status='CREATED'").get().c, 1, 'only one open order');
   await webhook('', capturedEvent(a.razorpayOrderId, 'pay_late'));   // paid on the first (cancelled) attempt

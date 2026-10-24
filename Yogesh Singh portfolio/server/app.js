@@ -16,6 +16,7 @@ import mediaRoutes from './routes/media.js';
 import paymentRoutes, { webhook } from './routes/payments.js';
 import adminRoutes from './routes/admin.js';
 import contactRoutes from './routes/contact.js';
+import { LEGAL_TITLES } from './legal-defaults.js';
 
 /** Content-Security-Policy that only allows third parties for integrations that are actually configured. */
 export function buildCsp() {
@@ -100,7 +101,7 @@ export function createApp() {
     `User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api/\nDisallow: /media/\nDisallow: /account.html\nDisallow: /login.html\nDisallow: /reset-password.html\nDisallow: /payment-return.html\n\nSitemap: ${config.siteUrl}/sitemap.xml\n`));
   app.get('/sitemap.xml', (_req, res) => {
     const films = db.prepare('SELECT slug FROM movies WHERE published = 1 ORDER BY id').all();
-    const urls = ['/', '/films', '/about', '/social', '/contact', ...films.map((f) => `/film/${f.slug}`)];
+    const urls = ['/', '/films', '/about', '/gallery', '/social', '/contact', '/privacy', '/terms', '/refunds', ...films.map((f) => `/film/${f.slug}`)];
     res.type('application/xml').send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map((u) => `  <url><loc>${esc(config.siteUrl + u)}</loc></url>`).join('\n')}\n</urlset>\n`);
   });
 
@@ -128,8 +129,15 @@ export function createApp() {
     const set = publicSettings();
     res.type('html').send(withMeta(file, { title: `${title} — ${set.hero_name}`, description: desc(set), path: route, siteName: set.hero_name }));
   });
+  for (const [slug, title] of Object.entries(LEGAL_TITLES)) {
+    app.get(`/${slug}`, (_req, res) => {
+      const set = publicSettings();
+      res.type('html').send(withMeta('legal.html', { title: `${title} — ${set.hero_name}`, description: `${title} for the website of ${set.hero_name}.`, path: `/${slug}`, siteName: set.hero_name }));
+    });
+  }
   page('/about', 'about.html', 'About', (s) => `About ${s.hero_name}: ${s.hero_roles.split(',').map((x) => x.trim()).join(', ')}.`);
   page('/contact', 'contact.html', 'Contact', (s) => `Contact ${s.hero_name} for speaking invitations, film enquiries, press and collaborations.`);
+  page('/gallery', 'gallery.html', 'Gallery', (s) => `Photographs of ${s.hero_name}: sets, stage and travels.`);
   page('/social', 'social.html', 'Social media', (s) => `Instagram posts and reels from ${s.hero_name}.`);
   app.get('/films', (_req, res) => {
     const set = publicSettings();

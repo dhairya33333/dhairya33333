@@ -121,7 +121,7 @@ test('admin can upload a cover; it is image-only, size-limited, admin-only, and 
   assert.equal((await fetch(`${t.base}/api/admin/social/${id}/cover`, { method: 'POST', body: new FormData() })).status, 401);
   for (const bad of ['evil.html', 'evil.svg', 'evil.exe', 'evil.php', 'evil.png.html']) assert.equal((await send(admin, bad, '<script>x</script>')).status, 400, bad);
   assert.equal((await send(admin, 'cover.png', PNG)).status, 200);
-  const p = row('Cupload0001'); assert.match(p.thumb, /^\/uploads\/cover-[a-f0-9]+\.png$/); assert.equal(p.cover_source, 'uploaded');
+  const p = row('Cupload0001'); assert.match(p.thumb, /^\/uploads\/covers\/[a-f0-9]+\.webp$/); assert.equal(p.cover_source, 'uploaded');
   assert.equal((await t.client().get(p.thumb)).status, 200);
   reset();                                              // Instagram now cooperates, but must not overwrite the admin's cover
   await admin.post(`/api/admin/social/${id}/refresh`);

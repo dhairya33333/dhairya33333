@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { db, allSettings } from '../db.js';
 import { SITE_DEFAULTS, EDITABLE_KEYS } from '../defaults.js';
+import { LEGAL_DEFAULTS, LEGAL_TITLES } from '../legal-defaults.js';
+import { getSetting } from '../db.js';
 import { config } from '../config.js';
 import { playlistInfo } from '../hls.js';
 import { canWatchFull } from './media.js';
@@ -44,6 +46,19 @@ r.get('/movies/:slug/playback', (req, res) => {
     url: full ? `/media/${m.id}/full.m3u8` : (info.hasPreview ? `/media/${m.id}/preview.m3u8` : null),
     previewSeconds: info.previewSeconds, durationSec: m.duration_sec, movieId: m.id,
   });
+});
+
+export const legalText = (slug) => getSetting(`legal_${slug}`, LEGAL_DEFAULTS[slug]);
+export const legalVersion = () => getSetting('legal_updated', 'initial');
+r.get('/legal/:slug', (req, res) => {
+  const slug = req.params.slug;
+  if (!LEGAL_TITLES[slug]) return res.status(404).json({ error: 'Not found.' });
+  res.set('Cache-Control', 'no-cache').json({ slug, title: LEGAL_TITLES[slug], body: legalText(slug), updated: legalVersion() });
+});
+
+r.get('/gallery', (_req, res) => {
+  const set = publicSettings();
+  res.json({ title: set.gallery_title, intro: set.gallery_intro, items: db.prepare('SELECT id, src, thumb, w, h, caption FROM gallery WHERE hidden = 0 ORDER BY sort, id').all() });
 });
 
 // Social page data. Embeds are built from a validated shortcode only: the browser never receives a free-form URL.

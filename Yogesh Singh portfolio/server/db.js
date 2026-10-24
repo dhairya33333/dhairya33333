@@ -113,6 +113,17 @@ const MIGRATIONS = [
     addColumn('social_posts', 'cover_source', 'TEXT');   // 'fetched' from Instagram, or 'uploaded' by the admin
     addColumn('social_posts', 'author', 'TEXT');
   },
+  // 6: checkout consent record
+  () => {
+    addColumn('orders', 'consent_at', 'TEXT');
+    addColumn('orders', 'consent_version', 'TEXT');
+  },
+  // 7: photo gallery
+  () => {
+    db.exec(`CREATE TABLE IF NOT EXISTS gallery (
+      id INTEGER PRIMARY KEY, src TEXT NOT NULL, thumb TEXT NOT NULL, w INTEGER DEFAULT 0, h INTEGER DEFAULT 0,
+      caption TEXT DEFAULT '', sort INTEGER NOT NULL DEFAULT 0, hidden INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL DEFAULT (datetime('now')))`);
+  },
 ];
 
 const current = db.prepare('PRAGMA user_version').get().user_version;

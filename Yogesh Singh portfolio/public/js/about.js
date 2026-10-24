@@ -16,5 +16,6 @@ if (s.quote.trim()) { $('#quote').textContent = s.quote; $('#quote-sec').hidden 
 $('#timeline').innerHTML = site.works.filter((w) => w.kind !== 'article').map((w) => `
   <div class="tl"><div class="when">${esc(w.period || KIND[w.kind] || '')}${w.period ? ` · ${esc(KIND[w.kind] || '')}` : ''}</div>
   <h3>${esc(w.title)}</h3>${w.subtitle ? `<p>${esc(w.subtitle)}</p>` : ''}${w.url ? `<p><a href="${esc(w.url)}" target="_blank" rel="noopener">Read more ↗</a></p>` : ''}</div>`).join('');
+if (s.portrait) { const im = $('#portrait'); im.src = s.portrait; im.alt = s.hero_name; im.hidden = false; }
 $('#speak-title').textContent = s.speaking_title; $('#speak-body').textContent = s.speaking_body;
 initMotion();

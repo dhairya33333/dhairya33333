@@ -112,7 +112,7 @@ test('payment completion followed by successful playback; another user gets noth
   // real checkout route (gateway call mocked) then a signed webhook, exactly as Razorpay would send it
   const realFetch = globalThis.fetch;
   globalThis.fetch = async (u, i) => String(u).startsWith('https://api.razorpay.com') ? new Response(JSON.stringify({ id: 'order_STREAM1' }), { status: 200 }) : realFetch(u, i);
-  const co = await buyer.post('/api/payments/checkout', { movieId });
+  const co = await buyer.post('/api/payments/checkout', { agree: true, movieId });
   globalThis.fetch = realFetch;
   assert.equal(co.status, 200, co.text);
   const raw = JSON.stringify({ event: 'payment.captured', payload: { payment: { entity: { id: 'pay_S1', order_id: 'order_STREAM1', amount: 29900, currency: 'INR' } } } });
