@@ -1,4 +1,4 @@
-import { api, $, rupees, getUser, mountNav, initMotion, loadScript } from './common.js';
+import { api, $, $$, rupees, runtime, getUser, mountNav, initMotion, loadScript } from './common.js';
 
 const slug = decodeURIComponent(location.pathname.split('/').filter(Boolean).pop());
 const video = $('#video');
@@ -54,6 +54,8 @@ function renderInfo() {
   $('#title').textContent = movie.title;
   $('#tagline').textContent = movie.tagline || '';
   $('#desc').textContent = movie.description || '';
+  $('#facts').innerHTML = '';
+  for (const f of [movie.duration_sec ? runtime(movie.duration_sec) : '', movie.year || '', `${rupees(movie.price_paise)} one-time`]) if (f) $('#facts').append(Object.assign(document.createElement('span'), { className: 'chip', textContent: f }));
   const owns = playback.mode === 'full';
   const freeLen = spoken(playback.previewSeconds);
   $('#badge').textContent = owns ? 'Full film' : 'Free preview';
@@ -162,7 +164,16 @@ async function boot() {
   $('#pay-go').addEventListener('click', pay);
   $('#modal-x').addEventListener('click', closeModal);
   $('#modal').addEventListener('click', (e) => { if (e.target.id === 'modal') closeModal(); });
-  addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('#modal').classList.contains('open')) closeModal(); });
+  addEventListener('keydown', (e) => {
+    if (!$('#modal').classList.contains('open')) return;
+    if (e.key === 'Escape') return closeModal();
+    if (e.key !== 'Tab') return;                                       // keep keyboard focus inside the open dialog
+    const f = $$('button, input, a[href]', $('#modal')).filter((x) => !x.disabled && x.offsetParent !== null);
+    if (!f.length) return;
+    const first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
   if (location.hash === '#unlock' && playback.mode !== 'full') unlock();
   initMotion();
 }

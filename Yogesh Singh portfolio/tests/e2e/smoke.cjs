@@ -44,5 +44,29 @@ const B = process.env.BASE || 'http://localhost:3333', OUT = process.argv[2] || 
   const full = await v.evaluate(() => new Promise((r) => { const x = document.getElementById('video'); x.addEventListener('durationchange', () => r(x.duration)); if (x.duration) r(x.duration); }));
   ok(full > 25, `After purchase the whole film plays (${full}s)`);
   await v.screenshot({ path: OUT + '/e2e-film-owned.png' });
+  // ---- phone-sized viewport (Chromium device emulation; real iOS Safari is NOT covered) ----
+  const mctx = await b.newContext({ ...require('playwright').devices['Pixel 7'] }); const m = await mctx.newPage();
+  const merrs = []; m.on('pageerror', (e) => merrs.push(e.message));
+  await m.goto(B + '/film/e2e-film'); await m.waitForTimeout(2500);
+  const overflow = async (pg) => pg.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  ok((await overflow(m)) <= 0, 'Phone: film page has no horizontal scrolling');
+  await m.evaluate(() => { const x = document.getElementById('video'); x.muted = true; x.currentTime = x.duration - 0.3; x.play(); });
+  await m.waitForSelector('#paywall.show', { timeout: 15000 });
+  const box = await m.locator('#paywall-buy').boundingBox(), pbox = await m.locator('#player').boundingBox();
+  ok(box && box.x >= pbox.x && box.y >= pbox.y && box.x + box.width <= pbox.x + pbox.width && box.y + box.height <= pbox.y + pbox.height && box.height >= 40, 'Phone: the unlock button lies fully INSIDE the player (not clipped) and is large enough to tap');
+  await m.screenshot({ path: OUT + '/e2e-mobile-paywall.png' });
+  await m.goto(B + '/'); await m.waitForTimeout(2500); ok((await overflow(m)) <= 0, 'Phone: home page has no horizontal scrolling');
+  await m.goto(B + '/films'); await m.waitForTimeout(1500); ok((await overflow(m)) <= 0, 'Phone: films page has no horizontal scrolling');
+  console.log(merrs.length ? 'Phone JS errors: ' + merrs.join(' | ') : 'No phone JS errors');
+
+  // ---- keyboard: Tab stays inside the payment dialog, Escape closes it ----
+  await v.goto(B + '/film/e2e-film'); await v.waitForTimeout(1500);
+  console.log('(viewer owns the film; keyboard test uses a second viewer)');
+  const kctx = await b.newContext({ viewport: { width: 1200, height: 800 } }); const k = await kctx.newPage();
+  await k.goto(B + '/login.html'); await k.click('#sw'); await k.fill('input[name=name]', 'Kbd'); await k.fill('input[name=email]', 'kbd@e2e.com'); await k.fill('input[name=password]', 'password-12345'); await k.click('#go');
+  await k.waitForURL(B + '/'); await k.goto(B + '/film/e2e-film#unlock'); await k.waitForSelector('#modal.open');
+  let inside = true; for (let i = 0; i < 8; i++) { await k.keyboard.press('Tab'); inside = inside && (await k.evaluate(() => !!document.activeElement.closest('#modal'))); }
+  ok(inside, 'Keyboard: Tab never leaves the open payment dialog');
+  await k.keyboard.press('Escape'); ok(!(await k.isVisible('#modal.open')), 'Keyboard: Escape closes the dialog');
   console.log(errs.length ? 'JS errors: ' + errs.join(' | ') : 'No JS errors'); await b.close();
 })().catch((e) => { console.error(e); process.exit(1); });

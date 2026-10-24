@@ -24,6 +24,9 @@ if [ ! -f /etc/yogesh-portfolio/env ]; then
 fi
 chmod 600 /etc/yogesh-portfolio/env
 chown -R portfolio:portfolio "$DATA" /srv/yp
+chmod 700 "$DATA" /srv/yp/originals /srv/yp/hls /srv/yp/tmp /srv/yp/backups
+chmod 2770 /srv/yp/incoming     # group-writable drop folder: add your SFTP user to the 'portfolio' group (usermod -aG portfolio USER)
+chmod 711 /srv/yp               # others may not list it
 chown -R root:portfolio "$APP"; chmod -R g+rX,o-rwx "$APP"
 
 cp deploy/yogesh-portfolio.service /etc/systemd/system/

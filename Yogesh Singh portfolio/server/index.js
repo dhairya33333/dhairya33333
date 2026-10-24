@@ -2,10 +2,11 @@ import { config } from './config.js';
 import { createApp, runStartupTasks } from './app.js';
 import { startInstagramScheduler } from './instagram.js';
 import { cleanupStaleUploads } from './transcode.js';
+import { purgeRevoked } from './auth.js';
 
 runStartupTasks();
 startInstagramScheduler();
-setInterval(cleanupStaleUploads, 6 * 3600_000);
+setInterval(() => { cleanupStaleUploads(); purgeRevoked(); }, 6 * 3600_000);
 
 const server = createApp().listen(config.port, () =>
   console.log(`Portfolio running on ${config.siteUrl}  (payments: ${config.paymentsMode}, google: ${config.google.clientId ? 'on' : 'off'})`));

@@ -10,7 +10,8 @@
     "create-admin": "node scripts/create-admin.js",
     "test": "NODE_ENV=test node --test --test-concurrency=1 \"tests/*.test.js\"",
     "check": "for f in $(find server scripts public tests -name '*.js'); do node --check $f || exit 1; done && echo 'syntax OK'",
-    "backup-db": "node scripts/backup-db.js"
+    "backup-db": "node scripts/backup-db.js",
+    "verify-data": "node scripts/verify-data.js"
   },
   "engines": {
     "node": ">=22.13"

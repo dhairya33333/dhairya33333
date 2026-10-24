@@ -30,12 +30,21 @@ export function dirSize(dir) {
 /** Display-only name: never used to build a path. */
 export const safeDisplayName = (name) => path.basename(String(name || 'video')).replace(/[^\w.\- ()]/g, '_').slice(0, 120);
 
-/** Rough output size/time before encoding, from duration and the configured bitrate cap. Real numbers are logged after each job. */
-export function estimateEncode(durationSec) {
-  const kbps = Math.min(config.encode.estVideoKbps, config.encode.maxrateKbps) + 128;
+/**
+ * Output size/time BEFORE encoding. "typical" uses the configured typical bitrate; "worst case" assumes the encoder sits at the
+ * bitrate cap for the whole film. Disk checks use the worst case. HLS output is NOT assumed smaller than the source: a low-bitrate
+ * source can produce a larger file, so the check also floors at the source size when it is known.
+ */
+export function estimateEncode(durationSec, sourceBytes = 0) {
+  const audioKbps = 128;
+  const typicalKbps = Math.min(config.encode.estVideoKbps, config.encode.maxrateKbps) + audioKbps;
+  const worstKbps = config.encode.maxrateKbps + audioKbps;
+  const bytes = (kbps) => Math.round((durationSec * kbps * 1000) / 8);
   return {
     durationSec,
-    estOutputBytes: Math.round((durationSec * kbps * 1000) / 8),
+    estOutputBytes: bytes(typicalKbps),
+    worstCaseBytes: Math.max(bytes(worstKbps), 0),
+    sourceBytes,
     estEncodeSeconds: Math.round(durationSec / config.encode.speedX),
   };
 }

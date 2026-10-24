@@ -1,15 +1,18 @@
 import { Router } from 'express';
 import multer from 'multer';
 import fs from 'node:fs';
+import crypto from 'node:crypto';
 import path from 'node:path';
 import { db, allSettings, setSetting, tx } from '../db.js';
 import { dirs, config } from '../config.js';
 import { requireAdmin, asyncHandler, randomId } from '../auth.js';
 import { hlsDir, usageReport } from '../storage.js';
-import { enqueueTranscode } from '../transcode.js';
+import { enqueueTranscode, cancelEncode, checkFfmpeg } from '../transcode.js';
 import { syncInstagram } from '../instagram.js';
 import { SITE_DEFAULTS, EDITABLE_KEYS } from '../defaults.js';
 import uploadRoutes from './uploads.js';
+import { adminRevoke } from '../payments/ledger.js';
+import { log } from '../log.js';
 
 const r = Router();
 r.use(requireAdmin);
@@ -42,6 +45,7 @@ r.get('/stats', (_req, res) => {
     recent: db.prepare(`SELECT o.order_id, o.amount_paise, o.paid_at, u.name, m.title FROM orders o JOIN users u ON u.id=o.user_id JOIN movies m ON m.id=o.movie_id WHERE o.status='PAID' ORDER BY o.paid_at DESC LIMIT 8`).all(),
     paymentsMode: config.paymentsMode,
     googleConfigured: !!config.google.clientId,
+    ffmpegOk: checkFfmpeg().ok,
   });
 });
 
@@ -98,6 +102,13 @@ for (const kind of ['poster', 'trailer']) {
   });
 }
 
+r.post('/movies/:id/cancel-encode', (req, res) => {
+  const what = cancelEncode(Number(req.params.id));
+  if (!what) return bad(res, 'Nothing is being processed for this film.', 409);
+  log('warn', 'encode.cancelled', { movie: Number(req.params.id), admin: req.user.id });
+  res.json({ ok: true, was: what });
+});
+
 r.post('/movies/:id/reprocess', (req, res) => {
   const m = db.prepare('SELECT * FROM movies WHERE id = ?').get(Number(req.params.id));
   if (!m?.source_file || !fs.existsSync(m.source_file)) return bad(res, 'The original file is no longer on the server. Upload it again.');
@@ -136,7 +147,15 @@ r.delete('/movies/:id', (req, res) => {
 });
 
 // ---------- Orders / users ----------
-r.get('/orders', (_req, res) => res.json({ orders: db.prepare(`SELECT o.order_id, o.amount_paise, o.status, o.provider, o.failure_reason, o.created_at, o.paid_at, u.name, u.email, m.title FROM orders o JOIN users u ON u.id=o.user_id JOIN movies m ON m.id=o.movie_id ORDER BY o.id DESC LIMIT 300`).all() }));
+r.get('/orders', (_req, res) => res.json({ orders: db.prepare(`SELECT o.order_id, o.amount_paise, o.refunded_paise, o.dispute_status, o.status, o.provider, o.failure_reason, o.created_at, o.paid_at, u.name, u.email, m.title FROM orders o JOIN users u ON u.id=o.user_id JOIN movies m ON m.id=o.movie_id ORDER BY o.id DESC LIMIT 300`).all() }));
+
+// Admin decision to withdraw access (e.g. a chargeback handled outside the gateway). Logged and irreversible from the UI.
+r.post('/orders/:orderId/revoke', (req, res) => {
+  const out = adminRevoke(String(req.params.orderId));
+  if (!out.ok) return bad(res, 'Order not found.', 404);
+  log('warn', 'order.admin_revoke', { order: req.params.orderId, admin: req.user.id });
+  res.json({ ok: true });
+});
 
 r.get('/users', (_req, res) => res.json({
   users: db.prepare(`SELECT u.id, u.name, u.email, u.phone, u.role, u.created_at, (u.google_sub IS NOT NULL) AS google, (SELECT COUNT(*) FROM purchases p WHERE p.user_id=u.id) purchases FROM users u ORDER BY u.id DESC LIMIT 500`).all(),
@@ -150,6 +169,17 @@ r.post('/grant', (req, res) => {
   if (!m) return bad(res, 'Choose a film.');
   db.prepare('INSERT OR IGNORE INTO purchases (user_id, movie_id, order_id) VALUES (?, ?, NULL)').run(u.id, m.id);
   res.json({ ok: true });
+});
+
+// One-time password-reset link, valid 60 minutes. Only a hash is stored; the link is shown once, to this admin.
+r.post('/users/:id/reset-link', (req, res) => {
+  const u = db.prepare('SELECT id, email FROM users WHERE id = ?').get(Number(req.params.id));
+  if (!u) return bad(res, 'User not found.', 404);
+  const token = randomId(24);
+  db.prepare('INSERT INTO password_resets (token_hash, user_id, expires_at, created_by) VALUES (?, ?, ?, ?)')
+    .run(crypto.createHash('sha256').update(token).digest('hex'), u.id, Date.now() + 60 * 60 * 1000, req.user.id);
+  log('info', 'password_reset.issued', { user: u.id, admin: req.user.id });
+  res.json({ url: `${config.siteUrl}/reset-password.html?token=${token}`, expiresInMinutes: 60 });
 });
 
 r.post('/users/:id/role', (req, res) => {

@@ -5,7 +5,7 @@ import { config } from './config.js';
 import { db } from './db.js';
 
 const COOKIE = 'yp_session';
-const MAX_AGE = 1000 * 60 * 60 * 24 * 30;
+const MAX_AGE = config.sessionDays * 24 * 60 * 60 * 1000;
 export const GOOGLE_ONLY_HASH = '!google-sign-in-only';   // not a valid bcrypt hash: password login can never match it
 
 export const hashPassword = (pw) => bcrypt.hashSync(pw, 11);
@@ -20,10 +20,21 @@ export const passwordProblem = (pw) =>
 
 export function startSession(res, user) {
   // tv = token_version: bumping it on the user row invalidates every existing session (password change, etc.)
-  const token = jwt.sign({ uid: user.id, tv: user.token_version || 0 }, config.jwtSecret, { expiresIn: '30d' });
+  const token = jwt.sign({ uid: user.id, tv: user.token_version || 0, jti: randomId(12) }, config.jwtSecret, { expiresIn: `${config.sessionDays}d`, algorithm: 'HS256' });
   res.cookie(COOKIE, token, { httpOnly: true, sameSite: 'lax', secure: config.isProd, maxAge: MAX_AGE, path: '/' });
 }
-export const endSession = (res) => res.clearCookie(COOKIE, { path: '/' });
+/** Logout revokes the actual token (not only the cookie), so a copied cookie stops working too. */
+export function endSession(req, res) {
+  const token = req?.cookies?.[COOKIE];
+  if (token) {
+    try {
+      const { jti, exp } = jwt.verify(token, config.jwtSecret, { algorithms: ['HS256'] });
+      if (jti) db.prepare('INSERT OR IGNORE INTO revoked_tokens (jti, expires_at) VALUES (?, ?)').run(jti, exp);
+    } catch { /* already invalid */ }
+  }
+  res.clearCookie(COOKIE, { path: '/' });
+}
+export const purgeRevoked = () => db.prepare('DELETE FROM revoked_tokens WHERE expires_at < ?').run(Math.floor(Date.now() / 1000));
 
 export const publicUser = (u) => u && ({
   id: u.id, name: u.name, email: u.email, phone: u.phone, role: u.role,
@@ -35,8 +46,9 @@ export function attachUser(req, _res, next) {
   const token = req.cookies?.[COOKIE];
   if (token) {
     try {
-      const { uid, tv } = jwt.verify(token, config.jwtSecret);
-      const u = db.prepare('SELECT * FROM users WHERE id = ?').get(uid);
+      const { uid, tv, jti } = jwt.verify(token, config.jwtSecret, { algorithms: ['HS256'] });
+      const revoked = jti && db.prepare('SELECT 1 FROM revoked_tokens WHERE jti = ?').get(jti);
+      const u = !revoked && db.prepare('SELECT * FROM users WHERE id = ?').get(uid);
       if (u && (u.token_version || 0) === (tv || 0)) req.user = u;
     } catch { /* invalid / expired */ }
   }

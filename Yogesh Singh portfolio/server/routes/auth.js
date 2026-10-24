@@ -5,6 +5,7 @@ import { config } from '../config.js';
 import {
   hashPassword, checkPassword, passwordProblem, startSession, endSession, publicUser, asyncHandler, requireAuth, GOOGLE_ONLY_HASH,
 } from '../auth.js';
+import crypto from 'node:crypto';
 import { verifyGoogleIdToken, GoogleAuthError } from '../google.js';
 
 const r = Router();
@@ -93,7 +94,24 @@ r.post('/password', limiter, requireAuth, asyncHandler(async (req, res) => {
   res.json({ ok: true });
 }));
 
-r.post('/logout', (_req, res) => { endSession(res); res.json({ ok: true }); });
+// Password recovery without email: an admin issues a one-time link (Admin → Users), the user opens it and sets a new password.
+r.post('/reset', limiter, asyncHandler(async (req, res) => {
+  const token = String(req.body.token || '');
+  const problem = passwordProblem(String(req.body.password || ''));
+  if (problem) return res.status(400).json({ error: problem });
+  const hash = crypto.createHash('sha256').update(token).digest('hex');
+  const row = token.length >= 32 && db.prepare('SELECT * FROM password_resets WHERE token_hash = ?').get(hash);
+  if (!row || row.used_at || row.expires_at < Date.now()) return res.status(400).json({ error: 'This reset link is invalid or has expired. Ask the site admin for a new one.' });
+  db.exec('BEGIN');
+  try {
+    db.prepare("UPDATE password_resets SET used_at = datetime('now') WHERE token_hash = ?").run(hash);
+    db.prepare('UPDATE users SET password_hash = ?, token_version = token_version + 1 WHERE id = ?').run(hashPassword(String(req.body.password)), row.user_id);
+    db.exec('COMMIT');
+  } catch (e) { db.exec('ROLLBACK'); throw e; }
+  res.json({ ok: true });
+}));
+
+r.post('/logout', (req, res) => { endSession(req, res); res.json({ ok: true }); });
 r.get('/me', (req, res) => res.json({ user: publicUser(req.user) }));
 
 export default r;

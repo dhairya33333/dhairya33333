@@ -1,4 +1,4 @@
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { config, dirs } from './config.js';
@@ -6,9 +6,11 @@ import { db } from './db.js';
 import { freeBytes, estimateEncode, hlsDir } from './storage.js';
 import { parsePlaylist } from './hls.js';
 import { randomId } from './auth.js';
+import { log, scrub } from './log.js';
 
 const queue = [];
 let active = 0;
+const running = new Map();   // movieId -> { child, cancelled }
 
 function run_(cmd, args) {
   return new Promise((resolve, reject) => {
@@ -60,7 +62,7 @@ export async function validateOutput(dir, sourceDuration) {
   return { ok: true, segments: segs.length, bytes };
 }
 
-function ffmpegArgs(src, out) {
+export function ffmpegArgs(src, out) {
   const e = config.encode;
   const args = [
     '-y', '-nostdin', '-i', src,
@@ -96,15 +98,17 @@ async function runJob({ movieId, src, uploadId }) {
   const tmpOut = path.join(dirs.media, `${movieId}.tmp-${randomId(4)}`);
   const failJob = (message) => {
     fs.rmSync(tmpOut, { recursive: true, force: true });   // partial output only. The original and any live output are untouched
-    console.error(`[encode] movie ${movieId} failed: ${message}`);
-    setMovie(movieId, { encode_state: 'failed', error: String(message).slice(0, 500), ...(wasReady ? {} : { status: 'failed' }) });
-    setUpload(uploadId, 'failed', String(message).slice(0, 500));
+    const safe = scrub(message).slice(0, 500);      // admin-visible text never contains server paths
+    log('error', 'encode.failed', { movie: movieId, message: safe });
+    setMovie(movieId, { encode_state: 'failed', error: safe, ...(wasReady ? {} : { status: 'failed' }) });
+    setUpload(uploadId, 'failed', safe);
   };
   try {
     if (!fs.existsSync(src)) throw new Error('The original file is missing on the server.');
     const info = await probe(src);
-    const est = estimateEncode(info.duration);
-    const need = est.estOutputBytes * 1.25 + config.limits.reserveFreeBytes;
+    const est = estimateEncode(info.duration, info.bytes);
+    // worst case output (never assume it is smaller than the source) + the live copy we keep during a swap + the reserve
+    const need = Math.max(est.worstCaseBytes, info.bytes * 0.5) * 1.1 + config.limits.reserveFreeBytes;
     if (freeBytes(dirs.media) < need) throw new Error(`Not enough free disk space to encode (about ${(need / 1024 ** 3).toFixed(1)} GB needed). Free some space and press Re-process.`);
 
     setMovie(movieId, { encode_state: 'processing', progress: 0, error: null, duration_sec: info.duration, source_bytes: info.bytes });
@@ -113,15 +117,24 @@ async function runJob({ movieId, src, uploadId }) {
 
     const ffArgs = ffmpegArgs(src, tmpOut);
     await new Promise((resolve, reject) => {
+      // argument array, no shell: no value from a request or filename is ever interpreted by a shell
       const ff = niceBin && config.encode.nice ? spawn(niceBin, ['-n', '10', 'ffmpeg', ...ffArgs]) : spawn('ffmpeg', ffArgs);
+      const handle = { child: ff, cancelled: false, timedOut: false };
+      running.set(movieId, handle);
+      const timer = setTimeout(() => { handle.timedOut = true; ff.kill('SIGKILL'); }, config.encode.timeoutHours * 3600_000);
+      const done = (fn) => (arg) => { clearTimeout(timer); running.delete(movieId); fn(arg); };
       let last = 0, tail = '';
       ff.stdout.on('data', (d) => {
         const m = /out_time_us=(\d+)/.exec(d.toString());
         if (m && Date.now() - last > 2000) { last = Date.now(); setMovie(movieId, { progress: Math.min(99, (Number(m[1]) / 1e6 / info.duration) * 100) }); }
       });
       ff.stderr.on('data', (d) => (tail = (tail + d).slice(-600)));
-      ff.on('error', reject);
-      ff.on('close', (code) => (code === 0 ? resolve() : reject(new Error('ffmpeg failed: ' + tail.trim()))));
+      ff.on('error', done(reject));
+      ff.on('close', done((code) => {
+        if (handle.cancelled) return reject(new Error('Cancelled by an administrator.'));
+        if (handle.timedOut) return reject(new Error(`Encoding exceeded the ${config.encode.timeoutHours} hour limit and was stopped.`));
+        return code === 0 ? resolve() : reject(new Error('ffmpeg failed: ' + tail.trim()));
+      }));
     });
 
     const v = await validateOutput(tmpOut, info.duration);
@@ -136,7 +149,7 @@ async function runJob({ movieId, src, uploadId }) {
     const seconds = (Date.now() - started) / 1000;
     setMovie(movieId, { status: 'ready', encode_state: 'idle', validated: 1, progress: 100, error: null, encode_seconds: seconds, output_bytes: v.bytes, segments: v.segments });
     setUpload(uploadId, 'completed');
-    console.log(`[encode] movie ${movieId} ready: ${v.segments} segments, ${(v.bytes / 1024 ** 2).toFixed(0)} MB in ${Math.round(seconds)}s (${(info.duration / seconds).toFixed(2)}x realtime)`);
+    log('info', 'encode.ready', { movie: movieId, segments: v.segments, output_mb: Math.round(v.bytes / 1024 ** 2), seconds: Math.round(seconds), speed_x: Number((info.duration / seconds).toFixed(2)) });
   } catch (e) {
     failJob(e.message);
   }
@@ -150,6 +163,27 @@ function pump() {
   }
 }
 
+/** Stops a running encode (SIGKILL on the ffmpeg child) or removes a queued one. Originals and any live output are untouched. */
+export function cancelEncode(movieId) {
+  const h = running.get(movieId);
+  if (h) { h.cancelled = true; h.child.kill('SIGKILL'); return 'running'; }
+  const i = queue.findIndex((j) => j.movieId === movieId);
+  if (i >= 0) {
+    const [job] = queue.splice(i, 1);
+    setMovie(movieId, { encode_state: 'failed', error: 'Cancelled by an administrator.' });
+    setUpload(job.uploadId, 'failed', 'Cancelled by an administrator.');
+    return 'queued';
+  }
+  return null;
+}
+
+/** ffmpeg and ffprobe must exist for the SERVICE user, not just for an interactive shell. */
+export function checkFfmpeg() {
+  const v = (bin) => { const r = spawnSync(bin, ['-version'], { encoding: 'utf8' }); return r.status === 0 ? r.stdout.split('\n')[0] : null; };
+  const ffmpeg = v('ffmpeg'), ffprobe = v('ffprobe');
+  return { ok: !!(ffmpeg && ffprobe), ffmpeg, ffprobe };
+}
+
 export function enqueueTranscode(movieId, src, uploadId = null) {
   setMovie(movieId, { encode_state: 'queued', progress: 0, error: null, source_file: src });
   setUpload(uploadId, 'queued');
@@ -157,8 +191,28 @@ export function enqueueTranscode(movieId, src, uploadId = null) {
   pump();
 }
 
+/**
+ * A hard crash of the Node process (OOM kill, power loss followed by manual start) can leave this app's own ffmpeg running
+ * with nothing watching it. Under systemd the control-group kill normally prevents that; this is the application-level
+ * safety net: stop any ffmpeg whose output directory is inside MEDIA_DIR. Linux only (/proc); best effort.
+ */
+export function killOrphanedEncoders() {
+  let killed = 0;
+  try {
+    for (const pid of fs.readdirSync('/proc').filter((n) => /^\d+$/.test(n))) {
+      let cmd; try { cmd = fs.readFileSync(`/proc/${pid}/cmdline`, 'utf8').split('\0'); } catch { continue; }
+      if (path.basename(cmd[0] || '') === 'ffmpeg' && cmd.includes('-hls_segment_filename') && cmd.some((a) => a.startsWith(dirs.media + path.sep))) {
+        try { process.kill(Number(pid), 'SIGKILL'); killed++; } catch { /* already gone or not ours */ }
+      }
+    }
+  } catch { /* no /proc */ }
+  if (killed) log('warn', 'encode.orphans_killed', { count: killed });
+  return killed;
+}
+
 /** After a restart nothing is encoding. Mark interrupted jobs failed (originals untouched) and remove half-written output. */
 export function recoverInterrupted() {
+  killOrphanedEncoders();
   db.prepare("UPDATE movies SET encode_state = 'failed', error = 'Interrupted by a server restart. Press Re-process.' WHERE encode_state IN ('queued', 'processing')").run();
   db.prepare("UPDATE uploads SET status = 'failed', error = 'Interrupted by a server restart.', updated_at = datetime('now') WHERE status IN ('queued', 'processing')").run();
   for (const name of fs.readdirSync(dirs.media)) if (/\.(tmp|old)-/.test(name)) fs.rmSync(path.join(dirs.media, name), { recursive: true, force: true });

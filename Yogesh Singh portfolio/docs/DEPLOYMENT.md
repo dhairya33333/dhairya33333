@@ -6,6 +6,7 @@
 | Plan | Hostinger **KVM VPS**, 2 vCPU and 4 GB RAM minimum (more CPU = faster encoding). Check the current plan sizes on Hostinger |
 | OS | Ubuntu 22.04 or 24.04 LTS (64-bit) |
 | Disk | Original 10.8 GB + processed ~3–4 GB + working space (an upload needs the file size free again) + backups ⇒ **plan for ≥ 60 GB, 100 GB+ is comfortable**, and always keep an off-server copy of the original |
+| Supported OS / runtime | **Ubuntu 22.04 or 24.04 LTS, 64-bit.** The code was developed and tested on Node.js 22.22 and FFmpeg 6.1 (Ubuntu 24.04 packages). Node 22.13+ is required (built-in `node:sqlite`, which prints an "experimental" warning). Not tested on other versions |
 | Software | Node.js ≥ 22.13, FFmpeg/ffprobe, nginx, certbot (Let's Encrypt), ufw, fail2ban: all installed by `deploy/setup-vps.sh` |
 | Database | **SQLite** (file in `DATA_DIR`, WAL mode). The brief mentions PostgreSQL, but this app was built on SQLite. For one small server it is simpler and just as safe with the backups below. There is no database port to expose. Moving to PostgreSQL later is a separate, larger task |
 | Domain | Registered by the client; A record (and `www`) pointing to the VPS IP |
@@ -39,6 +40,16 @@ bash /opt/yogesh-portfolio/deploy/create-admin.sh "Yogesh Singh" admin@email.com
 
 Large-request note: the default nginx/Node limits would reject a 10.8 GB POST; that is why the uploader sends pieces. The app also sets Node's request timeout to unlimited for those requests. Verified in code and tests; **the nginx and systemd files themselves could not be executed in the build environment**, so check `nginx -t`, `systemctl status yogesh-portfolio` and `journalctl -u yogesh-portfolio -n 50` after install.
 
+## Permissions model
+| Path | Owner / mode | Why |
+|---|---|---|
+| `/opt/yogesh-portfolio` | root:portfolio, `g+rX o-rwx` | code is read-only to the service |
+| `/etc/yogesh-portfolio/env` | root, `600` | secrets; systemd reads it, the app never writes it |
+| `/var/lib/yogesh-portfolio` (database, uploads) | portfolio, `700`, files `600` (umask 077) | nothing readable by other users |
+| `/srv/yp/{originals,hls,tmp,backups}` | portfolio, `700` | private; never served directly |
+| `/srv/yp/incoming` | portfolio:portfolio, `2770` | SFTP drop folder: add your SFTP user to group `portfolio` (`usermod -aG portfolio youruser`) |
+The service runs as the unprivileged `portfolio` user (never root) with `NoNewPrivileges`, `PrivateTmp`, `ProtectSystem`, `ProtectHome`, a memory cap (`MemoryMax=80%`) and `KillMode=control-group` (ffmpeg is stopped with the service).
+
 ## Day-to-day operations
 | Task | Command |
 |---|---|
@@ -47,6 +58,8 @@ Large-request note: the default nginx/Node limits would reject a 10.8 GB POST; t
 | nginx logs | `/var/log/nginx/` (rotated by the system's logrotate) |
 | Disk | Admin → Dashboard, or `df -h /srv/yp /var/lib/yogesh-portfolio`. `check-disk.sh` logs a critical line above 85% (set `ALERT_EMAIL` to be mailed) |
 | Update the site | see *Updating* |
+| Data consistency check | `cd /opt/yogesh-portfolio && sudo -u portfolio env $(grep -Ev '^\s*(#|$)' /etc/yogesh-portfolio/env | xargs) npm run verify-data` (read-only; payments, refunds and entitlements must agree) |
+| Health check | `curl -s https://yourdomain/healthz` → `{"ok":true}` |
 | Renew HTTPS | automatic (`certbot.timer`); test with `certbot renew --dry-run` |
 
 ## Backups
@@ -63,7 +76,12 @@ rm -f /var/lib/yogesh-portfolio/portfolio.sqlite-wal /var/lib/yogesh-portfolio/p
 chown portfolio:portfolio /var/lib/yogesh-portfolio/portfolio.sqlite
 systemctl start yogesh-portfolio
 ```
-Lost server entirely: new VPS → `setup-vps.sh` → restore the database file and `uploads/` → copy originals back to `/srv/yp/originals` → press *Re-process* on each film (or copy `/srv/yp/hls` too). Practise this once before launch.
+Lost server entirely: new VPS → `setup-vps.sh` → restore the database file and `uploads/` → copy originals back to `/srv/yp/originals` → press *Re-process* on each film (or copy `/srv/yp/hls` too). Practise this once before launch. (The automated test `RESTORE DRILL` in `tests/data-integrity.test.js` restores a backup into a fresh data directory, boots the server on it, signs a user in and checks the purchase and data consistency; the same steps on the real server are yours to rehearse.)
+
+## Reboot and restart recovery
+* `systemctl enable` makes the service start on boot; `Restart=always` restarts it after a crash.
+* After any unclean stop the app, on start-up: marks interrupted encodes `failed` (press *Re-process*), deletes half-written output, stops any orphaned ffmpeg left from before, removes stale partial uploads (older than 7 days; resumable until then) and expired session revocations. Originals and published films are never touched.
+* Verified here by killing the server with SIGKILL mid-encode and restarting it (`CRASH RECOVERY` test). **A real server reboot / `systemctl restart` on the VPS has not been tested here; do it once** (`reboot`, then check `systemctl status yogesh-portfolio` and `/healthz`).
 
 ## Updating and rollback
 ```bash

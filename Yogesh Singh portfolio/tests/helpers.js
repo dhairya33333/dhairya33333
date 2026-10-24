@@ -53,6 +53,7 @@ export class Client {
 
 export function makeAdmin(t, email = 'admin@test.com', password = 'admin-password-123') {
   const { db, auth } = t;
+  if (db.prepare('SELECT 1 FROM users WHERE email = ?').get(email)) return { email, password };
   db.prepare("INSERT INTO users (name, email, password_hash, role, email_verified) VALUES ('Admin', ?, ?, 'admin', 1)").run(email, auth.hashPassword(password));
   return { email, password };
 }

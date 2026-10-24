@@ -58,3 +58,31 @@ Audit of the existing code before this round of changes. Statuses are updated at
 | 14 | Fixed | 72 tests, `npm test` |
 
 Full results and remaining limitations: `docs/CHANGES.md`.
+
+
+---
+
+# Second audit round (hardening against the production-readiness brief)
+
+Baseline before this round: clean `npm ci` from the lockfile succeeded, `npm run check` passed, **72/72 tests passed**, `npm audit --omit=dev` 0 vulnerabilities (Node 22.22, 4 vCPU, 16 GB, FFmpeg 6.1). Git checkpoint: tag `checkpoint-before-hardening-2`.
+
+| # | Priority | Sev | Finding | Fix | Verified by |
+|---|---|---|---|---|---|
+| R1 | Payments | High | If a webhook omitted amount/currency the comparison was **skipped** (`!= null` guard) | Ledger rejects any missing/non-integer amount, currency or payment id; webhook fetches authoritative data from the gateway | `payments-hardening`, `cashfree` tests; mutation check |
+| R2 | Payments | High | Cashfree path never passed the paid amount/currency/payment id to the ledger | Cashfree webhook and reconcile read `/orders/{id}/payments` (exact paise) | `cashfree.test.js` (10 tests) |
+| R3 | Payments | High | Refund "full" decided from numbers inside the webhook payload; no running total; no refund-id idempotency | `refunds` table, total summed from records, judged against OUR stored price | `payments-hardening` |
+| R4 | Payments | Med | No dispute handling, no explicit PENDING state, one gateway payment could be offered for several orders | Dispute states + admin revoke, `PENDING`, unique `(provider, provider_payment_id)` + ledger check | `payments-hardening`, `data-integrity` |
+| R5 | Payments | Med | No transition logging; secrets could reach logs | Redacting structured logger; transitions logged by reference only | log test |
+| R6 | Auth | Med | Logout only cleared the cookie (a copied token stayed valid up to 30 days) | Per-token id (`jti`) revocation list, 14-day sessions, HS256 only | `auth-hardening` |
+| R7 | Auth | Med | No password recovery path at all | Admin-issued one-time hashed link (60 min, single use), ends other sessions | `auth-hardening` |
+| R8 | Auth | Low | Malformed `GOOGLE_CLIENT_ID` or http `SITE_URL` in production accepted silently | Startup validation / hard stop | `auth-hardening` |
+| R9 | App | Med | No global API rate limit | Per-IP `/api` limiter (media excluded) | `ratelimit-api` |
+| R10 | Uploads | Med | No chunk integrity check; any admin could touch any upload; two writers could race on one upload | SHA-256 per chunk, owner binding, in-flight lock | `uploads-hardening` |
+| R11 | Uploads | Med | Disk preflight used a typical bitrate, not the worst case | Worst case at the bitrate cap; documented calculation | `uploads-hardening`, VIDEO.md |
+| R12 | FFmpeg | Med | No encode timeout, no cancel, no ffmpeg availability check, admin-visible errors could contain server paths, orphaned ffmpeg after a hard crash | Timeout, cancel (running/queued), `/healthz` + dashboard check, path scrubbing, orphan cleanup at start-up | `uploads-hardening`, `data-integrity` crash test |
+| R13 | DB | Med | Files created with default permissions; no data-consistency tool; restore never drilled | umask 077 + explicit modes, `npm run verify-data`, restore drill and crash-recovery tests, extra indexes, `synchronous=NORMAL` | `data-integrity` |
+| R14 | Preview | Med | Boundary verified only on tidy 6.000 s segments | Verified on a 23.976 fps encode: timestamps, continuity, A/V sync, decoding, seeking, strict prefix of the full film | `preview-media` |
+| R15 | SEO | Low | No canonical URLs, sitemap, robots, structured data | Added (only from configured content, nothing invented) | `seo` |
+| R16 | UX | **High on phones** | The paywall's "Unlock" button was **clipped out of view inside the small phone player** (found by looking at a screenshot; an earlier bounding-box check had missed it) | Compact paywall layout on small screens; the test now requires the button to lie inside the player | browser test |
+| R17 | UX | Low | Payment dialog did not trap keyboard focus | Tab trap + Escape | browser test |
+| R18 | Setup | Med | `umask 077` would have removed group access from the SFTP drop folder | Explicit `chmod 2770` for `incoming` | `data-integrity` |

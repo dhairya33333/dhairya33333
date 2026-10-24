@@ -14,6 +14,7 @@ Self-hosted website for Yogesh Pratap Singh (former IPS officer, author, film di
 | [docs/VIDEO.md](docs/VIDEO.md) | Uploading a 10.8 GB film, FFmpeg/HLS, publishing, capacity |
 | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | VPS sizing, install, backups, restore, update, rollback |
 | [docs/GO_LIVE.md](docs/GO_LIVE.md) | Launch checklist |
+| [docs/SECURITY.md](docs/SECURITY.md) | Access policy, what is enforced, honest limitations (no DRM, etc.) |
 
 ## Run locally
 ```bash
@@ -26,8 +27,9 @@ Without payment keys (and outside production) checkout runs in clearly labelled 
 
 ## Test
 ```bash
-npm test          # 72 automated tests (needs ffmpeg), about 45 s, uses temp directories and fake gateways. No real charges
+npm test          # 134 automated tests (needs ffmpeg), about 2 minutes, uses temp directories and simulated gateways. No real charges
 npm run check     # syntax check of every source file
+npm run verify-data   # payments, refunds and entitlements agree (read-only; run it on the server too)
 ```
 There is no linter, type checker or build step in this project (plain JavaScript, no bundler). An optional browser smoke test is in `tests/e2e/smoke.cjs` (see the header of that file).
 
@@ -38,6 +40,7 @@ server/payments/   ledger.js (all order/purchase state), razorpay.js, cashfree.j
 server/routes/     auth, public, media (HLS gate), payments, admin, uploads (resumable)
 server/transcode.js, hls.js, storage.js   ffmpeg jobs + validation, preview boundary, disk accounting
 public/            site pages, js/, css/, admin/
-deploy/            nginx, systemd, setup, backup, disk check
+deploy/            nginx, systemd, setup, backup, disk check, create-admin
+scripts/           backup-db, verify-data, measure-encode, measure-upload, load-viewers
 tests/             node:test suites
 ```

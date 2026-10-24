@@ -24,7 +24,9 @@ const views = {
           <p class="muted small" style="margin:10px 0 0">Refunded orders: ${s.orders_refunded}</p></div>
         <div class="panel"><h3>Google sign-in</h3>
           <span class="pill ${s.googleConfigured ? 'PAID' : 'CREATED'}">${s.googleConfigured ? 'on' : 'off'}</span>
-          <span class="muted small" style="margin-left:10px">${s.googleConfigured ? 'Visitors can continue with Google.' : 'Add GOOGLE_CLIENT_ID in .env to enable.'}</span></div>
+          <span class="muted small" style="margin-left:10px">${s.googleConfigured ? 'Visitors can continue with Google.' : 'Add GOOGLE_CLIENT_ID in .env to enable.'}</span>
+          <h3 style="margin-top:18px">Video tools</h3><span class="pill ${s.ffmpegOk ? 'PAID' : 'FAILED'}">ffmpeg ${s.ffmpegOk ? 'ok' : 'MISSING'}</span>
+          ${s.ffmpegOk ? '' : '<span class="small" style="color:var(--danger);margin-left:8px">Films cannot be processed until ffmpeg is installed for the service user.</span>'}</div>
       </div>
       <div class="panel" style="margin-top:16px"><h3>Disk &amp; storage</h3><div id="storage" class="muted small">Loading…</div></div>
       <div class="panel" style="margin-top:16px"><h3>Recent sales</h3><div class="tablewrap"><table><tr><th>When</th><th>Viewer</th><th>Film</th><th>Amount</th></tr>
@@ -73,6 +75,7 @@ const views = {
           <div class="panel"><h3>Film file ${m.duration_sec ? `· ${runtime(m.duration_sec)}` : ''}</h3>
             ${m.encode_state === 'queued' ? '<p>Waiting for an encoder slot…</p>' : ''}
             ${m.encode_state === 'processing' ? `<p>Encoding for streaming… ${m.progress.toFixed(0)}%</p><div class="bar"><i style="width:${m.progress}%"></i></div><p class="muted small">This can take a long time for a full-length film. You can leave this page.</p>` : ''}
+            ${busy ? '<button class="btn danger s" id="cancelenc">Cancel processing</button>' : ''}
             ${m.encode_state === 'failed' ? `<p style="color:var(--danger)"><b>Processing failed.</b> ${esc(m.error || '')}</p><p class="muted small">The original file is untouched${m.status === 'ready' ? ' and the published film is still playing the previous version' : ''}.</p>` : ''}
             ${m.status === 'ready' && m.validated && m.encode_state === 'idle' ? `<p style="color:var(--ok)">Ready to stream. Passed validation: ${m.segments || '?'} segments, ${m.output_bytes ? (m.output_bytes / 1024 ** 3).toFixed(2) + ' GB' : ''}${m.encode_seconds ? `, encoded in ${Math.round(m.encode_seconds / 60)} min` : ''}.</p>` : ''}
             <div class="row">${m.has_source && !busy ? '<button class="btn s" id="reproc">Re-process</button>' : ''}
@@ -95,6 +98,7 @@ const views = {
     const body = () => ({ title: $('#f-title').value, tagline: $('#f-tag').value, description: $('#f-desc').value, year: $('#f-year').value, price_rupees: $('#f-price').value, preview_minutes: $('#f-prev').value, published: $('#f-pub').checked, featured: $('#f-feat').checked });
     $('#save').onclick = () => act(() => api('/admin/movies/' + m.id, { method: 'PUT', body: body() }), 'Saved');
     $('#del').onclick = () => confirm('Delete this film permanently?') && act(async () => { await api('/admin/movies/' + m.id, { method: 'DELETE' }); location.hash = '#films'; });
+    $('#cancelenc')?.addEventListener('click', () => confirm('Stop processing this film? The original file and any published version are not affected.') && act(async () => { await api(`/admin/movies/${m.id}/cancel-encode`, { method: 'POST' }); route(); }, 'Cancelled'));
     $('#rmsrc')?.addEventListener('click', () => { const t = prompt('This permanently deletes the ORIGINAL uploaded film from the server. The processed film stays. Make sure you have your own backup.\n\nType DELETE to confirm:'); if (t) act(async () => { await api(`/admin/movies/${m.id}/cleanup-source`, { method: 'POST', body: { confirm: t } }); route(); }, 'Original removed'); });
     $('#reproc')?.addEventListener('click', () => act(async () => { await api(`/admin/movies/${m.id}/reprocess`, { method: 'POST' }); route(); }, 'Re-processing started'));
     $('#impgo').onclick = () => $('#imp').value && act(async () => { await api(`/admin/movies/${m.id}/import`, { method: 'POST', body: { file: $('#imp').value } }); route(); }, 'Processing started');
@@ -106,7 +110,8 @@ const views = {
   async orders() {
     const { orders } = await api('/admin/orders');
     view.innerHTML = head('Orders', 'Latest 300 orders.') + `<div class="panel tablewrap"><table><tr><th>Date</th><th>Order</th><th>Viewer</th><th>Film</th><th>Amount</th><th>Gateway</th><th>Status</th></tr>
-      ${orders.map((o) => `<tr><td>${fmt(o.created_at)}</td><td class="small muted">${esc(o.order_id)}</td><td>${esc(o.name)}<br><span class="muted small">${esc(o.email)}</span></td><td>${esc(o.title)}</td><td>${rupees(o.amount_paise)}</td><td class="small muted">${esc(o.provider || '')}</td><td><span class="pill ${o.status}">${o.status}</span>${o.failure_reason ? `<br><span class="small muted">${esc(o.failure_reason)}</span>` : ''}</td></tr>`).join('') || '<tr><td colspan="7" class="muted">No orders yet.</td></tr>'}</table></div>`;
+      ${orders.map((o) => `<tr><td>${fmt(o.created_at)}</td><td class="small muted">${esc(o.order_id)}</td><td>${esc(o.name)}<br><span class="muted small">${esc(o.email)}</span></td><td>${esc(o.title)}</td><td>${rupees(o.amount_paise)}</td><td class="small muted">${esc(o.provider || '')}</td><td><span class="pill ${o.status}">${o.status.replace('_', ' ')}</span>${o.refunded_paise ? `<br><span class="small muted">refunded ${rupees(o.refunded_paise)}</span>` : ''}${o.dispute_status ? `<br><span class="small" style="color:var(--danger)">dispute: ${esc(o.dispute_status)}</span>` : ''}${o.status === 'PAID' || o.status === 'PARTIALLY_REFUNDED' ? ` <a href="#" class="link small" data-revoke="${esc(o.order_id)}">revoke access</a>` : ''}${o.failure_reason ? `<br><span class="small muted">${esc(o.failure_reason)}</span>` : ''}</td></tr>`).join('') || '<tr><td colspan="7" class="muted">No orders yet.</td></tr>'}</table></div>`;
+    $$('[data-revoke]').forEach((a) => (a.onclick = (e) => { e.preventDefault(); confirm('Withdraw this buyer\'s access to the film? Use this for chargebacks or fraud. Refund money in the gateway separately.') && act(async () => { await api(`/admin/orders/${a.dataset.revoke}/revoke`, { method: 'POST' }); route(); }, 'Access revoked'); }));
   },
 
   async users() {
@@ -118,8 +123,9 @@ const views = {
         <button class="btn gold s" id="g-go" style="align-self:flex-end">Grant</button></div></div>
       <div class="panel tablewrap"><table><tr><th>Name</th><th>Email</th><th>Phone</th><th>Joined</th><th>Google</th><th>Films</th><th>Role</th></tr>
       ${users.map((u) => `<tr><td>${esc(u.name)}</td><td>${esc(u.email)}</td><td>${esc(u.phone || '–')}</td><td>${fmt(u.created_at)}</td><td>${u.google ? '✓' : ''}</td><td>${u.purchases}</td>
-        <td>${u.role === 'admin' ? '<span class="pill pub">admin</span>' : 'user'} <a href="#" class="link small" data-role="${u.id}" data-to="${u.role === 'admin' ? 'user' : 'admin'}">${u.role === 'admin' ? 'demote' : 'make admin'}</a></td></tr>`).join('')}</table></div>`;
+        <td>${u.role === 'admin' ? '<span class="pill pub">admin</span>' : 'user'} <a href="#" class="link small" data-role="${u.id}" data-to="${u.role === 'admin' ? 'user' : 'admin'}">${u.role === 'admin' ? 'demote' : 'make admin'}</a> · <a href="#" class="link small" data-reset="${u.id}">reset link</a></td></tr>`).join('')}</table></div>`;
     $('#g-go').onclick = () => act(() => api('/admin/grant', { method: 'POST', body: { email: $('#g-email').value, movieId: $('#g-movie').value } }), 'Access granted');
+    $$('[data-reset]').forEach((a) => (a.onclick = (e) => { e.preventDefault(); act(async () => { const r = await api(`/admin/users/${a.dataset.reset}/reset-link`, { method: 'POST' }); prompt(`Send this one-time link to the user (valid ${r.expiresInMinutes} minutes). It will not be shown again:`, r.url); }); }));
     $$('[data-role]').forEach((a) => (a.onclick = (e) => { e.preventDefault(); act(async () => { await api(`/admin/users/${a.dataset.role}/role`, { method: 'POST', body: { role: a.dataset.to } }); route(); }, 'Role updated'); }));
   },
 
@@ -196,6 +202,11 @@ function filmRow(m) {
     <button class="btn s" data-edit="${m.id}">Manage</button></div>`;
 }
 
+async function sha256Hex(blob) {
+  if (!crypto?.subtle) return '';                                   // non-secure context: skip, the server treats the header as optional
+  const buf = await crypto.subtle.digest('SHA-256', await blob.arrayBuffer());
+  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
+}
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const gbs = (n) => (n / 1024 ** 3).toFixed(2);
 
@@ -214,9 +225,12 @@ async function chunkedUpload(movieId, file, chunkBytes) {
       let ok = false;
       for (let attempt = 0; attempt < 6 && !ok; attempt++) {
         try {
-          const res = await fetch(`/api/admin/uploads/${uid}/chunk?offset=${received}`, { method: 'PUT', headers: { 'content-type': 'application/octet-stream' }, body: file.slice(received, end), credentials: 'same-origin' });
+          const piece = file.slice(received, end);
+          const sum = await sha256Hex(piece);       // the server verifies this while writing, so a damaged piece is resent
+          const res = await fetch(`/api/admin/uploads/${uid}/chunk?offset=${received}`, { method: 'PUT', headers: { 'content-type': 'application/octet-stream', 'x-chunk-sha256': sum }, body: piece, credentials: 'same-origin' });
           const data = await res.json().catch(() => ({}));
           if (res.ok) { received = data.received; ok = true; }
+          else if (res.status === 422) throw new Error('checksum');            // damaged in transit: retry the same piece
           else if (res.status === 409 && Number.isInteger(data.received)) { received = data.received; ok = true; }   // server is ahead: resync
           else if (res.status >= 400 && res.status < 500 && res.status !== 400) throw new Error(data.error || 'Upload rejected');
           else throw new Error(data.error || 'Interrupted');
@@ -230,7 +244,7 @@ async function chunkedUpload(movieId, file, chunkBytes) {
     const done = await api(`/admin/uploads/${uid}/complete`, { method: 'POST' });
     localStorage.removeItem(key);
     const est = done.estimate;
-    toast(est ? `Uploaded. Encoding started: about ${gbs(est.estOutputBytes)} GB output, roughly ${Math.max(1, Math.round(est.estEncodeSeconds / 60))} min.` : 'Uploaded. Encoding started.');
+    toast(est ? `Uploaded. Encoding started: about ${gbs(est.estOutputBytes)} GB output (up to ${gbs(est.worstCaseBytes)} GB worst case), roughly ${Math.max(1, Math.round(est.estEncodeSeconds / 60))} min.` : 'Uploaded. Encoding started.');
   } catch (e) {
     toast(e.message + ' You can choose the same file again to resume.', true);
   }

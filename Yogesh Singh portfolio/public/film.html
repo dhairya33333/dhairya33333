@@ -34,6 +34,14 @@
 .pstate button { margin-top: 14px; }
 .preview-note { margin: 18px 0 0; padding: 14px 18px; border: 1px solid var(--line); border-left: 3px solid var(--gold); border-radius: 6px; background: #fff; color: var(--ink); font-size: 15px; }
 .demo-note { font-size: 12px; color: var(--gold); border: 1px dashed var(--gold); padding: 8px 12px; border-radius: 6px; margin-bottom: 16px; }
+@media (max-width: 640px) {
+  /* the player is only ~200px tall on a phone: keep the call to action inside it */
+  .paywall { padding: 10px; }
+  .paywall p { display: none; }
+  .paywall h2 { font-size: 26px; margin: 4px 0 12px; }
+  .paywall .eyebrow { font-size: 10px; }
+  .badge { top: 8px; left: 8px; }
+}
 @media (max-width: 860px) { .info { grid-template-columns: 1fr; } .buy { min-width: 0; } }
 </style></head>
 <body>
@@ -55,7 +63,7 @@
   <p class="preview-note" id="preview-note" aria-live="polite"></p>
   <div class="info">
     <div>
-      <h1 id="title"></h1><p class="tag" id="tagline"></p><p class="desc" id="desc"></p>
+      <h1 id="title"></h1><p class="tag" id="tagline"></p><div class="chips" id="facts" style="margin:0 0 18px"></div><p class="desc" id="desc"></p>
     </div>
     <aside class="buy" id="buy"></aside>
   </div>

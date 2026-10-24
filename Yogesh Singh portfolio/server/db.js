@@ -1,9 +1,11 @@
 import { DatabaseSync } from 'node:sqlite';
 import path from 'node:path';
+import fs from 'node:fs';
 import { dirs } from './config.js';
 
-export const db = new DatabaseSync(path.join(dirs.data, 'portfolio.sqlite'));
-db.exec('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000;');
+const DB_FILE = path.join(dirs.data, 'portfolio.sqlite');
+export const db = new DatabaseSync(DB_FILE);
+db.exec('PRAGMA journal_mode = WAL; PRAGMA synchronous = NORMAL; PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000;');
 
 // v1 baseline (CREATE IF NOT EXISTS keeps already-deployed databases intact)
 db.exec(`
@@ -81,6 +83,24 @@ const MIGRATIONS = [
 
     addColumn('works', 'url', "TEXT DEFAULT ''");
   },
+  // 3: refund ledger, disputes, one payment per order, revocable sessions, admin password-reset links, upload owner, indexes
+  () => {
+    addColumn('orders', 'refunded_paise', 'INTEGER NOT NULL DEFAULT 0');
+    addColumn('orders', 'dispute_status', 'TEXT');
+    db.exec('CREATE UNIQUE INDEX IF NOT EXISTS orders_provider_payment ON orders(provider, provider_payment_id) WHERE provider_payment_id IS NOT NULL');
+    db.exec(`CREATE TABLE IF NOT EXISTS refunds (
+      id INTEGER PRIMARY KEY, provider TEXT NOT NULL, refund_id TEXT NOT NULL, order_id TEXT NOT NULL REFERENCES orders(order_id),
+      amount_paise INTEGER NOT NULL, created_at TEXT NOT NULL DEFAULT (datetime('now')), UNIQUE (provider, refund_id))`);
+    db.exec(`CREATE TABLE IF NOT EXISTS revoked_tokens (jti TEXT PRIMARY KEY, expires_at INTEGER NOT NULL)`);
+    db.exec(`CREATE TABLE IF NOT EXISTS password_resets (
+      token_hash TEXT PRIMARY KEY, user_id INTEGER NOT NULL REFERENCES users(id), expires_at INTEGER NOT NULL, used_at TEXT,
+      created_by INTEGER, created_at TEXT NOT NULL DEFAULT (datetime('now')))`);
+    addColumn('uploads', 'created_by', 'INTEGER');
+    db.exec('CREATE INDEX IF NOT EXISTS orders_user_movie ON orders(user_id, movie_id, status)');
+    db.exec('CREATE INDEX IF NOT EXISTS purchases_movie ON purchases(movie_id)');
+    db.exec('CREATE INDEX IF NOT EXISTS uploads_movie ON uploads(movie_id, status)');
+    db.exec('CREATE INDEX IF NOT EXISTS users_google ON users(google_sub)');
+  },
 ];
 
 const current = db.prepare('PRAGMA user_version').get().user_version;
@@ -89,6 +109,8 @@ for (let v = current; v < MIGRATIONS.length; v++) {
   try { MIGRATIONS[v](); db.exec(`PRAGMA user_version = ${v + 1}`); db.exec('COMMIT'); }
   catch (e) { db.exec('ROLLBACK'); throw e; }
 }
+
+for (const f of [DB_FILE, `${DB_FILE}-wal`, `${DB_FILE}-shm`]) { try { fs.chmodSync(f, 0o600); } catch { /* may not exist yet */ } }
 
 export const getSetting = (key, fallback = '') =>
   db.prepare('SELECT value FROM settings WHERE key = ?').get(key)?.value ?? fallback;

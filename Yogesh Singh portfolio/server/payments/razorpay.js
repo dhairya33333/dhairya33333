@@ -58,19 +58,41 @@ export async function reconcile(order) {
   return { state: 'PENDING' };
 }
 
-/** Normalises a verified webhook body into { eventId, type, orderRef(razorpay order id), paymentId, amountPaise, currency } */
+export const fetchRefund = (refundId) => call('GET', `/refunds/${encodeURIComponent(refundId)}`);
+
+/**
+ * Authoritative paid data for an order, straight from Razorpay's API (used when a webhook omits amount/currency/payment id).
+ * Returns null unless a CAPTURED payment that belongs to this order exists.
+ */
+export async function authoritativePayment(order, paymentId = null) {
+  if (paymentId) {
+    const p = await fetchPayment(paymentId);
+    return p.order_id === order.provider_order_id && p.status === 'captured' ? { paymentId: p.id, amountPaise: p.amount, currency: p.currency } : null;
+  }
+  const rec = await reconcile(order);
+  return rec.state === 'PAID' ? { paymentId: rec.paymentId, amountPaise: rec.amountPaise, currency: rec.currency } : null;
+}
+
+const EVENT_TYPES = {
+  'payment.captured': 'paid', 'order.paid': 'paid', 'payment.failed': 'failed', 'refund.processed': 'refunded',
+  'payment.dispute.created': 'dispute_open', 'payment.dispute.under_review': 'dispute_open',
+  'payment.dispute.won': 'dispute_won', 'payment.dispute.lost': 'dispute_lost', 'payment.dispute.closed': 'dispute_closed',
+};
+const int = (v) => (Number.isInteger(v) ? v : null);
+
+/** Normalises a verified webhook body. Missing fields stay null so the caller must fetch authoritative data. */
 export function parseWebhook(rawBody, headers) {
   const body = JSON.parse(rawBody);
-  const pay = body?.payload?.payment?.entity;
-  const refund = body?.payload?.refund?.entity;
-  const eventId = headers['x-razorpay-event-id'] || `${body.event}:${pay?.id || refund?.id || body.created_at}`;
-  const map = { 'payment.captured': 'paid', 'order.paid': 'paid', 'payment.failed': 'failed', 'refund.processed': 'refunded' };
+  const pay = body?.payload?.payment?.entity, ord = body?.payload?.order?.entity;
+  const refund = body?.payload?.refund?.entity, dispute = body?.payload?.dispute?.entity;
   return {
-    eventId, type: map[body.event] || 'ignored', raw: body.event,
-    providerOrderId: pay?.order_id || body?.payload?.order?.entity?.id || null,
-    paymentId: pay?.id || null, amountPaise: pay?.amount ?? body?.payload?.order?.entity?.amount_paid ?? null,
-    currency: pay?.currency || body?.payload?.order?.entity?.currency || null,
+    eventId: headers['x-razorpay-event-id'] || `${body.event}:${pay?.id || refund?.id || dispute?.id || body.created_at}`,
+    type: EVENT_TYPES[body.event] || 'ignored', raw: body.event,
+    providerOrderId: pay?.order_id || ord?.id || null,
+    paymentId: pay?.id || refund?.payment_id || dispute?.payment_id || null,
+    amountPaise: int(pay?.amount) ?? int(ord?.amount_paid), currency: pay?.currency || ord?.currency || null,
+    paymentStatus: pay?.status || null,
     failure: pay?.error_description || null,
-    fullRefund: refund && pay ? refund.amount >= pay.amount : false,
+    refundId: refund?.id || null, refundAmountPaise: int(refund?.amount),
   };
 }

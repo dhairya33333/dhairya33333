@@ -11,15 +11,26 @@ One-time payment per film. Razorpay is the default provider (`PAYMENT_PROVIDER=r
 
 | Event | Effect |
 |---|---|
-| Valid signature + captured, amount and currency match | `PAID`, purchase row created (once) |
-| Invalid signature, wrong amount/currency, order of another user | Nothing unlocked, logged |
-| Same webhook delivered again (same event id) | Acknowledged, not reprocessed; `payment_events` keeps one row |
-| `payment.failed` | `FAILED` with reason (cannot downgrade a paid order) |
+| Captured payment whose **amount and currency equal our stored order** and whose id is new | `PAID`, entitlement created once |
+| Webhook payload missing amount, currency or payment id (or not marked captured) | The gateway API is asked for the authoritative payment; if it cannot confirm, nothing is granted and the event stays redeliverable |
+| Missing, non-integer, different amount or different currency | Rejected and flagged on the order (`amount_mismatch`, `currency_mismatch`); never skipped |
+| Same gateway payment id offered for a second order | Rejected (`payment_reused`); also blocked by a unique database index |
+| Invalid signature, order of another user | Nothing unlocked, logged without the signature |
+| Same webhook delivered again (same event id) | Acknowledged, not reprocessed (`payment_events`) |
+| Payment authorized but not captured | `PENDING`, nothing granted |
+| `payment.failed` | `FAILED` with the reason (cannot downgrade a paid order) |
 | User closes checkout | `CANCELLED` (a late successful payment still unlocks) |
-| Full refund (`refund.processed`) | `REFUNDED`, access revoked on the next request; a replayed capture cannot restore it |
-| Partial refund | Access kept (decide policy with the client) |
+| Refund (any size) | Recorded once per gateway refund id. If the gateway payload has no amount, it is fetched. **"Full" is judged against OUR stored price, summing all refunds** |
+| Refunds total < price | `PARTIALLY_REFUNDED`: **access is kept** (policy, change in `ledger.js` if the client prefers otherwise) |
+| Refunds total >= price | `REFUNDED`: access revoked on the next request; a replayed capture cannot restore it |
+| Dispute opened / under review | Order flagged `dispute: open` in Admin → Orders; **access kept** until resolved |
+| Dispute won / closed | Flag updated, access kept |
+| Dispute lost (Razorpay `payment.dispute.lost`) | `CHARGEBACK`, access revoked |
+| Admin "revoke access" | `CHARGEBACK`, access revoked, logged with the admin id |
 | Gateway down while creating the order | HTTP 502 "You have not been charged"; retry works |
 | New checkout while an old one is open | Old one closed, so open orders do not pile up |
+
+All state changes happen inside one SQLite transaction in `server/payments/ledger.js` and each transition is logged (`order.transition`: order id, from, to, gateway payment id; never keys, signatures or card data). `npm run verify-data` checks that payments, refunds and entitlements agree.
 
 Transactions are persistent: `orders` (provider, provider ids, amount, currency, status, timestamps, failure reason), `purchases` and `payment_events`. Admin → Orders lists them.
 
@@ -44,10 +55,10 @@ Transactions are persistent: `orders` (provider, provider ids, amount, currency,
 * Publish refund/cancellation, terms and privacy pages before going live; the gateway will ask for them.
 
 ## Cashfree (alternative)
-`PAYMENT_PROVIDER=cashfree`, `CASHFREE_ENV=sandbox|production`, `CASHFREE_APP_ID`, `CASHFREE_SECRET_KEY`; webhook URL as above. Cashfree needs the buyer's 10-digit mobile number, so checkout asks for it. Cashfree has no refund webhook handling in this code; refunds there must be revoked manually (Admin → Users).
+`PAYMENT_PROVIDER=cashfree`, `CASHFREE_ENV=sandbox|production`, `CASHFREE_APP_ID`, `CASHFREE_SECRET_KEY`; webhook URL as above. Cashfree needs the buyer's 10-digit mobile number, so checkout asks for it. Cashfree webhooks are never trusted for money: the paid amount, currency and payment id are read from Cashfree's `/orders/{id}/payments` API. Refund webhooks (`REFUND_STATUS_WEBHOOK`, status SUCCESS) use the same refund ledger; disputes are flagged and revoked manually from Admin → Orders. Cashfree is kept because the project owner originally named it; Razorpay is the primary provider for launch.
 
 ## Demo mode
 With no keys outside production the buy button completes instantly (clearly labelled "Demo"). In production without keys, checkout is disabled with an error.
 
 ## Verified vs not verified
-Automated (`tests/payments.test.js`, `tests/streaming.test.js`): signature verification, wrong/missing signature, authorized-only, amount mismatch, IDOR, duplicate webhooks, refunds (full/partial/replay), cancel then late payment, reconcile, persistence, payment-then-playback. The Razorpay HTTP API is **faked** in tests, so **no real or sandbox transaction has been performed**; do the test-mode run above before launch.
+Automated (`tests/payments.test.js`, `payments-hardening.test.js`, `cashfree.test.js`, `streaming.test.js`): signature verification, wrong/missing signature, authorized-only, amount mismatch, IDOR, duplicate webhooks, refunds (full/partial/replay), cancel then late payment, reconcile, persistence, payment-then-playback. The Razorpay HTTP API is **faked** in tests, so **no real or sandbox transaction has been performed**; do the test-mode run above before launch.

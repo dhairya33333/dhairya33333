@@ -48,6 +48,19 @@ export function verifyWebhook(rawBody, signature, timestamp) {
   return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
 
+const toPaise = (rupees) => Math.round(Number(rupees) * 100);
+
+export const fetchPayments = async (orderId) => {
+  const list = await call('GET', `/orders/${encodeURIComponent(orderId)}/payments`);
+  return Array.isArray(list) ? list : [];
+};
+
+/** Authoritative paid data from Cashfree's API: the successful payment with its real amount, currency and id. */
+export async function authoritativePayment(order, cfPaymentId = null) {
+  const ok = (await fetchPayments(order.order_id)).find((p) => p.payment_status === 'SUCCESS' && (!cfPaymentId || String(p.cf_payment_id) === String(cfPaymentId)));
+  return ok ? { paymentId: String(ok.cf_payment_id), amountPaise: toPaise(ok.payment_amount), currency: String(ok.payment_currency || 'INR') } : null;
+}
+
 export async function createCheckout({ order, user, phone, siteUrl }) {
   const o = await createOrder({
     orderId: order.order_id, amountPaise: order.amount_paise, user, phone,
@@ -57,16 +70,26 @@ export async function createCheckout({ order, user, phone, siteUrl }) {
 }
 
 export async function reconcile(order) {
+  const paid = await authoritativePayment(order);
+  if (paid) return { state: 'PAID', ...paid };
   const st = await fetchOrderStatus(order.order_id);
-  if (st === 'PAID') return { state: 'PAID' };
-  if (st === 'EXPIRED' || st === 'TERMINATED') return { state: 'FAILED' };
-  return { state: 'PENDING' };
+  return { state: st === 'EXPIRED' || st === 'TERMINATED' ? 'FAILED' : 'PENDING' };
 }
 
+/** Cashfree amounts are rupees (decimal); everything is converted to integer paise here. */
 export function parseWebhook(rawBody) {
   const body = JSON.parse(rawBody);
   const type = String(body.type || '');
-  const orderId = body?.data?.order?.order_id || null;
-  const eventId = `${type}:${orderId}:${body?.data?.payment?.cf_payment_id || body.event_time || ''}`;
-  return { eventId, type: type === 'PAYMENT_SUCCESS_WEBHOOK' ? 'paid' : type === 'PAYMENT_FAILED_WEBHOOK' ? 'failed' : 'ignored', raw: type, orderId };
+  const d = body.data || {};
+  const refund = d.refund || null;
+  const map = { PAYMENT_SUCCESS_WEBHOOK: 'paid', PAYMENT_FAILED_WEBHOOK: 'failed', REFUND_STATUS_WEBHOOK: refund?.refund_status === 'SUCCESS' ? 'refunded' : 'ignored',
+    DISPUTE_CREATED: 'dispute_open', DISPUTE_UPDATED: 'dispute_open' };
+  const orderId = d.order?.order_id || refund?.order_id || d.dispute?.order_id || null;
+  return {
+    eventId: `${type}:${orderId}:${d.payment?.cf_payment_id || refund?.cf_refund_id || refund?.refund_id || d.dispute?.dispute_id || body.event_time || ''}`,
+    type: map[type] || 'ignored', raw: type, orderId, paymentId: d.payment?.cf_payment_id != null ? String(d.payment.cf_payment_id) : null,
+    refundId: refund ? String(refund.cf_refund_id ?? refund.refund_id ?? '') || null : null,
+    refundAmountPaise: refund?.refund_amount != null ? toPaise(refund.refund_amount) : null,
+    failure: d.payment?.payment_message || null,
+  };
 }

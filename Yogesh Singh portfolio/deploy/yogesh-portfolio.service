@@ -16,6 +16,12 @@ TimeoutStopSec=30
 LimitNOFILE=65536
 # Keep the web server responsive while ffmpeg is running
 Nice=5
+UMask=0077
+# Cap what a runaway encode can take from the rest of the server (KVM plans are small). Tune after measuring.
+MemoryMax=80%
+TasksMax=512
+# KillMode=control-group (the default) also stops ffmpeg when the service stops or crashes
+KillMode=control-group
 
 # Hardening
 NoNewPrivileges=true

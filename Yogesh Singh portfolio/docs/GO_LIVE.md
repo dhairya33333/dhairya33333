@@ -8,6 +8,10 @@ Tick every line; most items need the client's accounts and cannot be done by the
 - [ ] Google OAuth consent screen published to Production, production origin added, `GOOGLE_CLIENT_ID` set
 - [ ] Refund/cancellation, terms, privacy and contact pages published (gateway requirement)
 
+**Staging first (do not skip)**
+- [ ] Deploy to a staging subdomain (or the real VPS before announcing) with Razorpay **test** keys and a Google OAuth client allowing that origin
+- [ ] Run the whole checklist below there; only then switch to live keys
+
 **Server**
 - [ ] `systemctl status yogesh-portfolio` active; `nginx -t` OK
 - [ ] `JWT_SECRET` set (random, 32+ chars); env file mode 600; no secrets in git
@@ -15,6 +19,11 @@ Tick every line; most items need the client's accounts and cannot be done by the
 - [ ] Disk: ≥ 20% free after the film is uploaded and processed
 - [ ] Nightly backup ran once; the file restores (practice the restore); off-server copy of the **original film** exists
 - [ ] `ufw status` shows only SSH/80/443; fail2ban active
+- [ ] `curl https://yourdomain/healthz` returns `{"ok":true}`; Admin → Dashboard shows *ffmpeg ok*
+- [ ] **Reboot the VPS once** and confirm the site comes back by itself (not tested in the build environment)
+- [ ] `npm run verify-data` prints "Data is consistent"
+- [ ] Permissions: `ls -ld /var/lib/yogesh-portfolio /srv/yp/*` show `drwx------` (incoming is `drwxrws---`); `/etc/yogesh-portfolio/env` is `-rw-------`
+- [ ] Restore drill performed on the real server (see DEPLOYMENT.md)
 
 **Film**
 - [ ] Original uploaded (or imported) and processed, status *Ready*, validation passed
@@ -29,8 +38,10 @@ Tick every line; most items need the client's accounts and cannot be done by the
 - [ ] Close the payment window: no access, a clear message, retry works
 - [ ] Webhook delivery shows 200 in the Razorpay dashboard; a re-sent webhook does not create a second purchase
 - [ ] Refund the test payment: access disappears
+- [ ] Password recovery: issue a reset link from Admin → Users for a test account and use it once; the second use must fail
 - [ ] Google sign-in: new account works; existing email+password account is *not* merged but can connect Google from My account
-- [ ] Phone check (iOS Safari and Android Chrome): browse, sign in, pay, play
+- [ ] Phone check on a **real iPhone (Safari)** and a real Android phone (Chrome): browse, sign in, pay, play, seek, rotate. iOS Safari has not been tested at all yet
+- [ ] From outside the server, play the film from two or three different networks at the same time and watch the server (`top`, `journalctl`)
 
 **Content**
 - [ ] Homepage text, biography, awards, links and contact email replaced with Yogesh Singh's real content (currently placeholders built from public sources; verify every fact)

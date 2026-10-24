@@ -3,18 +3,24 @@
 import { Router } from 'express';
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
+import { Transform } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { config, dirs } from '../config.js';
 import { db } from '../db.js';
 import { asyncHandler, randomId } from '../auth.js';
 import { freeBytes, safeDisplayName, insideDir, estimateEncode, VIDEO_EXT } from '../storage.js';
 import { enqueueTranscode, probe } from '../transcode.js';
+import { scrub, log } from '../log.js';
 
 const r = Router();
 const bad = (res, msg, code = 400, extra = {}) => res.status(code).json({ error: msg, ...extra });
 const ID = /^[a-f0-9]{16}$/;
 const publicUpload = (u) => ({ id: u.id, movie_id: u.movie_id, kind: u.kind, name: u.display_name, size: u.size, received: u.received, status: u.status, error: u.error, updated_at: u.updated_at });
 const getUpload = (id) => (ID.test(id) ? db.prepare('SELECT * FROM uploads WHERE id = ?').get(id) : null);
+// An upload belongs to the admin who started it; another admin session cannot append to, finish or cancel it.
+const mine = (u, req) => u && (u.created_by == null || u.created_by === req.user.id);
+const inFlight = new Set();               // upload ids with a chunk currently being written (no two writers on one file)
 const gb = (n) => (n / 1024 ** 3).toFixed(1);
 
 function moveFile(from, to) {
@@ -40,19 +46,19 @@ r.post('/movies/:id/uploads', (req, res) => {
   const id = randomId(8);
   const tmp = path.join(dirs.tmp, `${id}.part`);
   fs.writeFileSync(tmp, '');
-  db.prepare("INSERT INTO uploads (id, movie_id, kind, display_name, size, path) VALUES (?, ?, 'upload', ?, ?, ?)").run(id, movie.id, name, size, tmp);
+  db.prepare("INSERT INTO uploads (id, movie_id, kind, display_name, size, path, created_by) VALUES (?, ?, 'upload', ?, ?, ?, ?)").run(id, movie.id, name, size, tmp, req.user.id);
   res.json({ upload: publicUpload(getUpload(id)), chunkBytes: config.limits.chunkBytes });
 });
 
 r.get('/uploads/:uid', (req, res) => {
   const u = getUpload(req.params.uid);
-  if (!u) return bad(res, 'Upload not found.', 404);
+  if (!mine(u, req)) return bad(res, 'Upload not found.', 404);
   res.json({ upload: publicUpload(u), chunkBytes: config.limits.chunkBytes });
 });
 
 r.put('/uploads/:uid/chunk', asyncHandler(async (req, res) => {
   const u = getUpload(req.params.uid);
-  if (!u) return bad(res, 'Upload not found.', 404);
+  if (!mine(u, req)) return bad(res, 'Upload not found.', 404);
   if (u.status !== 'uploading') return bad(res, `This upload is already ${u.status}.`, 409);
   const offset = Number(req.query.offset);
   if (!Number.isInteger(offset) || offset !== u.received) return bad(res, 'Chunk out of order. Resuming from the server position.', 409, { received: u.received });
@@ -61,21 +67,33 @@ r.put('/uploads/:uid/chunk', asyncHandler(async (req, res) => {
   if (u.received + len > u.size) return bad(res, 'Chunk goes past the declared file size.');
   if (freeBytes(dirs.tmp) < len + config.limits.reserveFreeBytes / 2) return bad(res, 'The server ran out of disk space.', 507);
 
+  if (inFlight.has(u.id)) return bad(res, 'Another chunk for this upload is still being written.', 409, { received: u.received });
+  // Optional integrity check: the browser sends the SHA-256 of the piece; we hash while writing (streaming, no buffering).
+  const expected = String(req.headers['x-chunk-sha256'] || '').toLowerCase();
+  if (expected && !/^[a-f0-9]{64}$/.test(expected)) return bad(res, 'Invalid checksum header.');
+  const hash = crypto.createHash('sha256');
+  const hasher = new Transform({ transform(chunk, _enc, cb) { hash.update(chunk); cb(null, chunk); } });
+  inFlight.add(u.id);
   try {
     const ws = fs.createWriteStream(u.path, { flags: 'r+', start: offset });
-    await pipeline(req, ws);
+    await pipeline(req, hasher, ws);
     if (ws.bytesWritten !== len) throw new Error('short chunk');
+    if (expected && hash.digest('hex') !== expected) {
+      fs.truncateSync(u.path, u.received);
+      return bad(res, 'The chunk arrived damaged (checksum mismatch). Retrying.', 422, { received: u.received });
+    }
   } catch {
     fs.truncateSync(u.path, u.received);              // drop a half-written chunk so the client can resend it
     return res.headersSent ? undefined : bad(res, 'Chunk upload interrupted. Please retry.', 400, { received: u.received });
-  }
+  } finally { inFlight.delete(u.id); }
   db.prepare("UPDATE uploads SET received = ?, updated_at = datetime('now') WHERE id = ?").run(offset + len, u.id);
   res.json({ received: offset + len });
 }));
 
 r.post('/uploads/:uid/complete', asyncHandler(async (req, res) => {
   const u = getUpload(req.params.uid);
-  if (!u) return bad(res, 'Upload not found.', 404);
+  if (!mine(u, req)) return bad(res, 'Upload not found.', 404);
+  if (inFlight.has(u.id)) return bad(res, 'A chunk is still being written.', 409);
   if (u.status !== 'uploading') return bad(res, `This upload is already ${u.status}.`, 409);
   if (u.received !== u.size || fs.statSync(u.path).size !== u.size) return bad(res, 'The upload is incomplete.', 400, { received: u.received });
 
@@ -83,18 +101,19 @@ r.post('/uploads/:uid/complete', asyncHandler(async (req, res) => {
   moveFile(u.path, final);
   db.prepare("UPDATE uploads SET path = ?, status = 'queued', updated_at = datetime('now') WHERE id = ?").run(final, u.id);
   let estimate = null;
-  try { estimate = estimateEncode((await probe(final)).duration); }
+  try { const info = await probe(final); estimate = estimateEncode(info.duration, info.bytes); }
   catch (e) {  // not a video: keep the file (never deleted automatically), report clearly, do not queue
-    db.prepare("UPDATE uploads SET status = 'failed', error = ? WHERE id = ?").run(e.message, u.id);
-    return bad(res, e.message, 422);
+    db.prepare("UPDATE uploads SET status = 'failed', error = ? WHERE id = ?").run(scrub(e.message), u.id);
+    return bad(res, scrub(e.message), 422);
   }
+  log('info', 'upload.completed', { upload: u.id, movie: u.movie_id, bytes: u.size });
   enqueueTranscode(u.movie_id, final, u.id);
   res.json({ ok: true, estimate });
 }));
 
 r.delete('/uploads/:uid', (req, res) => {
   const u = getUpload(req.params.uid);
-  if (!u) return bad(res, 'Upload not found.', 404);
+  if (!mine(u, req)) return bad(res, 'Upload not found.', 404);
   if (u.status !== 'uploading') return bad(res, 'Only an unfinished upload can be cancelled.', 409);
   if (u.path?.startsWith(dirs.tmp)) fs.rmSync(u.path, { force: true });
   db.prepare("UPDATE uploads SET status = 'failed', error = 'Cancelled.' WHERE id = ?").run(u.id);
@@ -115,7 +134,7 @@ r.post('/movies/:id/import', (req, res) => {
   if (!VIDEO_EXT.test(name) || !insideDir(dirs.incoming, file)) return bad(res, 'File not found in the incoming folder.');
   const id = randomId(8);
   const size = fs.statSync(file).size;
-  db.prepare("INSERT INTO uploads (id, movie_id, kind, display_name, size, received, path) VALUES (?, ?, 'import', ?, ?, ?, ?)").run(id, movie.id, safeDisplayName(name), size, size, fs.realpathSync(file));
+  db.prepare("INSERT INTO uploads (id, movie_id, kind, display_name, size, received, path, created_by) VALUES (?, ?, 'import', ?, ?, ?, ?, ?)").run(id, movie.id, safeDisplayName(name), size, size, fs.realpathSync(file), req.user.id);
   enqueueTranscode(movie.id, fs.realpathSync(file), id);   // the original stays in the incoming folder
   res.json({ ok: true });
 });
