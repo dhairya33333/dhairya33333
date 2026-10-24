@@ -132,6 +132,16 @@ const MIGRATIONS = [
     addColumn('users', 'totp_last_step', 'INTEGER NOT NULL DEFAULT 0');
     db.exec(`CREATE TABLE IF NOT EXISTS recovery_codes (user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, code_hash TEXT NOT NULL, used_at TEXT, PRIMARY KEY (user_id, code_hash))`);
   },
+  // 9: cast and crew, subtitles, watch progress
+  () => {
+    addColumn('movies', 'credits', "TEXT NOT NULL DEFAULT ''");
+    db.exec(`CREATE TABLE IF NOT EXISTS subtitles (
+      id INTEGER PRIMARY KEY, movie_id INTEGER NOT NULL REFERENCES movies(id) ON DELETE CASCADE, lang TEXT NOT NULL, label TEXT NOT NULL,
+      vtt TEXT NOT NULL, created_at TEXT NOT NULL DEFAULT (datetime('now')), UNIQUE (movie_id, lang))`);
+    db.exec(`CREATE TABLE IF NOT EXISTS progress (
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, movie_id INTEGER NOT NULL REFERENCES movies(id) ON DELETE CASCADE,
+      position_sec REAL NOT NULL DEFAULT 0, updated_at TEXT NOT NULL DEFAULT (datetime('now')), PRIMARY KEY (user_id, movie_id))`);
+  },
 ];
 
 const current = db.prepare('PRAGMA user_version').get().user_version;

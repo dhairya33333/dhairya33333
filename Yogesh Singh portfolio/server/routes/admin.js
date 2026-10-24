@@ -11,6 +11,7 @@ import { enqueueTranscode, cancelEncode, checkFfmpeg } from '../transcode.js';
 import { syncInstagram } from '../instagram.js';
 import { refreshEmbed } from '../instagram-meta.js';
 import { optimizeImage, removeUploaded } from '../images.js';
+import { parseSubtitles, toVtt, LIMITS as SUB_LIMITS } from '../subtitles.js';
 import { SITE_DEFAULTS, EDITABLE_KEYS } from '../defaults.js';
 import uploadRoutes from './uploads.js';
 import { LEGAL_DEFAULTS, LEGAL_TITLES } from '../legal-defaults.js';
@@ -68,6 +69,7 @@ const movieFields = (b) => ({
   preview_sec: Math.max(0, Math.round(Number(b.preview_minutes) * 60)),
   published: b.published ? 1 : 0,
   featured: b.featured ? 1 : 0,
+  credits: String(b.credits ?? '').replace(/\r/g, '').split('\n').map((l) => l.trim()).filter(Boolean).slice(0, 60).map((l) => l.slice(0, 160)).join('\n'),
 });
 
 r.get('/movies', (_req, res) => res.json({ movies: db.prepare('SELECT * FROM movies ORDER BY id DESC').all().map(adminMovie) }));
@@ -77,10 +79,10 @@ r.post('/movies', (req, res) => {
   if (!f.title) return bad(res, 'Title is required.');
   let slug = slugify(f.title);
   while (db.prepare('SELECT 1 FROM movies WHERE slug = ?').get(slug)) slug += '-' + randomId(2);
-  const { lastInsertRowid } = db.prepare('INSERT INTO movies (slug, title, tagline, description, year, price_paise, preview_sec, published, featured) VALUES (?,?,?,?,?,?,?,0,0)')
+  const { lastInsertRowid } = db.prepare('INSERT INTO movies (slug, title, tagline, description, year, price_paise, preview_sec, published, featured, credits) VALUES (?,?,?,?,?,?,?,0,0,?)')
     .run(slug, f.title, f.tagline, f.description, f.year,
       has(req.body.price_rupees) ? f.price_paise : 29900,                 // blank price = default Rs 299
-      has(req.body.preview_minutes) ? f.preview_sec : 1800);              // blank preview = default 30 minutes
+      has(req.body.preview_minutes) ? f.preview_sec : 1800, f.credits);   // blank preview = default 30 minutes
   res.json({ id: Number(lastInsertRowid) });
 });
 
@@ -92,8 +94,8 @@ r.put('/movies/:id', (req, res) => {
   if (f.published && !(m.status === 'ready' && m.validated)) return bad(res, 'Upload and process the film (and let it pass validation) before publishing it.');
   tx(() => {
     if (f.featured) db.prepare('UPDATE movies SET featured = 0').run();
-    db.prepare('UPDATE movies SET title=?, tagline=?, description=?, year=?, price_paise=?, preview_sec=?, published=?, featured=? WHERE id=?')
-      .run(f.title, f.tagline, f.description, f.year, f.price_paise, f.preview_sec, f.published, f.featured, m.id);
+    db.prepare('UPDATE movies SET title=?, tagline=?, description=?, year=?, price_paise=?, preview_sec=?, published=?, featured=?, credits=? WHERE id=?')
+      .run(f.title, f.tagline, f.description, f.year, f.price_paise, f.preview_sec, f.published, f.featured, 'credits' in req.body ? f.credits : m.credits, m.id);
   });
   res.json({ ok: true });
 });
@@ -156,6 +158,25 @@ r.delete('/movies/:id', (req, res) => {
   unlink(m.poster); unlink(m.trailer);
   fs.rmSync(hlsDir(m.id), { recursive: true, force: true });   // processed output only; incoming-folder originals are never touched
   res.json({ ok: true });
+});
+
+// ---------- Subtitles ----------
+const subUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: SUB_LIMITS.bytes, files: 1 } });
+r.get('/movies/:id/subtitles', (req, res) => res.json({ items: db.prepare('SELECT lang, label, created_at FROM subtitles WHERE movie_id = ? ORDER BY label').all(Number(req.params.id)) }));
+r.post('/movies/:id/subtitles', subUpload.single('file'), (req, res) => {
+  const m = db.prepare('SELECT id FROM movies WHERE id = ?').get(Number(req.params.id));
+  if (!m) return bad(res, 'Not found.', 404);
+  const lang = String(req.body.lang || '').trim().toLowerCase(), label = String(req.body.label || '').trim().slice(0, 40);
+  if (!/^[a-z]{2,3}(-[a-z]{2,4})?$/.test(lang)) return bad(res, 'Language code looks like "en" or "hi" (2 or 3 letters).');
+  if (!label) return bad(res, 'Give the language a name viewers will see, for example English.');
+  if (!req.file) return bad(res, 'Choose an .srt or .vtt file (up to 2 MB).');
+  let vtt; try { vtt = toVtt(parseSubtitles(req.file.buffer.toString('utf8'))); } catch (e) { return bad(res, e.message); }
+  db.prepare('INSERT INTO subtitles (movie_id, lang, label, vtt) VALUES (?, ?, ?, ?) ON CONFLICT (movie_id, lang) DO UPDATE SET label = excluded.label, vtt = excluded.vtt, created_at = datetime(\'now\')').run(m.id, lang, label, vtt);
+  res.json({ ok: true });
+});
+r.delete('/movies/:id/subtitles/:lang', (req, res) => {
+  const out = db.prepare('DELETE FROM subtitles WHERE movie_id = ? AND lang = ?').run(Number(req.params.id), String(req.params.lang));
+  out.changes ? res.json({ ok: true }) : bad(res, 'Not found.', 404);
 });
 
 // ---------- Orders / users ----------

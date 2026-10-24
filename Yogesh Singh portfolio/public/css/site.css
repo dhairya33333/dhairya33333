@@ -427,3 +427,10 @@ section.block.compact { padding: clamp(40px, 6vw, 80px) 0; }
 .gbox-n { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: #fff; font-size: 18px; }
 .portrait { width: 100%; max-width: 380px; aspect-ratio: 4/5; object-fit: cover; border-radius: 6px; margin-bottom: 30px; display: block; box-shadow: 0 20px 50px rgba(0,0,0,.1); }
 @media (max-width: 640px) { .gbox { grid-template-columns: 1fr; padding: 10px; } .gbox-n { display: none; } .gbox img { max-height: 80vh; } .ggrid { columns: 2 140px; column-gap: 10px; } .gitem { margin-bottom: 10px; } }
+
+/* ---------- Film credits ---------- */
+.credits-h { font: 400 13px var(--sans); letter-spacing: .16em; text-transform: uppercase; color: var(--muted); margin: 34px 0 10px; }
+.credits { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: 0 28px; margin: 0; }
+.credits > div { padding: 12px 0; border-top: 1px solid var(--line); }
+.credits dt { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.credits dd { margin: 2px 0 0; font-family: var(--serif); font-size: 22px; }

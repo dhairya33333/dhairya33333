@@ -6,6 +6,8 @@ import { getSetting } from '../db.js';
 import { config } from '../config.js';
 import { playlistInfo } from '../hls.js';
 import { canWatchFull } from './media.js';
+import { requireAuth } from '../auth.js';
+import { parseSubtitles, toVtt, trimToPreview } from '../subtitles.js';
 
 const r = Router();
 
@@ -13,7 +15,12 @@ const movieCard = (m) => ({
   id: m.id, slug: m.slug, title: m.title, tagline: m.tagline, description: m.description, year: m.year,
   poster: m.poster, trailer: m.trailer, duration_sec: m.duration_sec, preview_sec: m.preview_sec,
   price_paise: m.price_paise, featured: !!m.featured, ready: m.status === 'ready',
+  credits: parseCredits(m.credits),
 });
+/** "Role|Name" per line, grouped for display. */
+export function parseCredits(text) {
+  return String(text || '').split('\n').map((l) => l.split('|').map((x) => x.trim())).filter((p) => p[0] && p[1]).slice(0, 60).map(([role, name]) => ({ role, name }));
+}
 
 export function publicSettings() {
   const s = { ...SITE_DEFAULTS, ...allSettings() };
@@ -45,7 +52,42 @@ r.get('/movies/:slug/playback', (req, res) => {
     mode: full ? 'full' : 'preview',
     url: full ? `/media/${m.id}/full.m3u8` : (info.hasPreview ? `/media/${m.id}/preview.m3u8` : null),
     previewSeconds: info.previewSeconds, durationSec: m.duration_sec, movieId: m.id,
+    subtitles: db.prepare('SELECT lang, label FROM subtitles WHERE movie_id = ? ORDER BY label').all(m.id).map((x) => ({ ...x, url: `/api/movies/${encodeURIComponent(m.slug)}/subtitles/${x.lang}.vtt` })),
   });
+});
+
+// Subtitle track. Without the film purchased, only the cues inside the free preview are returned.
+r.get('/movies/:slug/subtitles/:lang.vtt', (req, res) => {
+  const m = db.prepare("SELECT * FROM movies WHERE slug = ? AND published = 1 AND status = 'ready'").get(req.params.slug);
+  const row = m && /^[a-z]{2,3}(-[A-Za-z]{2,4})?$/.test(req.params.lang) && db.prepare('SELECT vtt FROM subtitles WHERE movie_id = ? AND lang = ?').get(m.id, req.params.lang);
+  if (!row) return res.status(404).end();
+  let body = row.vtt;
+  if (!canWatchFull(req.user, m)) body = toVtt(trimToPreview(parseSubtitles(row.vtt), m.preview_sec));
+  res.set({ 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff' }).type('text/vtt').send(body);
+});
+
+// Where the signed-in viewer stopped. Saved on the server so it follows them to another phone or computer.
+const placeFor = (user, m) => db.prepare('SELECT position_sec FROM progress WHERE user_id = ? AND movie_id = ?').get(user.id, m.id)?.position_sec || 0;
+r.get('/progress/:slug', requireAuth, (req, res) => {
+  const m = db.prepare("SELECT * FROM movies WHERE slug = ? AND published = 1").get(req.params.slug);
+  if (!m) return res.status(404).json({ error: 'Film not found.' });
+  const cap = canWatchFull(req.user, m) ? Infinity : m.preview_sec;
+  res.set('Cache-Control', 'private, no-store').json({ position: Math.min(placeFor(req.user, m), cap) });
+});
+r.post('/progress', requireAuth, (req, res) => {
+  const m = db.prepare("SELECT * FROM movies WHERE slug = ? AND published = 1 AND status = 'ready'").get(String(req.body.slug || ''));
+  const pos = Number(req.body.position);
+  if (!m || !Number.isFinite(pos) || pos < 0) return res.status(400).json({ error: 'Invalid position.' });
+  const max = canWatchFull(req.user, m) ? (m.duration_sec || pos) : m.preview_sec;      // cannot claim to be past what they may watch
+  db.prepare("INSERT INTO progress (user_id, movie_id, position_sec, updated_at) VALUES (?, ?, ?, datetime('now')) ON CONFLICT (user_id, movie_id) DO UPDATE SET position_sec = excluded.position_sec, updated_at = excluded.updated_at")
+    .run(req.user.id, m.id, Math.min(pos, max));
+  res.json({ ok: true });
+});
+r.get('/my/continue', requireAuth, (req, res) => {
+  const rows = db.prepare(`SELECT m.slug, m.title, m.poster, m.duration_sec, p.position_sec FROM progress p JOIN movies m ON m.id = p.movie_id
+    WHERE p.user_id = ? AND m.published = 1 AND p.position_sec > 30 ORDER BY p.updated_at DESC LIMIT 6`).all(req.user.id)
+    .filter((x) => !x.duration_sec || x.position_sec < x.duration_sec - 60);
+  res.set('Cache-Control', 'private, no-store').json({ items: rows });
 });
 
 export const legalText = (slug) => getSetting(`legal_${slug}`, LEGAL_DEFAULTS[slug]);

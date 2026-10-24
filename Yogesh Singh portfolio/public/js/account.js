@@ -13,6 +13,12 @@ function paintSignin() {
 }
 paintSignin();
 
+const { items: cont } = await api('/my/continue').catch(() => ({ items: [] }));
+if (cont.length && $('#continue')) {
+  $('#continue').innerHTML = `<h2 class="serif" style="font-size:30px;margin:0 0 6px">Continue watching</h2>` + cont.map((p) => `<a href="/film/${esc(p.slug)}" style="display:flex;gap:16px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)">
+      ${p.poster ? `<img src="${esc(p.poster)}" alt="" style="width:40px;height:60px;object-fit:cover;border-radius:3px">` : ''}
+      <span style="flex:1"><b>${esc(p.title)}</b><br><span class="muted small">${Math.floor(p.position_sec / 60)} min watched${p.duration_sec ? ` of ${Math.round(p.duration_sec / 60)}` : ''}</span></span><span class="link">Resume →</span></a>`).join('');
+}
 const { purchases } = await api('/my/purchases');
 $('#list').innerHTML = purchases.length
   ? purchases.map((p) => `<a href="/film/${esc(p.slug)}" style="display:flex;gap:16px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)">

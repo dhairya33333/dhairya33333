@@ -60,7 +60,7 @@ const views = {
     const { movies } = await api('/admin/movies');
     const m = movies.find((x) => x.id === Number(id));
     if (!m) { location.hash = '#films'; return; }
-    const [inc, up] = await Promise.all([api('/admin/incoming'), api(`/admin/movies/${m.id}/uploads`)]);
+    const [inc, up, subs] = await Promise.all([api('/admin/incoming'), api(`/admin/movies/${m.id}/uploads`), api(`/admin/movies/${m.id}/subtitles`)]);
     const busy = ['queued', 'processing'].includes(m.encode_state);
     view.innerHTML = head(esc(m.title), `<a class="link" href="#films">← All films</a> &nbsp; <span class="pill ${m.encode_state === 'idle' ? m.status : m.encode_state}">${m.encode_state === 'idle' ? m.status : m.encode_state}</span>`) + `
       <div class="grid g2">
@@ -68,6 +68,7 @@ const views = {
           <label class="field"><span>Title</span><input id="f-title" value="${esc(m.title)}"></label>
           <label class="field"><span>Tagline</span><input id="f-tag" value="${esc(m.tagline)}"></label>
           <label class="field"><span>Description</span><textarea id="f-desc">${esc(m.description)}</textarea></label>
+          <label class="field"><span>Cast &amp; crew: one per line as  Role|Name  (for example  Director|Yogesh Pratap Singh)</span><textarea id="f-credits" rows="6">${esc(m.credits)}</textarea></label>
           <div class="cols"><label class="field"><span>Year</span><input id="f-year" value="${esc(m.year)}"></label>
             <label class="field"><span>Price (₹)</span><input id="f-price" type="number" min="1" step="any" value="${m.price_paise / 100}"></label></div>
           <label class="field"><span>Free preview (minutes)</span><input id="f-prev" type="number" min="0" step="any" value="${+(m.preview_sec / 60).toFixed(2)}"></label>
@@ -92,6 +93,10 @@ const views = {
               <option value="">Choose a file…</option>${inc.files.map((f) => `<option value="${esc(f.name)}">${esc(f.name)} (${(f.size / 1e9).toFixed(2)} GB)</option>`).join('')}</select>
               <button class="btn s" id="impgo" ${busy ? 'disabled' : ''}>Process</button></div>
             ${up.uploads.length ? `<h3 style="margin-top:20px">Recent uploads</h3><table>${up.uploads.slice(0, 5).map((u) => `<tr><td class="small">${esc(u.name || '')}</td><td><span class="pill ${u.status === 'completed' ? 'ready' : u.status === 'failed' ? 'failed' : 'processing'}">${u.status}</span></td><td class="small muted">${esc(u.error || '')}</td></tr>`).join('')}</table>` : ''}</div>
+          <div class="panel" style="margin-top:16px"><h3>Subtitles</h3>
+            <p class="muted small">Upload .srt or .vtt files. People who have not bought the film only receive the subtitles for the free preview.</p>
+            ${subs.items.length ? `<table>${subs.items.map((x) => `<tr><td>${esc(x.label)} <span class="muted small">(${esc(x.lang)})</span></td><td><button class="btn s" data-subdel="${esc(x.lang)}">Remove</button></td></tr>`).join('')}</table>` : '<p class="muted small">No subtitles yet.</p>'}
+            <div class="row" style="margin-top:10px"><input id="s-lang" placeholder="Code, e.g. en" size="6"><input id="s-label" placeholder="Name, e.g. English" size="14"><input type="file" id="s-file" accept=".srt,.vtt,text/vtt"><button class="btn s gold" id="s-add">Add</button></div></div>
           <div class="panel" style="margin-top:16px"><h3>Artwork</h3>
             <div class="row" style="align-items:flex-start">${m.poster ? `<img src="${esc(m.poster)}" style="width:90px;border-radius:4px">` : ''}
               <div style="flex:1"><label class="field"><span>Poster (portrait 2:3 works best)</span><input type="file" id="poster" accept="image/*"></label>
@@ -99,7 +104,7 @@ const views = {
               ${m.trailer ? '<span class="pill pub">trailer set</span>' : ''}</div></div></div>
         </div>
       </div>`;
-    const body = () => ({ title: $('#f-title').value, tagline: $('#f-tag').value, description: $('#f-desc').value, year: $('#f-year').value, price_rupees: $('#f-price').value, preview_minutes: $('#f-prev').value, published: $('#f-pub').checked, featured: $('#f-feat').checked });
+    const body = () => ({ title: $('#f-title').value, tagline: $('#f-tag').value, description: $('#f-desc').value, year: $('#f-year').value, price_rupees: $('#f-price').value, preview_minutes: $('#f-prev').value, published: $('#f-pub').checked, featured: $('#f-feat').checked, credits: $('#f-credits').value });
     $('#save').onclick = () => act(() => api('/admin/movies/' + m.id, { method: 'PUT', body: body() }), 'Saved');
     $('#del').onclick = () => confirm('Delete this film permanently?') && act(async () => { await api('/admin/movies/' + m.id, { method: 'DELETE' }); location.hash = '#films'; });
     $('#cancelenc')?.addEventListener('click', () => confirm('Stop processing this film? The original file and any published version are not affected.') && act(async () => { await api(`/admin/movies/${m.id}/cancel-encode`, { method: 'POST' }); route(); }, 'Cancelled'));
@@ -107,6 +112,8 @@ const views = {
     $('#reproc')?.addEventListener('click', () => act(async () => { await api(`/admin/movies/${m.id}/reprocess`, { method: 'POST' }); route(); }, 'Re-processing started'));
     $('#impgo').onclick = () => $('#imp').value && act(async () => { await api(`/admin/movies/${m.id}/import`, { method: 'POST', body: { file: $('#imp').value } }); route(); }, 'Processing started');
     for (const k of ['poster', 'trailer']) $('#' + k).onchange = (e) => upload(`/admin/movies/${m.id}/${k}`, e.target.files[0]).then(() => { toast('Uploaded'); route(); }).catch((x) => toast(x.message, true));
+    $('#s-add').onclick = () => { const f = $('#s-file').files[0]; if (!f) return toast('Choose a subtitle file', true); const fd = new FormData(); fd.append('lang', $('#s-lang').value); fd.append('label', $('#s-label').value); fd.append('file', f); act(async () => { await api(`/admin/movies/${m.id}/subtitles`, { method: 'POST', form: fd }); route(); }, 'Subtitles added'); };
+    $$('[data-subdel]').forEach((b) => (b.onclick = () => act(async () => { await api(`/admin/movies/${m.id}/subtitles/${b.dataset.subdel}`, { method: 'DELETE' }); route(); }, 'Removed')));
     $('#vid').onchange = (e) => { const f = e.target.files[0]; if (f) chunkedUpload(m.id, f, up.chunkBytes); };
     if (busy) poll = setTimeout(() => route(), 4000);
   },

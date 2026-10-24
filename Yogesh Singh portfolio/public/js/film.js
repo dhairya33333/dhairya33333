@@ -16,8 +16,29 @@ const state = (text, { retry } = {}) => {
 
 const spoken = (sec) => (sec < 90 ? `${sec} seconds` : `${Math.round(sec / 60)} minutes`);
 const posKey = () => `yp-pos-${movie.id}`;
-const savedPos = () => Number(localStorage.getItem(posKey()) || 0);
+const localPos = () => Number(localStorage.getItem(posKey()) || 0);
+// Signed-in viewers: the place is kept on the server, so it follows them to another phone or computer. Everyone: also kept on this device.
+let remotePos = 0, lastSent = -100;
 const savePos = (n) => { try { localStorage.setItem(posKey(), String(Math.floor(n))); } catch { /* private mode */ } };
+function pushPos(force) {
+  if (!user || !movie) return;
+  const t = Math.floor(video.currentTime || 0);
+  if (t < 5 || (!force && Math.abs(t - lastSent) < 15)) return;
+  lastSent = t;
+  fetch('/api/progress', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', keepalive: true, body: JSON.stringify({ slug, position: t }) }).catch(() => {});
+}
+function addSubtitles() {
+  $$('track', video).forEach((t) => t.remove());
+  (playback.subtitles || []).forEach((s, i) => {
+    const t = Object.assign(document.createElement('track'), { kind: 'subtitles', label: s.label, srclang: s.lang, src: s.url, default: i === 0 && localStorage.getItem('yp-subs') !== 'off' });
+    video.append(t);
+  });
+}
+function renderCredits() {
+  const c = movie.credits || [];
+  $('#credits-sec').hidden = !c.length;
+  $('#credits').replaceChildren(...c.map((x) => { const d = document.createElement('div'), dt = document.createElement('dt'), dd = document.createElement('dd'); dt.textContent = x.role; dd.textContent = x.name; d.append(dt, dd); return d; }));
+}
 
 function showPaywall() {
   if (playback?.mode === 'full') return;
@@ -61,7 +82,7 @@ function renderInfo() {
   $('#badge').textContent = owns ? 'Full film' : 'Free preview';
   $('#preview-note').hidden = false;
   $('#preview-note').textContent = owns
-    ? 'You own this film. Your place is saved on this device.'
+    ? 'You own this film. Your place is saved to your account.'
     : playback.url
       ? `You are watching the free preview: the first ${freeLen}. When it ends, a one-time payment of ${rupees(movie.price_paise)} unlocks the rest of the film.`
       : `This film has no free preview. A one-time payment of ${rupees(movie.price_paise)} unlocks it.`;
@@ -139,10 +160,11 @@ async function start() {
   state('Loading film…');
   try { playback = await api(`/movies/${encodeURIComponent(slug)}/playback`); }
   catch { state('The film could not be loaded.', { retry: true }); return; }
-  renderInfo();
+  renderInfo(); renderCredits(); addSubtitles();
+  if (user) { try { remotePos = (await api(`/progress/${encodeURIComponent(slug)}`)).position || 0; } catch { /* offline: fall back to this device */ } }
   if (!playback.url) { state(''); showPaywall(); return; }
   const cap = playback.mode === 'preview' ? Math.max(0, playback.previewSeconds - 5) : Infinity;
-  attach(playback.url, Math.min(savedPos(), cap));
+  attach(playback.url, Math.min(user && remotePos ? remotePos : localPos(), cap));
 }
 
 async function boot() {
@@ -158,7 +180,11 @@ async function boot() {
     $('#paywall-buy').addEventListener('click', unlock);
   }
   let last = 0;
-  video.addEventListener('timeupdate', () => { if (Math.abs(video.currentTime - last) > 5) { last = video.currentTime; savePos(last); } });
+  video.addEventListener('timeupdate', () => { if (Math.abs(video.currentTime - last) > 5) { last = video.currentTime; savePos(last); pushPos(); } });
+  video.addEventListener('pause', () => pushPos(true));
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') pushPos(true); });
+  addEventListener('pagehide', () => pushPos(true));
+  video.textTracks.addEventListener?.('change', () => { try { localStorage.setItem('yp-subs', [...video.textTracks].some((t) => t.mode === 'showing') ? 'on' : 'off'); } catch { /* private mode */ } });
   video.addEventListener('waiting', () => { if (!video.paused) state('Buffering…'); });
   for (const ev of ['playing', 'canplay']) video.addEventListener(ev, () => state(''));
   video.addEventListener('contextmenu', (e) => e.preventDefault());
