@@ -54,6 +54,16 @@ Tick every line; most items need the client's accounts and cannot be done by the
 - [ ] Articles/press entries added (Admin → Journey, type *article*)
 - [ ] Instagram token added (optional)
 
+**Round 3 items**
+- [ ] Admin → Legal pages: every [placeholder] filled in (the dashboard warns until they are) and the text read by a lawyer
+- [ ] Email: SMTP set in the env file (docs/EMAIL.md), **Dashboard → Send test email** arrives, then a real contact message and a test purchase email arrive; forgot-password works for a test account
+- [ ] Admin account: two-step sign-in turned on, recovery codes saved somewhere safe (and `ADMIN_2FA_REQUIRED=true` set if more admins exist)
+- [ ] Dashboard → System health: all green (backup < 36 h, off-server copy OK, disk, https)
+- [ ] Alerts: `ALERT_WEBHOOK_URL` (or `ALERT_EMAIL`) set; stop the app for 10 minutes once and confirm you get "SITE DOWN" and then "RECOVERED"
+- [ ] Hindi: a Hindi speaker reads the site with the हिं toggle and fixes anything odd (Admin → Site content → Hindi, and `public/js/i18n-hi.js` for button text)
+- [ ] Portrait and gallery photos uploaded; film cast & crew filled in; subtitles uploaded and checked on the free preview
+- [ ] A discount code created and tried at checkout on a test order (price shown must match the gateway's amount)
+
 **After launch**
 - [ ] Watch `journalctl -u yogesh-portfolio -f` and Admin → Orders during the first sales
 - [ ] Load-test before any promotion; record the number of concurrent viewers the plan really supports

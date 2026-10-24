@@ -42,7 +42,7 @@ certbot --nginx -d "$DOMAIN" -d "www.$DOMAIN" -m "$EMAIL" --agree-tos --non-inte
 # cron: nightly backup (as portfolio) and disk check (as root)
 chmod +x deploy/*.sh
 ( crontab -u portfolio -l 2>/dev/null | grep -v backup.sh; echo "15 3 * * * $APP/deploy/backup.sh >> /var/log/yp-backup.log 2>&1" ) | crontab -u portfolio -
-( crontab -l 2>/dev/null | grep -v check-disk.sh; echo "*/30 * * * * $APP/deploy/check-disk.sh" ) | crontab -
+( crontab -l 2>/dev/null | grep -v -e check-disk.sh -e check-site.sh; echo "*/30 * * * * $APP/deploy/check-disk.sh"; echo "*/5 * * * * $APP/deploy/check-site.sh" ) | crontab -
 touch /var/log/yp-backup.log && chown portfolio /var/log/yp-backup.log
 cat > /etc/logrotate.d/yp-backup <<'LR'
 /var/log/yp-backup.log { weekly rotate 8 compress missingok notifempty }

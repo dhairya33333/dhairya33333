@@ -96,3 +96,9 @@ Database migrations are additive only (new columns/tables, tracked in `PRAGMA us
 
 ## Security checklist for the server
 Only ports 22, 80 and 443 open; SSH keys only (`PasswordAuthentication no` once your key works); `unattended-upgrades` enabled; env file mode 600; `JWT_SECRET` unique and 32+ chars (the app refuses to start in production otherwise); never run the app as root.
+
+
+## Alerts, backups and speed (round 3)
+* **Backups:** `deploy/backup.sh` (03:15 nightly) backs up the database, then, if `BACKUP_REMOTE` is set, copies database, originals and uploads off the server with rsync, and writes `backups/status.json`. A failure raises an alert. Admin → Dashboard → System health shows the result. Test a restore at least once (`docs/DEPLOYMENT.md` restore section).
+* **Alerts:** put `ALERT_WEBHOOK_URL` (Slack/Discord incoming webhook, or an `https://ntfy.sh/your-topic` URL) and/or `ALERT_EMAIL` in `/etc/yogesh-portfolio/env`. `check-site.sh` (every 5 min) alerts once after two failed health checks and again on recovery; `check-disk.sh` (every 30 min) alerts above 85% disk. `setup-vps.sh` installs both cron jobs.
+* **Speed:** `deploy/nginx.conf` now gzips text, serves `/uploads/` with a 30-day immutable cache and sends `/media/` (video) uncompressed and unbuffered. After changing it run `nginx -t && systemctl reload nginx`. Measure pages with `BASE_URL=https://your-site npm run measure-pages`.

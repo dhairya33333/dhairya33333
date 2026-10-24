@@ -3,7 +3,29 @@
 Incremental changes to the existing codebase (no rewrite). Findings and fixes: [AUDIT.md](AUDIT.md). Security model and limits: [SECURITY.md](SECURITY.md).
 Round 1 added Google sign-in, Razorpay, resumable uploads and the validated HLS pipeline. **Round 2 (this report's focus) hardened payments, authentication, media access, uploads, data integrity, SEO and deployment, and measured performance.**
 
-## 0. Latest addition: About, Contact and Social pages
+
+## 00. Round 3: production extras (this section is the newest)
+Done in this order, each with tests. **201 automated tests, all pass** (was 157). The browser smoke test (real ffmpeg encode, upload, paywall, purchase, phone layout, keyboard) passes with the new consent box.
+
+| # | Feature | Where | Tests |
+|---|---|---|---|
+| 1 | Privacy, Terms, Refund pages, editable in Admin, footer links, **checkout requires the consent tick** and stores when/which version was accepted (migration 6) | `legal-defaults.js`, `routes/public.js`, `routes/payments.js`, `public/legal.*` | `legal` 6 |
+| 2 | Portrait, Gallery page, trailer on home (already existed), **image pipeline**: JPG/PNG/WebP check by file signature, resize, WebP, EXIF/GPS stripped; posters and Instagram covers use it too (migration 7) | `server/images.js`, `routes/admin.js`, `public/gallery.*` | `photos` 6 |
+| 5 | Email (nodemailer, optional): contact notification, purchase receipt + sale notice (sent once per order, after commit), forgot-password (same answer for unknown addresses), admin "Send test email". The log scrubber now also hides `password=...` style text | `server/mailer.js`, `docs/EMAIL.md` | `email` 7 |
+| 8 | Two-step sign-in: own TOTP (RFC 6238 test vectors pass), AES-GCM encrypted secret, replay protection, 10 hashed recovery codes, ticket flow for password and Google sign-in (5 tries), QR code, `ADMIN_2FA_REQUIRED`, `npm run reset-2fa` (migration 8) | `server/totp.js`, `routes/auth.js` | `twofa` 7 |
+| 6 | Cast and crew, subtitles (SRT/VTT cleaned to WebVTT, free-preview trimming for non-buyers), server-side continue watching (migration 9) | `server/subtitles.js`, `routes/public.js` | `film-extras` 7 |
+| 7 | Anonymous funnel, discount codes (server computes price, floor ₹1, max uses, expiry, once per person, one generic error), admin audit log (route + status, never bodies) (migration 10) | `analytics.js`, `coupons.js`, `routes/admin.js` | `admin-insight` 7 |
+| 4 | Hindi/English (migration 11): dictionary for interface text, `_hi` fields for content, Devanagari fonts, toggle remembered per device | `public/js/i18n*.js` | `i18n` 4 |
+| 9 | Backup status + off-server copy result, alerts (`alert.sh`, `check-site.sh`: down after 2 misses, recovery notice, `check-disk.sh`), System health panel | `deploy/*.sh`, `/api/admin/health` | `admin-insight` health test; alert scripts exercised locally against a fake webhook |
+| 10 | nginx gzip, long cache for uploaded images, no compression/buffering for video; `npm run measure-pages` | `deploy/nginx.conf`, `scripts/measure-pages.js` | measured below |
+
+**Measured page weight (first visit, includes CSS/JS/API, excludes Google Fonts and the lazy-loaded video player library):** Home 100 KB raw / 29 KB gzip, Films 91/26, Film 101/30, About 93/27, Gallery 93/27, Social 98/29, Contact 97/29, Sign in 86/25. gzip figures are what nginx sends once the new config is installed (not measured through a real nginx).
+
+**Not verified (needs the real thing):** real SMTP delivery, authenticator apps other than the RFC vectors, real Razorpay/Cashfree/Google/Instagram traffic, nginx and cron on a real VPS (shell syntax checked, alert logic exercised locally), real iPhone, a real 10.8 GB film. Hindi text and the legal templates need a human reader (Hindi speaker; lawyer).
+
+**Skipped on purpose:** 1080p and adaptive bitrate (one 720p rendition keeps encoding time and disk small; revisit if viewers complain).
+
+## 0. Earlier addition: About, Contact and Social pages
 * **New pages** `/about`, `/contact`, `/social` with a shared header/footer, page-reveal animations, staggered cards, an animated timeline and counters. Navigation on every page now reads Films · About · Social · Contact.
 * **Contact form** (`POST /api/contact`): validated, spam-protected (honeypot, 5/hour/IP, link limit), stored in a new `messages` table (migration 4). **Admin → Inbox** lists messages with an unread badge, mark read/unread, delete, and a "Reply by email" button. No email is sent automatically (no email service configured).
 * **Social page**: the admin pastes Instagram post/reel links (Admin → Social feed). The site fetches each post's cover and caption (best effort, strict host allow-list) and shows a designed card grid with Reels/Posts filters, hover effects and a keyboard-accessible viewer that plays the real post; covers can be uploaded when Instagram withholds them. Optional token sync still works. Links are strictly validated; only the short code reaches the browser; CSP allows `https://www.instagram.com` as a frame only.

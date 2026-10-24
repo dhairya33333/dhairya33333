@@ -40,7 +40,7 @@ const B = process.env.BASE || 'http://localhost:3333', OUT = process.argv[2] || 
   await v.click('#paywall-buy'); await v.waitForURL(/login/);
   await v.click('#sw'); await v.fill('input[name=name]', 'Viewer'); await v.fill('input[name=email]', 'v@e2e.com'); await v.fill('input[name=password]', 'password-12345'); await v.click('#go');
   await v.waitForURL(/film\/e2e-film/); await v.waitForSelector('#modal.open'); await v.fill('#phone', '9876543210'); await v.screenshot({ path: OUT + '/e2e-modal.png' });
-  await v.click('#pay-go'); await v.waitForFunction(() => document.getElementById('badge').textContent === 'Full film', null, { timeout: 15000 });
+  await v.check('#agree'); await v.click('#pay-go'); await v.waitForFunction(() => document.getElementById('badge').textContent === 'Full film', null, { timeout: 15000 });
   const full = await v.evaluate(() => new Promise((r) => { const x = document.getElementById('video'); x.addEventListener('durationchange', () => r(x.duration)); if (x.duration) r(x.duration); }));
   ok(full > 25, `After purchase the whole film plays (${full}s)`);
   await v.screenshot({ path: OUT + '/e2e-film-owned.png' });

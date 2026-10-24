@@ -43,3 +43,13 @@ The preview policy is the same in the front end (player loads `/api/movies/:slug
 
 ## Reporting / hardening checklist for the server
 See `DEPLOYMENT.md` and `GO_LIVE.md`.
+
+
+## Round 3 additions
+* **Two-step sign-in (TOTP).** Off by default for everyone; strongly recommended for the admin account, and `ADMIN_2FA_REQUIRED=true` blocks the admin API until each admin enables it. The authenticator secret is stored encrypted (AES-256-GCM, key derived from `JWT_SECRET`, so rotating `JWT_SECRET` switches two-step off for everyone and they must set it up again); a code works once; sign-in tickets last 5 minutes and die after 5 wrong codes; recovery codes are stored as hashes and work once. Lost phone and codes: `npm run reset-2fa -- email` on the server.
+* **Discount codes** are decided on the server only; the client cannot send a price. Invalid, expired, used-up and wrong-film codes all return the same message.
+* **Audit log** records who called which admin route and the result, never request bodies.
+* **Images** are accepted by file signature (not by name), re-encoded, and stripped of metadata; SVG is not accepted.
+* **Subtitles** for people who have not paid are cut to the free-preview window on the server.
+* **Analytics** are counters only: no cookies, IPs or user ids.
+* **Email** header values have line breaks removed; reset requests never reveal whether an address has an account.

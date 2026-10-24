@@ -12,7 +12,8 @@
     "check": "for f in $(find server scripts public tests -name '*.js'); do node --check $f || exit 1; done && echo 'syntax OK'",
     "backup-db": "node scripts/backup-db.js",
     "verify-data": "node scripts/verify-data.js",
-    "reset-2fa": "node scripts/reset-2fa.js"
+    "reset-2fa": "node scripts/reset-2fa.js",
+    "measure-pages": "node scripts/measure-pages.js"
   },
   "engines": {
     "node": ">=22.13"

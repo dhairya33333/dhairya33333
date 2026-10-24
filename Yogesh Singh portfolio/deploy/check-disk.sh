@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Cron every 30 min as root:  */30 * * * * /opt/yogesh-portfolio/deploy/check-disk.sh
-# Logs a warning (journal) and optionally mails ALERT_EMAIL when disk use passes the threshold.
+# Raises an alert (journal, ALERT_WEBHOOK_URL, ALERT_EMAIL) when disk use passes the threshold.
 THRESHOLD="${THRESHOLD:-85}"
 for path in /var/lib/yogesh-portfolio /srv/yp; do
   [ -d "$path" ] || continue
@@ -8,6 +8,6 @@ for path in /var/lib/yogesh-portfolio /srv/yp; do
   if [ "$use" -ge "$THRESHOLD" ]; then
     msg="DISK WARNING: $path is ${use}% full on $(hostname)"
     logger -p user.crit -t yp-disk "$msg"
-    [ -n "${ALERT_EMAIL:-}" ] && echo "$msg" | mail -s "$msg" "$ALERT_EMAIL" || true
+    "$(dirname "$0")/alert.sh" "$msg"
   fi
 done

@@ -11,9 +11,17 @@ Self-hosted website for Yogesh Pratap Singh (former IPS officer, author, film di
 | `/films` and `/film/<name>` | Film library, free preview, payment | Admin → Films |
 | `/about` | Biography, stats, timeline, speaking invitation | Admin → Site content (About, Stats) and Journey |
 | `/contact` | Contact details + message form (spam-protected) | Details: Admin → Site content. **Messages arrive in Admin → Inbox** (with an unread count); reply with the "Reply by email" button |
+| `/gallery` | Photograph gallery with a full-screen viewer; the portrait on About | **Admin → Photos** (photos are resized, converted to WebP and stripped of location data automatically) |
+| `/privacy`, `/terms`, `/refunds` | Legal pages; checkout needs the buyer to tick agreement | **Admin → Legal pages** (starting templates with [placeholders]: fill in and have a lawyer review) |
 | `/social` | Instagram posts and reels exactly as on Instagram | **Admin → Social feed → paste the post/reel link → "Add to website"** (no token needed). The site fetches the cover and caption and shows a designed card grid with Reels/Posts filters; clicking a card plays the post in a viewer. If Instagram withholds a cover, upload one (Upload cover) and edit the caption. Optional: connect an Instagram token for hands-free sync |
 
-Notes: the contact form does not send email by itself (there is no email service configured), so messages are kept in the Inbox and the admin sees an unread badge. Playing a post uses Instagram's own embed (needs the visitor's browser to reach instagram.com; public accounts only). Cover images and captions are read from Instagram's public preview data when a link is added; that can fail (Instagram sometimes asks for a login), which is why the admin can upload a cover. The embed playing was confirmed on a real account by the site owner; the automatic cover fetch has not been confirmed against live Instagram.
+Notes: messages are always kept in the Inbox (unread badge). If email is set up (docs/EMAIL.md) you are also emailed each message; without it nothing is sent. Playing a post uses Instagram's own embed (needs the visitor's browser to reach instagram.com; public accounts only). Cover images and captions are read from Instagram's public preview data when a link is added; that can fail (Instagram sometimes asks for a login), which is why the admin can upload a cover. The embed playing was confirmed on a real account by the site owner; the automatic cover fetch has not been confirmed against live Instagram.
+
+## What else the site does
+* **Hindi / English** toggle (button in the menu). Interface text is translated from a built-in dictionary; the biography, film text and journey have their own Hindi boxes in Admin. The Hindi was written by an AI and needs a native speaker's read-through.
+* **Film page:** cast and crew, subtitles (an uploaded .srt/.vtt; people who have not paid only get the free-preview part), and "continue watching" that follows the account to any device.
+* **Admin:** Insight (anonymous funnel from visit to purchase), Discounts (codes, price decided on the server, never below ₹1), Activity log (who changed what), a System health panel on the Dashboard, optional two-step sign-in (authenticator app + recovery codes; `ADMIN_2FA_REQUIRED=true` makes it compulsory for admins).
+* **Operations:** nightly backup with an off-server copy and status, disk and site-down alerts to a webhook or email, gzip and caching in nginx, `npm run measure-pages`.
 
 ## Documentation
 | Guide | |
@@ -24,6 +32,7 @@ Notes: the contact form does not send email by itself (there is no email service
 | [docs/PAYMENTS.md](docs/PAYMENTS.md) | Razorpay/Cashfree test and production setup, webhooks, refunds |
 | [docs/VIDEO.md](docs/VIDEO.md) | Uploading a 10.8 GB film, FFmpeg/HLS, publishing, capacity |
 | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | VPS sizing, install, backups, restore, update, rollback |
+| [docs/EMAIL.md](docs/EMAIL.md) | Optional email: contact alerts, receipts, forgot-password |
 | [docs/GO_LIVE.md](docs/GO_LIVE.md) | Launch checklist |
 | [docs/SECURITY.md](docs/SECURITY.md) | Access policy, what is enforced, honest limitations (no DRM, etc.) |
 
@@ -38,7 +47,7 @@ Without payment keys (and outside production) checkout runs in clearly labelled 
 
 ## Test
 ```bash
-npm test          # 157 automated tests (needs ffmpeg), about 2 minutes, uses temp directories and simulated gateways. No real charges
+npm test          # 201 automated tests (needs ffmpeg), about 2 minutes, uses temp directories and simulated gateways. No real charges
 npm run check     # syntax check of every source file
 npm run verify-data   # payments, refunds and entitlements agree (read-only; run it on the server too)
 ```

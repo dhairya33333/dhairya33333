@@ -96,7 +96,7 @@ export function createApp() {
   app.use('/api', publicRoutes);
   app.use('/media', mediaRoutes);
 
-  app.use('/uploads', express.static(dirs.uploads, { maxAge: '7d', index: false, dotfiles: 'deny' }));
+  app.use('/uploads', express.static(dirs.uploads, { maxAge: '30d', immutable: true, index: false, dotfiles: 'deny' }));
   app.get('/robots.txt', (_req, res) => res.type('text/plain').send(
     `User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api/\nDisallow: /media/\nDisallow: /account.html\nDisallow: /login.html\nDisallow: /reset-password.html\nDisallow: /payment-return.html\n\nSitemap: ${config.siteUrl}/sitemap.xml\n`));
   app.get('/sitemap.xml', (_req, res) => {
