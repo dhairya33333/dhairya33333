@@ -11,8 +11,11 @@ function setBadge(n) { const a = $('#inbox-link'); if (a) a.innerHTML = 'Inbox' 
 
 const views = {
   async dashboard() {
-    const s = await api('/admin/stats'); setBadge(s.unread_messages);
+    const [s, h] = await Promise.all([api('/admin/stats'), api('/admin/health').catch(() => null)]); setBadge(s.unread_messages);
     view.innerHTML = head('Dashboard', 'How the film is doing.') + `
+      ${h ? `<div class="panel" style="margin-bottom:16px;border-left:4px solid var(--${h.ok ? 'ok, #2e7d32' : 'danger'})"><h3>System health <span class="pill ${h.ok ? 'PAID' : 'FAILED'}">${h.ok ? 'all good' : 'needs attention'}</span></h3>
+        <table>${h.checks.map((c) => `<tr><td style="width:26px">${c.ok ? '✓' : '⚠'}</td><td><b>${esc(c.label)}</b></td><td class="small muted">${esc(c.detail)}</td></tr>`).join('')}</table>
+        <div class="row" style="margin-top:10px"><button class="btn s" id="mail-test">Send test email</button><span class="muted small">Node ${esc(h.node)} · up ${h.uptimeHours} h</span></div></div>` : ''}
       <div class="grid g4">
         <div class="panel kpi"><b>${rupees(s.revenue_paise)}</b><span>Revenue</span></div>
         <div class="panel kpi"><b>${s.orders_paid}</b><span>Paid orders</span></div>
@@ -42,6 +45,7 @@ const views = {
         <p><b>${u.free_gb} GB free</b> of ${u.total_gb} GB (${u.reserve_gb} GB is always kept in reserve)</p>
         <table>${Object.entries(u.parts_gb).map(([k, v]) => `<tr><td>${label[k]}</td><td style="text-align:right">${v} GB</td></tr>`).join('')}</table>`;
     }).catch(() => ($('#storage').textContent = 'Could not read disk usage.'));
+    $('#mail-test')?.addEventListener('click', () => act(async () => { const r = await api('/admin/email/test', { method: 'POST', body: {} }); toast('Test email sent to ' + r.to); }));
   },
 
   async films() {
@@ -185,6 +189,35 @@ const views = {
     $('#save').onclick = () => act(async () => { await api('/admin/legal', { method: 'PUT', body: Object.fromEntries($$('[data-legal]').map((t) => [t.dataset.legal, t.value])) }); route(); }, 'Saved');
   },
 
+  async insight() {
+    const days = Number(location.hash.split('/')[1]) || 30;
+    const f = await api('/admin/funnel?days=' + days);
+    const max = Math.max(1, ...f.steps.map((x) => x.count));
+    view.innerHTML = head('Insight', 'Where visitors drop off on the way to buying. Counts only: nothing identifies any visitor.') + `
+      <div class="row" style="margin-bottom:14px">${[7, 30, 90].map((d) => `<a class="btn s ${d === days ? 'gold' : ''}" href="#insight/${d}">Last ${d} days</a>`).join('')}</div>
+      <div class="panel">${f.steps.map((x) => `<div style="margin:12px 0"><div class="row" style="justify-content:space-between"><b>${esc(x.label)}</b><span><b>${x.count}</b>${x.pctOfPrev != null ? ` <span class="muted small">· ${x.pctOfPrev}% of the step before</span>` : ''}</span></div>
+        <div style="height:10px;background:#f1efe9;border-radius:5px;overflow:hidden"><div style="height:100%;width:${(x.count / max) * 100}%;background:var(--gold, #9a7430)"></div></div></div>`).join('')}
+        <p class="muted small">Overall: ${f.steps[0].count ? `${f.steps.at(-1).pctOfFirst}% of film-page visits ended in a purchase.` : 'no visits recorded yet.'} Preview and paywall counts come from the viewer's browser, so ad-blockers can hide a few.</p></div>`;
+  },
+  async discounts() {
+    const [{ items }, { movies }] = await Promise.all([api('/admin/coupons'), api('/admin/movies')]);
+    view.innerHTML = head('Discounts', 'Codes viewers type at checkout. The price is always calculated on the server, and never goes below ₹1.') + `
+      <div class="panel" style="margin-bottom:16px"><h3>New code</h3><div class="row" style="flex-wrap:wrap;gap:8px">
+        <input id="c-code" placeholder="CODE" size="12" style="text-transform:uppercase">
+        <select id="c-kind"><option value="percent">% off</option><option value="amount">₹ off</option></select><input id="c-val" type="number" min="1" placeholder="Amount" style="width:90px">
+        <input id="c-max" type="number" min="1" placeholder="Max uses" style="width:100px"><input id="c-exp" type="date" title="Last day it works">
+        <select id="c-movie"><option value="">Any film</option>${movies.map((m) => `<option value="${m.id}">${esc(m.title)}</option>`).join('')}</select>
+        <button class="btn gold s" id="c-add">Create</button></div><p class="muted small">Each person can use a code once.</p></div>
+      <div class="panel">${items.length ? `<table><tr><th>Code</th><th>Discount</th><th>Used</th><th>Until</th><th></th></tr>${items.map((c) => `<tr><td><b>${esc(c.code)}</b></td><td>${c.percent ? c.percent + '%' : rupees(c.amount_paise)} off</td><td>${c.used}${c.max_uses ? ' / ' + c.max_uses : ''}</td><td class="small">${esc(c.expires_on || '–')}</td>
+        <td><button class="btn s" data-act="${esc(c.code)}" data-on="${c.active ? 0 : 1}">${c.active ? 'Switch off' : 'Switch on'}</button> <button class="btn s" data-cdel="${esc(c.code)}">Delete</button></td></tr>`).join('')}</table>` : '<p class="muted">No codes yet.</p>'}</div>`;
+    $('#c-add').onclick = () => act(async () => { await api('/admin/coupons', { method: 'POST', body: { code: $('#c-code').value, kind: $('#c-kind').value, value: $('#c-val').value, max_uses: $('#c-max').value, expires_on: $('#c-exp').value, movie_id: $('#c-movie').value } }); route(); }, 'Code created');
+    $$('[data-act]').forEach((b) => (b.onclick = () => act(async () => { await api('/admin/coupons/' + b.dataset.act, { method: 'PUT', body: { active: b.dataset.on === '1' } }); route(); })));
+    $$('[data-cdel]').forEach((b) => (b.onclick = () => confirm('Delete this code?') && act(async () => { await api('/admin/coupons/' + b.dataset.cdel, { method: 'DELETE' }); route(); })));
+  },
+  async audit() {
+    const { items } = await api('/admin/audit');
+    view.innerHTML = head('Activity log', 'Every change made in the admin panel: who, what and when. Newest first.') + `<div class="panel">${items.length ? `<table>${items.map((a) => `<tr><td class="small muted" style="white-space:nowrap">${fmt(a.at)}</td><td class="small">${esc(a.admin_email || '')}</td><td class="small"><code>${esc(a.action)}</code></td><td class="small">${a.status < 400 ? '✓' : '✗ ' + a.status}</td></tr>`).join('')}</table>` : '<p class="muted">Nothing yet.</p>'}</div>`;
+  },
   async photos() {
     const [{ settings: st }, { items }] = await Promise.all([api('/admin/settings'), api('/admin/gallery')]);
     view.innerHTML = head('Photos', 'Portrait for the About page, and the public Gallery. Photos are resized, converted to WebP and stripped of camera location data automatically.') + `

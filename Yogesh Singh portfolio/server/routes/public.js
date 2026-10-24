@@ -6,7 +6,9 @@ import { getSetting } from '../db.js';
 import { config } from '../config.js';
 import { playlistInfo } from '../hls.js';
 import { canWatchFull } from './media.js';
+import rateLimit from 'express-rate-limit';
 import { requireAuth } from '../auth.js';
+import { count, CLIENT_STEPS } from '../analytics.js';
 import { parseSubtitles, toVtt, trimToPreview } from '../subtitles.js';
 
 const r = Router();
@@ -65,6 +67,10 @@ r.get('/movies/:slug/subtitles/:lang.vtt', (req, res) => {
   if (!canWatchFull(req.user, m)) body = toVtt(trimToPreview(parseSubtitles(row.vtt), m.preview_sec));
   res.set({ 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff' }).type('text/vtt').send(body);
 });
+
+// Anonymous funnel counter: only a step name is accepted, nothing identifies the visitor.
+const trackLimit = rateLimit({ windowMs: 15 * 60 * 1000, limit: 120, standardHeaders: true, legacyHeaders: false, message: { ok: true } });
+r.post('/track', trackLimit, (req, res) => { if (CLIENT_STEPS.includes(req.body?.name)) count(req.body.name); res.status(204).end(); });
 
 // Where the signed-in viewer stopped. Saved on the server so it follows them to another phone or computer.
 const placeFor = (user, m) => db.prepare('SELECT position_sec FROM progress WHERE user_id = ? AND movie_id = ?').get(user.id, m.id)?.position_sec || 0;

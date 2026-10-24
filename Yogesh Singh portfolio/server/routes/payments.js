@@ -8,6 +8,8 @@ import { log } from '../log.js';
 import * as razorpay from '../payments/razorpay.js';
 import * as cashfree from '../payments/cashfree.js';
 import { legalVersion } from './public.js';
+import { quote } from '../coupons.js';
+import { count } from '../analytics.js';
 import { getOrder, markPaid, markPending, markFailed, markCancelled, applyRefund, applyDispute, recordEvent, hasEvent } from '../payments/ledger.js';
 
 const r = Router();
@@ -19,6 +21,15 @@ const ownedOrder = (orderId, userId) => db.prepare(`SELECT o.*, m.slug FROM orde
 // What the browser is told. Access-keeping states report PAID; access-removed states report REVOKED/REFUNDED.
 const CLIENT = { CREATED: 'PENDING', PENDING: 'PENDING', PAID: 'PAID', PARTIALLY_REFUNDED: 'PAID', REFUNDED: 'REFUNDED', CHARGEBACK: 'REVOKED', FAILED: 'FAILED', CANCELLED: 'CANCELLED' };
 const clientStatus = (o) => CLIENT[o.status] || 'PENDING';
+
+// What would this film cost with this code? Lets the checkout dialog show the new price. Nothing is reserved.
+r.post('/coupon', limit(config.rate.payments), requireAuth, (req, res) => {
+  const movie = db.prepare("SELECT * FROM movies WHERE id = ? AND published = 1 AND status = 'ready'").get(Number(req.body.movieId));
+  if (!movie) return res.status(404).json({ error: 'This film is not available right now.' });
+  const q = quote({ movie, userId: req.user.id, code: req.body.code });
+  if (!q.ok) return res.status(400).json({ error: 'This discount code is not valid for this film.' });
+  res.json({ ok: true, code: q.code, discountPaise: q.discountPaise, finalPaise: q.finalPaise });
+});
 
 r.post('/checkout', limit(config.rate.payments), requireAuth, asyncHandler(async (req, res) => {
   const movie = db.prepare("SELECT * FROM movies WHERE id = ? AND published = 1 AND status = 'ready'").get(Number(req.body.movieId));
@@ -38,11 +49,18 @@ r.post('/checkout', limit(config.rate.payments), requireAuth, asyncHandler(async
   // Close any earlier unpaid attempt so open orders do not pile up. (A late payment on one still unlocks via the ledger.)
   db.prepare("UPDATE orders SET status = 'CANCELLED', updated_at = datetime('now') WHERE user_id = ? AND movie_id = ? AND status IN ('CREATED', 'PENDING')").run(req.user.id, movie.id);
 
+  let price = movie.price_paise, coupon = null, discount = 0;
+  if (req.body.coupon) {
+    const q = quote({ movie, userId: req.user.id, code: req.body.coupon });
+    if (!q.ok) return res.status(400).json({ error: 'This discount code is not valid for this film.', code: 'bad_coupon' });
+    price = q.finalPaise; coupon = q.code; discount = q.discountPaise;
+  }
   const orderId = `ord_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
   // The order is bound to this user and this film, with the amount and currency taken from OUR database.
-  db.prepare('INSERT INTO orders (order_id, user_id, movie_id, amount_paise, currency, gateway, provider, updated_at, consent_at, consent_version) VALUES (?, ?, ?, ?, ?, ?, ?, datetime(\'now\'), datetime(\'now\'), ?)')
-    .run(orderId, req.user.id, movie.id, movie.price_paise, 'INR', mode, mode, legalVersion());
-  log('info', 'order.created', { order: orderId, user: req.user.id, movie: movie.id, amount: movie.price_paise, provider: mode });
+  db.prepare('INSERT INTO orders (order_id, user_id, movie_id, amount_paise, currency, gateway, provider, updated_at, consent_at, consent_version, coupon_code, discount_paise) VALUES (?, ?, ?, ?, ?, ?, ?, datetime(\'now\'), datetime(\'now\'), ?, ?, ?)')
+    .run(orderId, req.user.id, movie.id, price, 'INR', mode, mode, legalVersion(), coupon, discount);
+  log('info', 'order.created', { order: orderId, user: req.user.id, movie: movie.id, amount: price, provider: mode, coupon: coupon ? 'yes' : 'no' });
+  count('checkout_started');
   if (mode === 'demo') return res.json({ mode: 'demo', orderId });
 
   try {

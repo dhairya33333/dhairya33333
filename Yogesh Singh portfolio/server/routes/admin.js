@@ -11,6 +11,8 @@ import { enqueueTranscode, cancelEncode, checkFfmpeg } from '../transcode.js';
 import { syncInstagram } from '../instagram.js';
 import { refreshEmbed } from '../instagram-meta.js';
 import { optimizeImage, removeUploaded } from '../images.js';
+import { funnel } from '../analytics.js';
+import { normalise as normCode, validCode, couponUses } from '../coupons.js';
 import { parseSubtitles, toVtt, LIMITS as SUB_LIMITS } from '../subtitles.js';
 import { SITE_DEFAULTS, EDITABLE_KEYS } from '../defaults.js';
 import uploadRoutes from './uploads.js';
@@ -22,6 +24,20 @@ import { mailConfigured, sendMail, notifyAddress } from '../mailer.js';
 
 const r = Router();
 r.use(requireAdmin);
+
+// Audit log: who changed something, and what. Records the route and result only, never request bodies (they can hold passwords or tokens).
+r.use((req, res, next) => {
+  if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next();
+  const admin = { id: req.user.id, email: req.user.email };
+  res.on('finish', () => {
+    try {
+      const url = req.originalUrl.split('?')[0].replace(/^\/api\/admin/, '').slice(0, 160);
+      if (/^\/uploads\/[^/]+\/chunk/.test(url)) return;                      // a 10 GB upload is hundreds of chunks: log the start and the end, not each piece
+      db.prepare('INSERT INTO audit_log (admin_id, admin_email, action, status) VALUES (?, ?, ?, ?)').run(admin.id, admin.email, `${req.method} ${url}`, res.statusCode);
+    } catch { /* never affects the response */ }
+  });
+  next();
+});
 r.use(uploadRoutes);
 
 const slugify = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'film';
@@ -158,6 +174,62 @@ r.delete('/movies/:id', (req, res) => {
   unlink(m.poster); unlink(m.trailer);
   fs.rmSync(hlsDir(m.id), { recursive: true, force: true });   // processed output only; incoming-folder originals are never touched
   res.json({ ok: true });
+});
+
+// ---------- Funnel, discounts, audit log, system health ----------
+r.get('/funnel', (req, res) => res.json(funnel(Math.min(365, Math.max(1, Number(req.query.days) || 30)))));
+
+r.get('/coupons', (_req, res) => res.json({ items: db.prepare('SELECT * FROM coupons ORDER BY created_at DESC').all().map((c) => ({ ...c, used: couponUses(c.code) })) }));
+r.post('/coupons', (req, res) => {
+  const code = normCode(req.body.code);
+  if (!validCode(code)) return bad(res, 'Code: 3 to 24 letters, numbers, - or _.');
+  const kind = req.body.kind === 'amount' ? 'amount' : 'percent', v = Number(req.body.value);
+  if (kind === 'percent' && !(Number.isInteger(v) && v >= 1 && v <= 100)) return bad(res, 'Percent must be a whole number from 1 to 100.');
+  if (kind === 'amount' && !(Number.isFinite(v) && v >= 1)) return bad(res, 'Rupees off must be at least 1.');
+  const max = has(req.body.max_uses) ? Math.max(1, Math.floor(Number(req.body.max_uses))) : null;
+  const exp = /^\d{4}-\d{2}-\d{2}$/.test(String(req.body.expires_on || '')) ? req.body.expires_on : null;
+  const movie = has(req.body.movie_id) ? Number(req.body.movie_id) : null;
+  if (db.prepare('SELECT 1 FROM coupons WHERE code = ?').get(code)) return bad(res, 'That code already exists.', 409);
+  db.prepare('INSERT INTO coupons (code, percent, amount_paise, max_uses, expires_on, movie_id) VALUES (?, ?, ?, ?, ?, ?)')
+    .run(code, kind === 'percent' ? v : null, kind === 'amount' ? Math.round(v * 100) : null, max, exp, movie);
+  res.json({ ok: true, code });
+});
+r.put('/coupons/:code', (req, res) => {
+  const out = db.prepare('UPDATE coupons SET active = ? WHERE code = ?').run(req.body.active ? 1 : 0, normCode(req.params.code));
+  out.changes ? res.json({ ok: true }) : bad(res, 'Not found.', 404);
+});
+r.delete('/coupons/:code', (req, res) => {
+  const code = normCode(req.params.code);
+  if (db.prepare('SELECT 1 FROM orders WHERE coupon_code = ? LIMIT 1').get(code)) return bad(res, 'This code has been used. Switch it off instead of deleting, so past orders stay explainable.', 409);
+  const out = db.prepare('DELETE FROM coupons WHERE code = ?').run(code);
+  out.changes ? res.json({ ok: true }) : bad(res, 'Not found.', 404);
+});
+
+r.get('/audit', (_req, res) => res.json({ items: db.prepare('SELECT at, admin_email, action, status FROM audit_log ORDER BY id DESC LIMIT 300').all() }));
+
+r.get('/health', (_req, res) => {
+  let newest = null, status = null;
+  try {
+    const files = fs.readdirSync(dirs.backups).filter((f) => /^portfolio-.*\.sqlite$/.test(f)).map((f) => ({ f, t: fs.statSync(path.join(dirs.backups, f)).mtimeMs })).sort((a, b) => b.t - a.t);
+    newest = files[0]?.t ?? null;
+    try { status = JSON.parse(fs.readFileSync(path.join(dirs.backups, 'status.json'), 'utf8')); } catch { /* no off-server status yet */ }
+  } catch { /* no backup folder yet */ }
+  const ageH = newest ? Math.round((Date.now() - newest) / 36e5) : null;
+  const disk = usageReport(), ff = checkFfmpeg();
+  const quick = Object.values(db.prepare('PRAGMA quick_check').get())[0] === 'ok';
+  const checks = [
+    { key: 'database', label: 'Database integrity', ok: quick, detail: quick ? 'Passes the SQLite integrity check.' : 'FAILED the integrity check. Restore from a backup.' },
+    { key: 'backup', label: 'Nightly backup', ok: ageH !== null && ageH < 36, detail: ageH === null ? 'No backup found yet. Set up the nightly job (docs/DEPLOYMENT.md).' : `Last database backup ${ageH} hour(s) ago.` },
+    { key: 'offsite', label: 'Off-server copy', ok: !!status?.remote_ok, detail: status ? (status.remote_ok ? `Last copied off the server at ${status.at}.` : status.remote ? 'The last off-server copy FAILED.' : 'Not configured. A copy on the same server is not a real backup.') : 'No backup status recorded yet.' },
+    { key: 'disk', label: 'Disk space', ok: !disk.low_disk, detail: `${disk.free_gb} GB free of ${disk.total_gb} GB (keeps ${disk.reserve_gb} GB in reserve).` },
+    { key: 'ffmpeg', label: 'Video processing (ffmpeg)', ok: ff.ok, detail: ff.ok ? 'Installed.' : 'Not found. Films cannot be processed.' },
+    { key: 'payments', label: 'Payments', ok: ['razorpay', 'cashfree'].includes(config.paymentsMode), detail: config.paymentsMode === 'demo' ? 'Demo mode: no real payments.' : config.paymentsMode === 'unconfigured' ? 'Not configured.' : `Live via ${config.paymentsMode}.` },
+    { key: 'email', label: 'Email', ok: mailConfigured(), detail: mailConfigured() ? 'SMTP configured. Use "Send test email" to confirm it works.' : 'Not configured. Contact alerts, receipts and password emails are off.' },
+    { key: 'https', label: 'Public address uses https', ok: config.siteUrl.startsWith('https://'), detail: config.siteUrl },
+    { key: 'legal', label: 'Legal pages filled in', ok: Object.keys(LEGAL_TITLES).every((k) => placeholderCount(getSetting(`legal_${k}`, LEGAL_DEFAULTS[k])) === 0), detail: 'Privacy, Terms and Refund pages must not contain [placeholders].' },
+    { key: 'twofa', label: 'Two-step sign-in for you', ok: !!_req.user.totp_enabled, detail: _req.user.totp_enabled ? 'On.' : 'Off. Turn it on under Security.' },
+  ];
+  res.json({ checks, ok: checks.filter((c) => !['offsite', 'email', 'twofa'].includes(c.key)).every((c) => c.ok), node: process.version, uptimeHours: Math.round(process.uptime() / 360) / 10 });
 });
 
 // ---------- Subtitles ----------

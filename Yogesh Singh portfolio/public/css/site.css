@@ -434,3 +434,8 @@ section.block.compact { padding: clamp(40px, 6vw, 80px) 0; }
 .credits > div { padding: 12px 0; border-top: 1px solid var(--line); }
 .credits dt { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .credits dd { margin: 2px 0 0; font-family: var(--serif); font-size: 22px; }
+
+.coupon { margin: 4px 0 14px; font-size: 14px; }
+.coupon summary { cursor: pointer; color: var(--muted); }
+.coupon .row { display: flex; gap: 8px; margin-top: 8px; }
+.coupon input { flex: 1; min-width: 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 6px; text-transform: uppercase; background: #fff; color: var(--ink); }

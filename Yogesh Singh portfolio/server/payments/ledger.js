@@ -10,6 +10,7 @@
 //   REFUNDED (refunds total >= price), CHARGEBACK -> access revoked immediately
 //   open dispute -> access kept, order flagged for the admin to review
 import { sendReceipt } from '../mailer.js';
+import { count } from '../analytics.js';
 import { db, tx } from '../db.js';
 import { log } from '../log.js';
 
@@ -55,7 +56,7 @@ export function markPaid(orderId, { providerPaymentId, amountPaise, currency } =
     db.prepare('INSERT OR IGNORE INTO purchases (user_id, movie_id, order_id) VALUES (?, ?, ?)').run(o.user_id, o.movie_id, orderId);
     return { ok: true, order: getOrder(orderId) };
   });
-  if (newlyPaid) sendReceipt(orderId)?.catch?.(() => {});          // after commit; once per order; never affects the payment
+  if (newlyPaid) { count('purchase'); sendReceipt(orderId)?.catch?.(() => {}); }          // after commit; once per order; never affects the payment
   return result;
 }
 

@@ -2,7 +2,9 @@ import { api, $, $$, rupees, runtime, getUser, mountNav, initMotion, loadScript 
 
 const slug = decodeURIComponent(location.pathname.split('/').filter(Boolean).pop());
 const video = $('#video');
-let movie, user, mode, playback, hls;
+let movie, user, mode, playback, hls, coupon = '';
+const sent = new Set();
+const track = (name) => { if (sent.has(name)) return; sent.add(name); fetch('/api/track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }), keepalive: true }).catch(() => {}); };
 
 const say = (text, ok) => { const m = $('#pay-msg'); m.textContent = text; m.className = 'msg' + (ok ? ' ok' : ''); };
 const state = (text, { retry } = {}) => {
@@ -42,6 +44,7 @@ function renderCredits() {
 
 function showPaywall() {
   if (playback?.mode === 'full') return;
+  track('paywall_shown');
   $('#paywall').classList.add('show');
   $('#paywall-buy').focus({ preventScroll: true });
 }
@@ -106,7 +109,8 @@ function unlock() {
   $('#phone-field').hidden = !needsPhone;
   $('#gateway-copy').textContent = mode === 'demo' ? 'Demo checkout (no real payment).' : 'Secure payment. UPI, cards and net banking accepted.';
   $('#phone').value = user.phone || '';
-  $('#pay-go').disabled = false; $('#agree').checked = false;
+  $('#pay-go').disabled = false; $('#agree').checked = false; coupon = ''; $('#coupon').value = ''; $('#coupon-box').open = false; $('#pay-amt').textContent = rupees(movie.price_paise);
+  track('checkout_open');
   say('');
   openModal();
 }
@@ -122,7 +126,7 @@ async function pay() {
   if (!$('#agree').checked) { say('Please tick the box to accept the Terms, Privacy Policy and Refund Policy.'); $('#agree').focus(); return; }
   btn.disabled = true;
   try {
-    const o = await api('/payments/checkout', { method: 'POST', body: { movieId: movie.id, phone: $('#phone').value, agree: true } });
+    const o = await api('/payments/checkout', { method: 'POST', body: { movieId: movie.id, phone: $('#phone').value, agree: true, coupon } });
     if (o.mode === 'demo') {
       await api('/payments/demo/complete', { method: 'POST', body: { orderId: o.orderId } });
       location.hash = ''; location.reload(); return;
@@ -186,9 +190,19 @@ async function boot() {
   addEventListener('pagehide', () => pushPos(true));
   video.textTracks.addEventListener?.('change', () => { try { localStorage.setItem('yp-subs', [...video.textTracks].some((t) => t.mode === 'showing') ? 'on' : 'off'); } catch { /* private mode */ } });
   video.addEventListener('waiting', () => { if (!video.paused) state('Buffering…'); });
+  video.addEventListener('playing', () => track('preview_play'), { once: true });
   for (const ev of ['playing', 'canplay']) video.addEventListener(ev, () => state(''));
   video.addEventListener('contextmenu', (e) => e.preventDefault());
 
+  track('film_view');
+  $('#coupon-apply').addEventListener('click', async () => {
+    const code = $('#coupon').value.trim();
+    if (!code) return;
+    try {
+      const q = await api('/payments/coupon', { method: 'POST', body: { movieId: movie.id, code } });
+      coupon = q.code; $('#pay-amt').textContent = rupees(q.finalPaise); say(`Code ${q.code} applied: you save ${rupees(q.discountPaise)}.`, true);
+    } catch (e) { coupon = ''; $('#pay-amt').textContent = rupees(movie.price_paise); say(e.message); }
+  });
   $('#pay-go').addEventListener('click', pay);
   $('#modal-x').addEventListener('click', closeModal);
   $('#modal').addEventListener('click', (e) => { if (e.target.id === 'modal') closeModal(); });

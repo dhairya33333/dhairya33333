@@ -142,6 +142,18 @@ const MIGRATIONS = [
       user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, movie_id INTEGER NOT NULL REFERENCES movies(id) ON DELETE CASCADE,
       position_sec REAL NOT NULL DEFAULT 0, updated_at TEXT NOT NULL DEFAULT (datetime('now')), PRIMARY KEY (user_id, movie_id))`);
   },
+  // 10: anonymous funnel counters, discount codes, admin audit log
+  () => {
+    db.exec(`CREATE TABLE IF NOT EXISTS events (day TEXT NOT NULL, name TEXT NOT NULL, n INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (day, name))`);
+    db.exec(`CREATE TABLE IF NOT EXISTS coupons (
+      code TEXT PRIMARY KEY, percent INTEGER, amount_paise INTEGER, max_uses INTEGER, expires_on TEXT, movie_id INTEGER,
+      active INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      CHECK ((percent IS NOT NULL AND percent BETWEEN 1 AND 100 AND amount_paise IS NULL) OR (percent IS NULL AND amount_paise >= 1)))`);
+    addColumn('orders', 'coupon_code', 'TEXT');
+    addColumn('orders', 'discount_paise', 'INTEGER NOT NULL DEFAULT 0');
+    db.exec(`CREATE TABLE IF NOT EXISTS audit_log (id INTEGER PRIMARY KEY, at TEXT NOT NULL DEFAULT (datetime('now')), admin_id INTEGER, admin_email TEXT, action TEXT NOT NULL, status INTEGER)`);
+    db.exec('CREATE INDEX IF NOT EXISTS audit_at ON audit_log(at)');
+  },
 ];
 
 const current = db.prepare('PRAGMA user_version').get().user_version;
