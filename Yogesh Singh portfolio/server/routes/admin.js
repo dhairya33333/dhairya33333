@@ -178,7 +178,7 @@ r.put('/settings', (req, res) => {
 
 // ---------- Works (timeline) ----------
 const workFields = (b) => ({
-  kind: ['career', 'film', 'talk', 'honour'].includes(b.kind) ? b.kind : 'career',
+  kind: ['career', 'book', 'film', 'talk', 'honour'].includes(b.kind) ? b.kind : 'career',
   title: String(b.title || '').trim().slice(0, 160),
   subtitle: String(b.subtitle || '').trim().slice(0, 400),
   period: String(b.period || '').trim().slice(0, 40),

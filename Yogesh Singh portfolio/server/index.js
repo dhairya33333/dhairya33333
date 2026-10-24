@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import { config, dirs, ROOT } from './config.js';
 import { db } from './db.js';
 import { attachUser, sameOrigin } from './auth.js';
+import { WORKS_SEED } from './defaults.js';
 import { recoverInterrupted } from './transcode.js';
 import { startInstagramScheduler } from './instagram.js';
 import { publicSettings } from './routes/public.js';
@@ -73,7 +74,7 @@ const withMeta = (file, meta) => {
 app.get('/film/:slug', (req, res) => {
   const m = db.prepare('SELECT * FROM movies WHERE slug = ? AND published = 1').get(req.params.slug);
   if (!m) return res.status(404).sendFile(path.join(ROOT, 'public/404.html'));
-  res.type('html').send(withMeta('film.html', { title: `${m.title} — Yogesh Singh`, description: m.tagline || m.description.slice(0, 160), image: m.poster }));
+  res.type('html').send(withMeta('film.html', { title: `${m.title} — Y. P. Singh`, description: m.tagline || m.description.slice(0, 160), image: m.poster }));
 });
 app.get('/', (_req, res) => {
   const s = publicSettings();
@@ -90,6 +91,11 @@ app.use((err, _req, res, _next) => {
   res.status(500).json({ error: config.isProd ? 'Something went wrong.' : err.message });
 });
 
+if (db.prepare('SELECT COUNT(*) c FROM works').get().c === 0 && !db.prepare("SELECT 1 FROM settings WHERE key = 'works_seeded'").get()) {
+  const ins = db.prepare('INSERT INTO works (kind,title,subtitle,period,sort) VALUES (?,?,?,?,?)');
+  WORKS_SEED.forEach((w) => ins.run(...w));
+  db.prepare("INSERT INTO settings (key, value) VALUES ('works_seeded', '1')").run();
+}
 recoverInterrupted();
 startInstagramScheduler();
 app.listen(config.port, () => console.log(`Portfolio running on ${config.siteUrl}  (payments: ${config.paymentsMode})`));

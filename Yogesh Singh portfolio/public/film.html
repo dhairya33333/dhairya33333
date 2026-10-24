@@ -1,17 +1,17 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#0a0a0b">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='16' fill='%230a0a0b'/%3E%3Ctext x='16' y='22' font-size='18' text-anchor='middle' fill='%23c9a96b' font-family='serif'%3EY%3C/text%3E%3C/svg%3E">
+<meta name="theme-color" content="#fbfaf7">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='16' fill='%23fbfaf7'/%3E%3Ctext x='16' y='22' font-size='18' text-anchor='middle' fill='%239a7430' font-family='serif'%3EY%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/css/site.css"><title>Film — Yogesh Singh</title>
+<link rel="stylesheet" href="/css/site.css"><title>Film — Y. P. Singh</title>
 <style>
 .watch { padding: 110px 0 80px; }
-.player { position: relative; aspect-ratio: 16/9; background: #000; border-radius: 8px; overflow: hidden; box-shadow: 0 50px 120px -40px rgba(0,0,0,.9), 0 0 0 1px var(--line); }
+.player { position: relative; aspect-ratio: 16/9; background: #000; border-radius: 8px; overflow: hidden; box-shadow: 0 50px 120px -40px rgba(60,44,12,.55), 0 0 0 1px var(--line); }
 .player video { width: 100%; height: 100%; background: #000; }
-.badge { position: absolute; top: 16px; left: 16px; z-index: 3; padding: 7px 14px; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; border-radius: 999px; background: rgba(10,10,11,.7); backdrop-filter: blur(8px); border: 1px solid var(--gold); color: var(--gold-2); pointer-events: none; }
-.paywall { position: absolute; inset: 0; z-index: 4; display: grid; place-items: center; text-align: center; padding: 24px; background: radial-gradient(circle at 50% 40%, rgba(10,10,11,.72), rgba(10,10,11,.96)); backdrop-filter: blur(14px); opacity: 0; pointer-events: none; transition: opacity .7s var(--ease); }
+.badge { position: absolute; top: 16px; left: 16px; z-index: 3; padding: 7px 14px; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; border-radius: 999px; background: rgba(255,255,255,.88); backdrop-filter: blur(8px); border: 1px solid var(--gold); color: var(--gold-2); pointer-events: none; }
+.paywall { position: absolute; inset: 0; z-index: 4; display: grid; place-items: center; text-align: center; padding: 24px; background: radial-gradient(circle at 50% 40%, rgba(251,250,247,.82), rgba(251,250,247,.97)); backdrop-filter: blur(14px); opacity: 0; pointer-events: none; transition: opacity .7s var(--ease); }
 .paywall.show { opacity: 1; pointer-events: auto; }
 .paywall h2 { font-family: var(--serif); font-weight: 400; font-size: clamp(32px, 5vw, 64px); line-height: 1; margin: 12px 0; }
 .paywall p { color: var(--muted); max-width: 440px; margin: 0 auto 26px; }
@@ -19,21 +19,21 @@
 .info h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(40px, 6vw, 84px); line-height: .96; margin: 0 0 10px; letter-spacing: -.02em; }
 .info .tag { font-family: var(--serif); font-style: italic; color: var(--gold-2); font-size: 22px; margin: 0 0 22px; }
 .info .desc { color: var(--muted); max-width: 680px; white-space: pre-line; }
-.buy { border: 1px solid var(--line); border-radius: 10px; padding: 28px; min-width: 300px; background: var(--bg-2); }
+.buy { border: 1px solid var(--line); border-radius: 10px; padding: 28px; min-width: 300px; background: #fff; }
 .buy .price { font-size: 44px; display: block; margin-bottom: 4px; }
 .buy ul { list-style: none; padding: 0; margin: 14px 0 22px; color: var(--muted); font-size: 14px; }
 .buy li::before { content: '✓'; color: var(--gold); margin-right: 10px; }
 .buy .btn { width: 100%; }
 .owned { color: var(--ok); font-size: 14px; letter-spacing: .1em; text-transform: uppercase; }
-.modal { position: fixed; inset: 0; z-index: 80; display: none; place-items: center; background: rgba(0,0,0,.75); backdrop-filter: blur(8px); padding: 20px; }
+.modal { position: fixed; inset: 0; z-index: 80; display: none; place-items: center; background: rgba(30,22,8,.5); backdrop-filter: blur(8px); padding: 20px; }
 .modal.open { display: grid; }
-.modal .card { position: relative; }
+.modal .card { position: relative; background: #fff; }
 .modal .x { position: absolute; top: 14px; right: 16px; background: none; border: 0; font-size: 26px; color: var(--muted); }
 .demo-note { font-size: 12px; color: var(--gold); border: 1px dashed var(--gold); padding: 8px 12px; border-radius: 6px; margin-bottom: 16px; }
 @media (max-width: 860px) { .info { grid-template-columns: 1fr; } .buy { min-width: 0; } }
 </style></head>
 <body>
-<header class="nav stuck"><div class="wrap"><a href="/" class="brand"><i></i>Yogesh Singh</a><nav class="nav-links"><a href="/#film">Film</a><a href="/#about">About</a><a href="/#contact">Contact</a><span id="nav-auth" style="display:contents"></span></nav><button class="burger" aria-label="Menu"><span></span><span></span></button></div></header>
+<header class="nav stuck"><div class="wrap"><a href="/" class="brand"><i></i>Y. P. Singh</a><nav class="nav-links"><a href="/#film">Film</a><a href="/#about">About</a><a href="/#contact">Contact</a><span id="nav-auth" style="display:contents"></span></nav><button class="burger" aria-label="Menu"><span></span><span></span></button></div></header>
 <main class="watch"><div class="wrap">
   <div class="player" id="player">
     <div class="badge" id="badge">Free preview</div>

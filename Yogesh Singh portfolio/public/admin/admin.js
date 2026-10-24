@@ -62,7 +62,7 @@ const views = {
             <label class="field" style="margin-top:14px"><span>Upload from this computer (mp4, mov, mkv)</span><input type="file" id="vid" accept="video/*,.mkv"></label>
             <div class="bar" id="upbar" hidden><i></i></div>
             <p class="muted small">For a 2+ hour film, uploading via SFTP is faster and more reliable. Put the file in <code>${esc(inc.dir)}</code> and pick it here:</p>
-            <div class="row"><select id="imp" class="field" style="margin:0;flex:1;padding:12px;background:#0d0d0f;color:var(--ink);border:1px solid var(--line);border-radius:6px">
+            <div class="row"><select id="imp" class="field" style="margin:0;flex:1;padding:12px;background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:6px">
               <option value="">Choose a file…</option>${inc.files.map((f) => `<option value="${esc(f.name)}">${esc(f.name)} (${(f.size / 1e9).toFixed(2)} GB)</option>`).join('')}</select>
               <button class="btn s" id="impgo">Process</button></div></div>
           <div class="panel" style="margin-top:16px"><h3>Artwork</h3>
@@ -122,9 +122,9 @@ const views = {
 
   async journey() {
     const { works } = await api('/admin/works');
-    const kinds = ['career', 'film', 'talk', 'honour'];
+    const kinds = ['career', 'book', 'film', 'talk', 'honour'];
     const form = (w = {}) => `<div class="cols">
-      <label class="field"><span>Type</span><select data-f="kind" style="width:100%;padding:12px;background:#0d0d0f;color:var(--ink);border:1px solid var(--line);border-radius:6px">${kinds.map((k) => `<option ${w.kind === k ? 'selected' : ''}>${k}</option>`).join('')}</select></label>
+      <label class="field"><span>Type</span><select data-f="kind" style="width:100%;padding:12px;background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:6px">${kinds.map((k) => `<option ${w.kind === k ? 'selected' : ''}>${k}</option>`).join('')}</select></label>
       <label class="field"><span>Label (e.g. 2019–2023)</span><input data-f="period" value="${esc(w.period || '')}"></label></div>
       <label class="field"><span>Title</span><input data-f="title" value="${esc(w.title || '')}"></label>
       <label class="field"><span>Details</span><textarea data-f="subtitle" rows="2">${esc(w.subtitle || '')}</textarea></label>

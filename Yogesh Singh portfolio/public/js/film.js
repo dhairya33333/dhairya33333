@@ -32,7 +32,7 @@ const savedPos = () => Number(localStorage.getItem(posKey()) || 0);
 function showPaywall() { $('#paywall').classList.add('show'); }
 
 function renderInfo() {
-  document.title = `${movie.title} — Yogesh Singh`;
+  document.title = `${movie.title} — Y. P. Singh`;
   $('#title').textContent = movie.title;
   $('#tagline').textContent = movie.tagline || '';
   $('#desc').textContent = movie.description || '';

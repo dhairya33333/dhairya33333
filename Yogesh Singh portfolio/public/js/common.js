@@ -56,10 +56,10 @@ export function initMotion() {
     cio.unobserve(e.target);
     const el = e.target, m = /^(\D*)([\d,.]+)(.*)$/.exec(el.dataset.count);
     if (!m) return;
-    const target = parseFloat(m[2].replace(/,/g, '')), t0 = performance.now();
+    const target = parseFloat(m[2].replace(/,/g, '')), group = m[2].includes(','), t0 = performance.now();
     const step = (t) => {
       const p = Math.min(1, (t - t0) / 1800), v = target * (1 - Math.pow(1 - p, 4));
-      el.textContent = m[1] + Math.round(v).toLocaleString('en-IN') + m[3];
+      el.textContent = m[1] + (group ? Math.round(v).toLocaleString('en-IN') : Math.round(v)) + m[3];
       if (p < 1) requestAnimationFrame(step);
     };
     requestAnimationFrame(step);

@@ -19,7 +19,6 @@ A self-hosted replacement for the WordPress site: an animated portfolio, a film 
 cd "Yogesh Singh portfolio"
 npm install
 npm run create-admin -- "Yogesh Singh" you@email.com 'a-strong-password'
-npm run seed-demo        # optional: sample journey entries
 npm run dev              # http://localhost:3000
 ```
 Without Cashfree keys (and outside production) payments run in **demo mode**: the buy button completes instantly so you can test the whole flow. In production, missing keys disable checkout.

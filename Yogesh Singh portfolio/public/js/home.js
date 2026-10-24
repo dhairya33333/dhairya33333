@@ -1,6 +1,6 @@
 import { api, $, esc, rupees, runtime, minutes, getUser, mountNav, initMotion } from './common.js';
 
-const KIND = { career: 'Service', film: 'Cinema', talk: 'Speaking', honour: 'Recognition' };
+const KIND = { career: 'Service', book: 'Book', film: 'Cinema', talk: 'Speaking', honour: 'Recognition' };
 
 function splitMask(el, text, startDelay = 0) {
   el.innerHTML = text.split(' ').map((w, wi) =>
@@ -57,15 +57,15 @@ function renderSocial(posts, s) {
 
 async function boot() {
   const mark = $('.loader .mark');
-  mark.innerHTML = 'Yogesh Singh'.split('').map((c, i) => `<span style="animation-delay:${i * 45}ms">${c === ' ' ? '&nbsp;' : c}</span>`).join('');
+  mark.innerHTML = 'Y. P. Singh'.split('').map((c, i) => `<span style="animation-delay:${i * 45}ms">${c === ' ' ? '&nbsp;' : c}</span>`).join('');
   const [site, user] = await Promise.all([api('/site'), getUser()]);
   const s = site.settings;
 
   document.title = s.site_title;
   mountNav(user);
 
-  const [first, ...rest] = s.hero_name.split(' ');
-  $('#hero-name').innerHTML = `<span class="mask"><span style="--d:900ms">${esc(first)}</span></span><span class="mask"><span style="--d:1050ms"><em>${esc(rest.join(' '))}</em></span></span>`;
+  const parts = s.hero_name.trim().split(' '); const last = parts.length > 1 ? parts.pop() : ''; const first = parts.join(' '); const rest = [last];
+  $('#hero-name').innerHTML = `<span class="mask"><span style="--d:900ms">${esc(first)}</span></span>${last ? `<span class="mask"><span style="--d:1050ms"><em>${esc(last)}</em></span></span>` : ''}`;
   const roles = s.hero_roles.split(',').map((r) => r.trim()).filter(Boolean);
   $('#hero-roles').innerHTML = roles.map((r) => `<span>${esc(r)}</span>`).join('');
   $('#hero-tag').textContent = s.hero_tagline;
@@ -81,6 +81,7 @@ async function boot() {
   $('#stats').innerHTML = s.stats.split('\n').map((l) => l.split('|')).filter((p) => p[1]).map(([n, label]) =>
     `<div class="stat"><b data-count="${esc(n.trim())}">${esc(n.trim())}</b><span>${esc(label.trim())}</span></div>`).join('');
   $('#quote').textContent = s.quote;
+  $('#quote-sec').hidden = !s.quote.trim();
 
   $('#works').innerHTML = site.works.map((w, i) => `
     <div class="work" data-reveal style="--i:${i}">
