@@ -18,13 +18,30 @@
   </div></section>
 
   <section class="section" style="padding-top:0"><div class="wrap">
-    <div id="embeds" class="embeds" aria-live="polite"></div>
+    <div class="sfilters" id="filters" role="tablist" aria-label="Filter posts" hidden></div>
+    <div id="grid" class="sgrid" aria-live="polite"></div>
     <div id="feed-wrap" hidden>
-      <span class="eyebrow" style="margin:50px 0 24px">More from the feed</span>
+      <span class="eyebrow" style="margin:60px 0 24px">More from the feed</span>
       <div class="ig" id="feed" style="margin-top:0"></div>
     </div>
     <div id="empty" class="empty" hidden>Posts will appear here soon. In the meantime you can follow on Instagram.</div>
+    <div class="follow" id="follow-bar" data-reveal hidden><div><b>Follow along</b><br><span>New posts and reels appear here as they are shared.</span></div><a class="btn primary" id="follow2" href="#" target="_blank" rel="noopener">Follow on Instagram <span class="arrow">↗</span></a></div>
   </div></section>
+
+  <div class="lb" id="lb" role="dialog" aria-modal="true" aria-labelledby="lb-title" hidden>
+    <div class="lb-back" data-close></div>
+    <div class="lb-panel">
+      <button class="lb-x" data-close aria-label="Close">×</button>
+      <div class="lb-media"><div class="lb-skel" id="lb-skel">Loading from Instagram…</div><div id="lb-frame"></div></div>
+      <aside class="lb-info">
+        <span class="eyebrow" id="lb-kind">Post</span>
+        <h2 id="lb-title" class="serif">Instagram</h2>
+        <p id="lb-caption"></p>
+        <a class="btn primary" id="lb-open" href="#" target="_blank" rel="noopener">Open on Instagram <span class="arrow">↗</span></a>
+        <div class="lb-nav"><button class="btn" id="lb-prev" aria-label="Previous post">←</button><span id="lb-count"></span><button class="btn" id="lb-next" aria-label="Next post">→</button></div>
+      </aside>
+    </div>
+  </div>
 </main>
 <div id="chrome-foot"></div>
 <script type="module" src="/js/social.js"></script>

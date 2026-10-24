@@ -46,7 +46,7 @@ Tick every line; most items need the client's accounts and cannot be done by the
 **Pages**
 - [ ] Contact page: send a real test message; it appears in Admin → Inbox with the unread badge; "Reply by email" opens your mail app
 - [ ] Contact email, phone and city entered in Admin → Site content (shown on the Contact page)
-- [ ] Social page: paste at least 3 real Instagram post/reel links in Admin → Social feed and confirm they display on a computer **and a phone** (this needs the real Instagram and the account must be public; it has not been exercised against live Instagram)
+- [ ] Social page: paste at least 3 real Instagram post/reel links in Admin → Social feed and confirm each shows a cover image and caption (if one has no cover, press "Fetch cover" or upload one), opens in the viewer and plays, on a computer **and a phone** (this needs the real Instagram and the account must be public; it has not been exercised against live Instagram)
 - [ ] About page text reviewed by Yogesh Singh
 
 **Content**

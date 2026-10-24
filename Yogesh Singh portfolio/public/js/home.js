@@ -1,4 +1,4 @@
-import { api, $, esc, rupees, runtime, minutes, getUser, mountNav, initMotion } from './common.js';
+import { api, $, $$, esc, rupees, runtime, minutes, getUser, mountNav, initMotion } from './common.js';
 
 const KIND = { career: 'Service', book: 'Book', article: 'Article', film: 'Cinema', talk: 'Speaking', honour: 'Recognition' };
 
@@ -110,7 +110,11 @@ async function boot() {
   api('/social').then((so) => {
     if (!so.embeds.length) return;
     $('#social').hidden = false;
-    if (!$('#ig').children.length) { $('#ig').style.display = 'none'; $('#social').classList.add('compact'); }   // embeds live on /social; keep the teaser slim
+    const covers = so.embeds.filter((e) => e.thumb).slice(0, 6);
+    if (!$('#ig').children.length && covers.length) {            // teaser built from the linked posts' covers; all of them open the Social page
+      $('#ig').innerHTML = covers.map((e, i) => `<a href="/social#${esc(e.code)}" data-reveal style="--i:${i}"><img src="${esc(e.thumb)}" alt="" loading="lazy">${e.kind === 'reel' ? '<span class="play">▶</span>' : ''}${e.caption ? `<span class="cap">${esc(e.caption)}</span>` : ''}</a>`).join('');
+      $$('#ig [data-reveal]').forEach((el) => requestAnimationFrame(() => el.classList.add('in')));
+    } else if (!$('#ig').children.length) { $('#ig').style.display = 'none'; $('#social').classList.add('compact'); }
   }).catch(() => {});
 
   const socials = [['Instagram', s.social_instagram], ['YouTube', s.social_youtube], ['X', s.social_x], ['Facebook', s.social_facebook], ['LinkedIn', s.social_linkedin]].filter(([, u]) => u);

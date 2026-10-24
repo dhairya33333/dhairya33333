@@ -11,9 +11,9 @@ Self-hosted website for Yogesh Pratap Singh (former IPS officer, author, film di
 | `/films` and `/film/<name>` | Film library, free preview, payment | Admin → Films |
 | `/about` | Biography, stats, timeline, speaking invitation | Admin → Site content (About, Stats) and Journey |
 | `/contact` | Contact details + message form (spam-protected) | Details: Admin → Site content. **Messages arrive in Admin → Inbox** (with an unread count); reply with the "Reply by email" button |
-| `/social` | Instagram posts and reels exactly as on Instagram | **Admin → Social feed → paste the post/reel link → "Add to website"** (no token needed). Optional: connect an Instagram token for hands-free sync |
+| `/social` | Instagram posts and reels exactly as on Instagram | **Admin → Social feed → paste the post/reel link → "Add to website"** (no token needed). The site fetches the cover and caption and shows a designed card grid with Reels/Posts filters; clicking a card plays the post in a viewer. If Instagram withholds a cover, upload one (Upload cover) and edit the caption. Optional: connect an Instagram token for hands-free sync |
 
-Notes: the contact form does not send email by itself (there is no email service configured), so messages are kept in the Inbox and the admin sees an unread badge. Instagram posts are shown through Instagram's own embed, which needs the visitor's browser to reach instagram.com and works for **public** accounts; it could not be exercised against the live Instagram from the build environment.
+Notes: the contact form does not send email by itself (there is no email service configured), so messages are kept in the Inbox and the admin sees an unread badge. Playing a post uses Instagram's own embed (needs the visitor's browser to reach instagram.com; public accounts only). Cover images and captions are read from Instagram's public preview data when a link is added; that can fail (Instagram sometimes asks for a login), which is why the admin can upload a cover. The embed playing was confirmed on a real account by the site owner; the automatic cover fetch has not been confirmed against live Instagram.
 
 ## Documentation
 | Guide | |
@@ -38,7 +38,7 @@ Without payment keys (and outside production) checkout runs in clearly labelled 
 
 ## Test
 ```bash
-npm test          # 146 automated tests (needs ffmpeg), about 2 minutes, uses temp directories and simulated gateways. No real charges
+npm test          # 157 automated tests (needs ffmpeg), about 2 minutes, uses temp directories and simulated gateways. No real charges
 npm run check     # syntax check of every source file
 npm run verify-data   # payments, refunds and entitlements agree (read-only; run it on the server too)
 ```

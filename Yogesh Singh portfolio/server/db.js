@@ -108,6 +108,11 @@ const MIGRATIONS = [
       organisation TEXT, message TEXT NOT NULL, is_read INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL DEFAULT (datetime('now')))`);
     db.exec('CREATE INDEX IF NOT EXISTS messages_read ON messages(is_read, id)');
   },
+  // 5: cover/author data for Instagram link posts
+  () => {
+    addColumn('social_posts', 'cover_source', 'TEXT');   // 'fetched' from Instagram, or 'uploaded' by the admin
+    addColumn('social_posts', 'author', 'TEXT');
+  },
 ];
 
 const current = db.prepare('PRAGMA user_version').get().user_version;

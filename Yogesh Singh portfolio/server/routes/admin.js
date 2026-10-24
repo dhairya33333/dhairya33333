@@ -9,6 +9,7 @@ import { requireAdmin, asyncHandler, randomId } from '../auth.js';
 import { hlsDir, usageReport } from '../storage.js';
 import { enqueueTranscode, cancelEncode, checkFfmpeg } from '../transcode.js';
 import { syncInstagram } from '../instagram.js';
+import { refreshEmbed } from '../instagram-meta.js';
 import { SITE_DEFAULTS, EDITABLE_KEYS } from '../defaults.js';
 import uploadRoutes from './uploads.js';
 import { adminRevoke } from '../payments/ledger.js';
@@ -255,14 +256,36 @@ export function parseInstagramLink(input) {
   return m ? { code: m[2], kind: m[1] === 'p' ? 'p' : 'reel' } : null;
 }
 
-r.post('/social/embed', (req, res) => {
+r.post('/social/embed', asyncHandler(async (req, res) => {
   const link = parseInstagramLink(req.body.url);
   if (!link) return bad(res, 'Paste a link to an Instagram post or reel, like https://www.instagram.com/p/XXXXXXXXXXX/ or https://www.instagram.com/reel/XXXXXXXXXXX/');
   const exists = db.prepare("SELECT id FROM social_posts WHERE source = 'embed' AND ext_id = ?").get(link.code);
   if (exists) return bad(res, 'That post is already on the Social page.', 409);
   db.prepare("INSERT INTO social_posts (source, ext_id, caption, media_type, permalink, posted_at) VALUES ('embed', ?, ?, ?, ?, datetime('now'))")
-    .run(link.code, String(req.body.caption || '').slice(0, 300), link.kind === 'reel' ? 'REEL' : 'POST', `https://www.instagram.com/${link.kind}/${link.code}/`);
-  res.json({ ok: true });
+    .run(link.code, String(req.body.caption || '').slice(0, 600), link.kind === 'reel' ? 'REEL' : 'POST', `https://www.instagram.com/${link.kind}/${link.code}/`);
+  const id = db.prepare("SELECT id FROM social_posts WHERE source = 'embed' AND ext_id = ?").get(link.code).id;
+  const meta = await refreshEmbed(id);                      // cover image + caption, best effort
+  res.json({ ok: true, id, cover: meta.cover, note: meta.note });
+}));
+
+r.post('/social/:id/refresh', asyncHandler(async (req, res) => {
+  const out = await refreshEmbed(Number(req.params.id));
+  if (out.note === 'not_found') return bad(res, 'Post not found.', 404);
+  res.json(out);
+}));
+
+// Admin-supplied cover image for a link post (used when Instagram does not hand one over)
+const coverUpload = multer({
+  storage: multer.diskStorage({ destination: dirs.uploads, filename: (_q, f, cb) => cb(null, 'cover-' + randomId() + path.extname(f.originalname).toLowerCase()) }),
+  limits: { fileSize: 8 * 1024 * 1024 },
+  fileFilter: (_q, f, cb) => cb(null, /\.(jpe?g|png|webp)$/i.test(f.originalname)),
+});
+r.post('/social/:id/cover', coverUpload.single('file'), (req, res) => {
+  const p = db.prepare("SELECT * FROM social_posts WHERE id = ? AND source = 'embed'").get(Number(req.params.id));
+  if (!p || !req.file) return bad(res, 'Choose a JPG, PNG or WebP image (up to 8 MB).');
+  if (p.cover_source === 'uploaded') unlink(p.thumb);
+  db.prepare("UPDATE social_posts SET thumb = ?, cover_source = 'uploaded' WHERE id = ?").run('/uploads/' + req.file.filename, p.id);
+  res.json({ ok: true, url: '/uploads/' + req.file.filename });
 });
 r.put('/instagram', (req, res) => {
   if ('user_id' in req.body) setSetting('ig_user_id', String(req.body.user_id).trim());
@@ -280,10 +303,15 @@ r.post('/social', imageUpload.single('file'), (req, res) => {
     .run(randomId(), String(req.body.caption || '').slice(0, 500), '/uploads/' + req.file.filename, link);
   res.json({ ok: true });
 });
-r.put('/social/:id', (req, res) => { db.prepare('UPDATE social_posts SET hidden = ? WHERE id = ?').run(req.body.hidden ? 1 : 0, Number(req.params.id)); res.json({ ok: true }); });
+r.put('/social/:id', (req, res) => {
+  const id = Number(req.params.id);
+  if ('hidden' in req.body) db.prepare('UPDATE social_posts SET hidden = ? WHERE id = ?').run(req.body.hidden ? 1 : 0, id);
+  if ('caption' in req.body) db.prepare('UPDATE social_posts SET caption = ? WHERE id = ?').run(String(req.body.caption || '').slice(0, 600), id);
+  res.json({ ok: true });
+});
 r.delete('/social/:id', (req, res) => {
   const p = db.prepare('SELECT * FROM social_posts WHERE id = ?').get(Number(req.params.id));
-  if (p?.source === 'manual') unlink(p.thumb);
+  if (p?.source === 'manual' || p?.cover_source === 'uploaded') unlink(p.thumb);
   db.prepare('DELETE FROM social_posts WHERE id = ?').run(Number(req.params.id));
   res.json({ ok: true });
 });

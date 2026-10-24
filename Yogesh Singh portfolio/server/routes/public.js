@@ -49,8 +49,8 @@ r.get('/movies/:slug/playback', (req, res) => {
 // Social page data. Embeds are built from a validated shortcode only: the browser never receives a free-form URL.
 r.get('/social', (_req, res) => {
   const set = publicSettings();
-  const embeds = db.prepare("SELECT id, ext_id, media_type, caption FROM social_posts WHERE source = 'embed' AND hidden = 0 ORDER BY id DESC LIMIT 60").all()
-    .map((p) => ({ id: p.id, code: p.ext_id, kind: p.media_type === 'REEL' ? 'reel' : 'p', caption: p.caption || '' }));
+  const embeds = db.prepare("SELECT id, ext_id, media_type, caption, author, thumb FROM social_posts WHERE source = 'embed' AND hidden = 0 ORDER BY id DESC LIMIT 60").all()
+    .map((p) => ({ id: p.id, code: p.ext_id, kind: p.media_type === 'REEL' ? 'reel' : 'p', caption: p.caption || '', author: p.author || '', thumb: p.thumb || '' }));
   const posts = db.prepare("SELECT id, caption, media_type, thumb, permalink FROM social_posts WHERE hidden = 0 AND thumb IS NOT NULL AND source <> 'embed' ORDER BY COALESCE(posted_at, '') DESC, id DESC LIMIT 24").all();
   res.json({ title: set.social_title, intro: set.social_intro, profile: set.social_instagram || '', embeds, posts });
 });

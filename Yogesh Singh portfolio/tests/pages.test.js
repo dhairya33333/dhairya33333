@@ -130,10 +130,10 @@ test('adding Instagram links: admin only, no duplicates, public API exposes only
   assert.equal((await t.client().get('/api/social')).json.embeds.length, 1);
 });
 
-test('the Social page JS builds embed addresses only from the shortcode, with a sandboxed lazy iframe', async () => {
+test('the Social page JS builds embed addresses only from the shortcode, in a sandboxed iframe created on demand', async () => {
   const js = (await t.client().get('/js/social.js')).text;
-  assert.match(js, /https:\/\/www\.instagram\.com\/\$\{e\.kind\}\/\$\{esc\(e\.code\)\}\/embed\/captioned\//);
-  assert.match(js, /setAttribute\('sandbox'/); assert.match(js, /loading = 'lazy'/);
+  assert.match(js, /https:\/\/www\.instagram\.com\/\$\{e\.kind\}\/\$\{e\.code\}\/embed\//);
+  assert.match(js, /setAttribute\('sandbox'/); assert.ok(!/iframe[^;]*src=\$\{/.test(js), 'no iframe is written into the page as HTML; it is created only when a card is opened');
   const csp = (await t.client().get('/social')).headers.get('content-security-policy');
   assert.match(csp, /frame-src [^;]*https:\/\/www\.instagram\.com/);
   assert.ok(!/frame-src [^;]*\*/.test(csp), 'no wildcard frame sources');

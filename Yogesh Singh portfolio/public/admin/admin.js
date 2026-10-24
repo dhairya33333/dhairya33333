@@ -197,9 +197,19 @@ const views = {
           <div class="row"><button class="btn gold s" id="ig-save">Save</button><button class="btn s" id="ig-sync">Sync now</button></div>
           <p class="muted small" style="margin-top:14px">Create a token at developers.facebook.com → your app → Instagram → API setup. The profile must be a Professional (Business/Creator) account. The site refreshes the token automatically.</p></div>
         <div class="panel" style="grid-column:1/-1"><h3>Add an Instagram post or reel by link</h3>
-          <p class="muted small">Paste the link from Instagram (the post's “…” menu → <b>Copy link</b>). It appears on the website's Social page exactly as it looks on Instagram, with the video, caption and a link to open it. Works for public accounts.</p>
+          <p class="muted small">Paste the link from Instagram (the post's “…” menu → <b>Copy link</b>). The site reads its cover image and caption and shows it as a clean card on the Social page; clicking the card plays the real post or reel in a viewer. Works for public accounts. If Instagram does not hand over a cover, use <b>Upload cover</b> (any screenshot or thumbnail works).</p>
           <div class="linkrow"><input id="ig-link" type="url" placeholder="https://www.instagram.com/reel/XXXXXXXXXXX/" autocomplete="off"><button class="btn gold s" id="ig-add">Add to website</button></div>
-          ${posts.filter((p) => p.source === 'embed').length ? `<div style="margin-top:18px">${posts.filter((p) => p.source === 'embed').map((p) => `<div class="row spread" style="padding:9px 0;border-top:1px solid var(--line)"><a class="link" href="${esc(p.permalink)}" target="_blank" rel="noopener">${esc(p.permalink.replace('https://www.instagram.com', ''))}</a><span class="row"><span class="pill ${p.hidden ? '' : 'pub'}">${p.hidden ? 'hidden' : 'shown'}</span><button class="btn s" data-hide="${p.id}" data-h="${p.hidden ? 0 : 1}">${p.hidden ? 'Show' : 'Hide'}</button><button class="btn danger s" data-rm="${p.id}">Remove</button></span></div>`).join('')}</div>` : ''}</div>
+          ${posts.filter((p) => p.source === 'embed').length ? `<div style="margin-top:18px">${posts.filter((p) => p.source === 'embed').map((p) => `
+          <div class="emb" style="display:grid;grid-template-columns:64px 1fr auto;gap:14px;align-items:center;padding:12px 0;border-top:1px solid var(--line)">
+            ${p.thumb ? `<img src="${esc(p.thumb)}" alt="" style="width:64px;height:80px;object-fit:cover;border-radius:6px;background:#e9e5db">` : '<div style="width:64px;height:80px;border-radius:6px;background:#e9e5db;display:grid;place-items:center;font-size:11px;color:var(--muted);text-align:center">no cover</div>'}
+            <div><a class="link" href="${esc(p.permalink)}" target="_blank" rel="noopener">${esc(p.permalink.replace('https://www.instagram.com', ''))}</a>
+              <div class="small muted" style="margin-top:4px">${p.author ? '@' + esc(p.author) + ' · ' : ''}${p.cover_source === 'uploaded' ? 'cover uploaded by you' : p.thumb ? 'cover fetched from Instagram' : '<b style="color:var(--danger)">no cover yet</b>: press “Fetch cover” or upload one'}</div>
+              <div class="small" style="margin-top:4px;max-width:520px">${p.caption ? esc(p.caption.slice(0, 140)) + (p.caption.length > 140 ? '…' : '') : '<span class="muted">no caption</span>'}</div></div>
+            <div class="row" style="justify-content:flex-end"><span class="pill ${p.hidden ? '' : 'pub'}">${p.hidden ? 'hidden' : 'shown'}</span>
+              <button class="btn s" data-refresh="${p.id}">Fetch cover</button>
+              <label class="btn s" style="cursor:pointer">Upload cover<input type="file" accept="image/jpeg,image/png,image/webp" data-cover="${p.id}" hidden></label>
+              <button class="btn s" data-cap="${p.id}">Caption</button>
+              <button class="btn s" data-hide="${p.id}" data-h="${p.hidden ? 0 : 1}">${p.hidden ? 'Show' : 'Hide'}</button><button class="btn danger s" data-rm="${p.id}">Remove</button></div></div>`).join('')}</div>` : ''}</div>
         <div class="panel"><h3>Add a post manually</h3>
           <label class="field"><span>Image</span><input type="file" id="m-file" accept="image/*"></label>
           <label class="field"><span>Caption</span><input id="m-cap"></label>
@@ -209,7 +219,14 @@ const views = {
       <div class="panel" style="margin-top:16px"><h3>Feed thumbnails (${posts.filter((p) => p.source !== 'embed').length})</h3><div class="ig">
         ${posts.filter((p) => p.source !== 'embed').map((p) => `<div class="it ${p.hidden ? 'hid' : ''}">${p.thumb ? `<img src="${esc(p.thumb)}" alt="" loading="lazy">` : ''}<div class="acts">
           <button data-hide="${p.id}" data-h="${p.hidden ? 0 : 1}">${p.hidden ? 'Show' : 'Hide'}</button><button data-rm="${p.id}">✕</button></div></div>`).join('') || '<span class="muted">Nothing yet.</span>'}</div></div>`;
-    $('#ig-add').onclick = () => act(async () => { await api('/admin/social/embed', { method: 'POST', body: { url: $('#ig-link').value } }); route(); }, 'Added to the Social page');
+    $('#ig-add').onclick = () => act(async () => {
+      const r = await api('/admin/social/embed', { method: 'POST', body: { url: $('#ig-link').value } });
+      toast(r.cover ? 'Added with its cover image' : 'Added. Instagram did not provide a cover: use “Upload cover” (or “Fetch cover” to retry)', !r.cover);
+      route();
+    });
+    $$('[data-refresh]').forEach((b) => (b.onclick = () => act(async () => { b.disabled = true; const r = await api(`/admin/social/${b.dataset.refresh}/refresh`, { method: 'POST' }); toast(r.cover ? 'Cover updated' : 'Instagram did not provide a cover. Upload one instead.', !r.cover); route(); })));
+    $$('[data-cover]').forEach((i) => (i.onchange = () => { const f = i.files[0]; if (!f) return; const fd = new FormData(); fd.append('file', f); act(async () => { await api(`/admin/social/${i.dataset.cover}/cover`, { method: 'POST', form: fd }); route(); }, 'Cover uploaded'); }));
+    $$('[data-cap]').forEach((b) => (b.onclick = () => { const p = posts.find((x) => x.id === Number(b.dataset.cap)); const t = prompt('Caption shown on the website for this post:', p?.caption || ''); if (t !== null) act(async () => { await api('/admin/social/' + b.dataset.cap, { method: 'PUT', body: { caption: t } }); route(); }, 'Caption saved'); }));
     $('#ig-save').onclick = () => act(async () => { await api('/admin/instagram', { method: 'PUT', body: { token: $('#ig-token').value } }); route(); }, 'Saved');
     $('#ig-sync').onclick = () => act(async () => { const r = await api('/admin/instagram/sync', { method: 'POST' }); if (!r.ok) throw new Error(r.message); route(); }, 'Synced');
     $('#m-add').onclick = () => { const f = $('#m-file').files[0]; if (!f) return toast('Choose an image', true); const fd = new FormData(); fd.append('caption', $('#m-cap').value); fd.append('permalink', $('#m-link').value); fd.append('file', f); act(async () => { await api('/admin/social', { method: 'POST', form: fd }); route(); }, 'Added'); };
