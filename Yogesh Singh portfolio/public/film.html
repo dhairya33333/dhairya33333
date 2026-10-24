@@ -29,16 +29,21 @@
 .modal.open { display: grid; }
 .modal .card { position: relative; background: #fff; }
 .modal .x { position: absolute; top: 14px; right: 16px; background: none; border: 0; font-size: 26px; color: var(--muted); }
+.pstate { position: absolute; inset: 0; z-index: 2; display: grid; place-items: center; text-align: center; padding: 24px; background: rgba(251,250,247,.9); color: var(--ink); font-size: 16px; transition: opacity .3s; }
+.pstate[hidden] { display: none; }
+.pstate button { margin-top: 14px; }
+.preview-note { margin: 18px 0 0; padding: 14px 18px; border: 1px solid var(--line); border-left: 3px solid var(--gold); border-radius: 6px; background: #fff; color: var(--ink); font-size: 15px; }
 .demo-note { font-size: 12px; color: var(--gold); border: 1px dashed var(--gold); padding: 8px 12px; border-radius: 6px; margin-bottom: 16px; }
 @media (max-width: 860px) { .info { grid-template-columns: 1fr; } .buy { min-width: 0; } }
 </style></head>
 <body>
-<header class="nav stuck"><div class="wrap"><a href="/" class="brand"><i></i>Y. P. Singh</a><nav class="nav-links"><a href="/#film">Film</a><a href="/#about">About</a><a href="/#contact">Contact</a><span id="nav-auth" style="display:contents"></span></nav><button class="burger" aria-label="Menu"><span></span><span></span></button></div></header>
+<header class="nav stuck"><div class="wrap"><a href="/" class="brand"><i></i>Y. P. Singh</a><nav class="nav-links"><a href="/films">Films</a><a href="/#about">About</a><a href="/#contact">Contact</a><span id="nav-auth" style="display:contents"></span></nav><button class="burger" aria-label="Menu"><span></span><span></span></button></div></header>
 <main class="watch"><div class="wrap">
   <div class="player" id="player">
-    <div class="badge" id="badge">Free preview</div>
+    <div class="badge" id="badge">Loading…</div>
+    <div class="pstate" id="pstate" role="status" aria-live="polite">Loading film…</div>
     <video id="video" controls playsinline controlslist="nodownload noplaybackrate" disablepictureinpicture></video>
-    <div class="paywall" id="paywall">
+    <div class="paywall" id="paywall" role="dialog" aria-label="Free preview ended">
       <div>
         <span class="eyebrow">End of free preview</span>
         <h2>The story continues.</h2>
@@ -47,6 +52,7 @@
       </div>
     </div>
   </div>
+  <p class="preview-note" id="preview-note" aria-live="polite"></p>
   <div class="info">
     <div>
       <h1 id="title"></h1><p class="tag" id="tagline"></p><p class="desc" id="desc"></p>
@@ -55,12 +61,12 @@
   </div>
 </div></main>
 
-<div class="modal" id="modal"><div class="card">
-  <button class="x" id="modal-x" aria-label="Close">×</button>
-  <h1>Almost there</h1><p class="sub">Secure payment powered by Cashfree. UPI, cards and net banking accepted.</p>
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><div class="card">
+  <button class="x" id="modal-x" aria-label="Close payment window">×</button>
+  <h1 id="modal-title">Almost there</h1><p class="sub"><span id="gateway-copy">Secure payment. UPI, cards and net banking accepted.</span></p>
   <div class="demo-note" id="demo-note" hidden>Demo mode: no real money is charged. Add Cashfree keys to go live.</div>
-  <label class="field"><span>Mobile number</span><input id="phone" type="tel" inputmode="numeric" maxlength="14" placeholder="10-digit mobile" autocomplete="tel"></label>
-  <div class="msg" id="pay-msg"></div>
+  <label class="field" id="phone-field"><span>Mobile number</span><input id="phone" type="tel" inputmode="numeric" maxlength="14" placeholder="10-digit mobile" autocomplete="tel"></label>
+  <div class="msg" id="pay-msg" role="alert" aria-live="assertive"></div>
   <button class="btn gold" id="pay-go">Pay <span id="pay-amt"></span></button>
 </div></div>
 <div class="cursor"></div>

@@ -1,18 +1,30 @@
 [Unit]
-Description=Yogesh Singh portfolio
-After=network.target
+Description=Yogesh Singh portfolio and film platform
+After=network-online.target
+Wants=network-online.target
 
 [Service]
 Type=simple
 User=portfolio
+Group=portfolio
 WorkingDirectory=/opt/yogesh-portfolio
 ExecStart=/usr/bin/node server/index.js
-Environment=NODE_ENV=production
+EnvironmentFile=/etc/yogesh-portfolio/env
 Restart=always
 RestartSec=3
+TimeoutStopSec=30
+LimitNOFILE=65536
+# Keep the web server responsive while ffmpeg is running
+Nice=5
+
+# Hardening
 NoNewPrivileges=true
+PrivateTmp=true
 ProtectSystem=full
-ReadWritePaths=/opt/yogesh-portfolio
+ProtectHome=true
+ReadWritePaths=/var/lib/yogesh-portfolio /srv/yp
+ProtectKernelTunables=true
+RestrictSUIDSGID=true
 
 [Install]
 WantedBy=multi-user.target

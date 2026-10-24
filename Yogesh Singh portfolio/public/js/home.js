@@ -1,6 +1,6 @@
 import { api, $, esc, rupees, runtime, minutes, getUser, mountNav, initMotion } from './common.js';
 
-const KIND = { career: 'Service', book: 'Book', film: 'Cinema', talk: 'Speaking', honour: 'Recognition' };
+const KIND = { career: 'Service', book: 'Book', article: 'Article', film: 'Cinema', talk: 'Speaking', honour: 'Recognition' };
 
 function splitMask(el, text, startDelay = 0) {
   el.innerHTML = text.split(' ').map((w, wi) =>
@@ -35,7 +35,7 @@ function renderFilm(movies, mode) {
           <span class="chip free">First ${free} min free</span>
         </div>
         <div class="actions" data-reveal>
-          <a class="btn primary" href="/film/${esc(m.slug)}">▶ Watch free preview</a>
+          <a class="btn primary" href="/film/${esc(m.slug)}">▶ Watch the free ${free} minutes</a>
           <a class="btn" href="/film/${esc(m.slug)}#unlock"><span class="price">${rupees(m.price_paise)}</span> Unlock full film <span class="arrow">→</span></a>
         </div>
       </div>
@@ -83,7 +83,17 @@ async function boot() {
   $('#quote').textContent = s.quote;
   $('#quote-sec').hidden = !s.quote.trim();
 
-  $('#works').innerHTML = site.works.map((w, i) => `
+  const journey = site.works.filter((w) => w.kind !== 'article'), articles = site.works.filter((w) => w.kind === 'article');
+  if (articles.length) {
+    $('#articles').hidden = false;
+    $('#articles-list').innerHTML = articles.map((w, i) => `
+      <a class="work" ${w.url ? `href="${esc(w.url)}" target="_blank" rel="noopener"` : ''} data-reveal style="--i:${i}">
+        <span class="k">${esc(w.period || 'Article')}</span>
+        <div><h4>${esc(w.title)}</h4>${w.subtitle ? `<p>${esc(w.subtitle)}</p>` : ''}</div>
+        <span class="p">${w.url ? 'Read ↗' : ''}</span>
+      </a>`).join('');
+  }
+  $('#works').innerHTML = journey.map((w, i) => `
     <div class="work" data-reveal style="--i:${i}">
       <span class="k">${esc(KIND[w.kind] || w.kind)}</span>
       <div><h4>${esc(w.title)}</h4>${w.subtitle ? `<p>${esc(w.subtitle)}</p>` : ''}</div>

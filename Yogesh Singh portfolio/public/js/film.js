@@ -1,77 +1,144 @@
-import { api, $, esc, rupees, getUser, mountNav, initMotion } from './common.js';
+import { api, $, rupees, getUser, mountNav, initMotion, loadScript } from './common.js';
 
-const slug = location.pathname.split('/').filter(Boolean).pop();
+const slug = decodeURIComponent(location.pathname.split('/').filter(Boolean).pop());
 const video = $('#video');
-let movie, owns = false, user, mode;
+let movie, user, mode, playback, hls;
 
-const loadScript = (src) => new Promise((res, rej) => {
-  const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s);
-});
+const say = (text, ok) => { const m = $('#pay-msg'); m.textContent = text; m.className = 'msg' + (ok ? ' ok' : ''); };
+const state = (text, { retry } = {}) => {
+  const el = $('#pstate');
+  el.hidden = !text;
+  el.innerHTML = '';
+  if (!text) return;
+  el.append(Object.assign(document.createElement('div'), { textContent: text }));
+  if (retry) { const b = Object.assign(document.createElement('button'), { className: 'btn s', textContent: 'Try again' }); b.onclick = start; el.firstChild.append(document.createElement('br'), b); }
+};
 
-function attach(src, resumeAt = 0) {
-  const start = () => { if (resumeAt > 1) video.currentTime = resumeAt; };
-  if (window.Hls?.isSupported()) {
-    const hls = new Hls({ maxBufferLength: 30, enableWorker: true });
-    hls.loadSource(src); hls.attachMedia(video);
-    hls.on(Hls.Events.MANIFEST_PARSED, start);
-    hls.on(Hls.Events.ERROR, (_e, d) => {
-      if (d.fatal && d.response?.code === 403) showPaywall();
-      else if (d.fatal && d.type === Hls.ErrorTypes.NETWORK_ERROR) hls.startLoad();
-      else if (d.fatal && d.type === Hls.ErrorTypes.MEDIA_ERROR) hls.recoverMediaError();
-    });
-  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-    video.src = src; video.addEventListener('loadedmetadata', start, { once: true });
-  } else {
-    $('#badge').textContent = 'Your browser cannot play this video';
-  }
-}
-
+const spoken = (sec) => (sec < 90 ? `${sec} seconds` : `${Math.round(sec / 60)} minutes`);
 const posKey = () => `yp-pos-${movie.id}`;
 const savedPos = () => Number(localStorage.getItem(posKey()) || 0);
+const savePos = (n) => { try { localStorage.setItem(posKey(), String(Math.floor(n))); } catch { /* private mode */ } };
 
-function showPaywall() { $('#paywall').classList.add('show'); }
+function showPaywall() {
+  if (playback?.mode === 'full') return;
+  $('#paywall').classList.add('show');
+  $('#paywall-buy').focus({ preventScroll: true });
+}
+
+function attach(src, resumeAt) {
+  hls?.destroy(); hls = null;
+  const begin = () => { if (resumeAt > 1) video.currentTime = resumeAt; state(''); };
+  if (window.Hls?.isSupported()) {
+    hls = new Hls({ maxBufferLength: 30, enableWorker: true });
+    hls.loadSource(src); hls.attachMedia(video);
+    hls.on(Hls.Events.MANIFEST_PARSED, begin);
+    hls.on(Hls.Events.ERROR, (_e, d) => {
+      if (!d.fatal) return;
+      const code = d.response?.code;
+      if (code === 401 || code === 403) { playback = { ...playback, mode: 'preview' }; state(''); showPaywall(); }   // access changed (e.g. refund, signed out)
+      else if (d.type === Hls.ErrorTypes.NETWORK_ERROR) { state('Network problem while loading the film.', { retry: true }); hls.destroy(); }
+      else if (d.type === Hls.ErrorTypes.MEDIA_ERROR) hls.recoverMediaError();
+      else state('This video could not be played.', { retry: true });
+    });
+  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    video.src = src;
+    video.addEventListener('loadedmetadata', begin, { once: true });
+    video.addEventListener('error', () => state('This video could not be played.', { retry: true }), { once: true });
+  } else {
+    state('Your browser cannot play this video. Please try a current version of Chrome, Safari, Edge or Firefox.');
+  }
+}
 
 function renderInfo() {
   document.title = `${movie.title} — Y. P. Singh`;
   $('#title').textContent = movie.title;
   $('#tagline').textContent = movie.tagline || '';
   $('#desc').textContent = movie.description || '';
-  const free = Math.round(movie.preview_sec / 60);
+  const owns = playback.mode === 'full';
+  const freeLen = spoken(playback.previewSeconds);
+  $('#badge').textContent = owns ? 'Full film' : 'Free preview';
+  $('#preview-note').hidden = false;
+  $('#preview-note').textContent = owns
+    ? 'You own this film. Your place is saved on this device.'
+    : playback.url
+      ? `You are watching the free preview: the first ${freeLen}. When it ends, a one-time payment of ${rupees(movie.price_paise)} unlocks the rest of the film.`
+      : `This film has no free preview. A one-time payment of ${rupees(movie.price_paise)} unlocks it.`;
   $('#buy').innerHTML = owns
     ? `<span class="owned">✓ You own this film</span><p style="color:var(--muted);margin:12px 0 0">Enjoy the full film. Your place is saved automatically.</p>`
     : `<span class="price serif">${rupees(movie.price_paise)}</span>
-       <ul><li>Full film, start to finish</li><li>First ${free} minutes always free</li><li>Watch on any device</li><li>Pick up where you left off</li></ul>
+       <ul><li>One-time payment, no subscription</li><li>First ${freeLen} always free</li><li>Watch on any device</li><li>Pick up where you left off</li></ul>
        <button class="btn gold" id="buy-btn">Unlock full film <span class="arrow">→</span></button>`;
   $('#buy-btn')?.addEventListener('click', unlock);
 }
 
+let lastFocus;
+function openModal() { lastFocus = document.activeElement; $('#modal').classList.add('open'); ($('#phone-field').hidden ? $('#pay-go') : $('#phone')).focus(); }
+function closeModal() { $('#modal').classList.remove('open'); lastFocus?.focus?.(); }
+
 function unlock() {
   if (!user) { location.href = `/login.html?next=${encodeURIComponent(location.pathname + '#unlock')}`; return; }
+  const needsPhone = mode === 'cashfree' || mode === 'demo';
   $('#pay-amt').textContent = rupees(movie.price_paise);
   $('#demo-note').hidden = mode !== 'demo';
+  $('#phone-field').hidden = !needsPhone;
+  $('#gateway-copy').textContent = mode === 'demo' ? 'Demo checkout (no real payment).' : 'Secure payment. UPI, cards and net banking accepted.';
   $('#phone').value = user.phone || '';
-  $('#pay-msg').textContent = '';
-  $('#modal').classList.add('open');
-  $('#phone').focus();
+  $('#pay-go').disabled = false;
+  say('');
+  openModal();
+}
+
+async function confirmPayment(orderId) {
+  state('Confirming your payment…');
+  location.href = `/payment-return.html?order_id=${encodeURIComponent(orderId)}`;
 }
 
 async function pay() {
-  const btn = $('#pay-go'), msg = $('#pay-msg');
-  msg.className = 'msg'; msg.textContent = '';
-  btn.disabled = true;
+  const btn = $('#pay-go');
+  say(''); btn.disabled = true;
   try {
     const o = await api('/payments/checkout', { method: 'POST', body: { movieId: movie.id, phone: $('#phone').value } });
     if (o.mode === 'demo') {
       await api('/payments/demo/complete', { method: 'POST', body: { orderId: o.orderId } });
-      location.hash = ''; location.reload();
+      location.hash = ''; location.reload(); return;
+    }
+    if (o.provider === 'razorpay') {
+      await loadScript('https://checkout.razorpay.com/v1/checkout.js');
+      const rzp = new window.Razorpay({
+        key: o.keyId, order_id: o.razorpayOrderId, amount: o.amount, currency: o.currency, name: 'Y. P. Singh', description: movie.title,
+        prefill: o.prefill, theme: { color: '#9a7430' },
+        handler: async (resp) => {          // success callback: only a hint, the server verifies signature + payment
+          closeModal(); state('Confirming your payment…');
+          try {
+            const v = await api('/payments/razorpay/verify', { method: 'POST', body: resp });
+            if (v.status === 'PAID') { location.hash = ''; location.reload(); } else confirmPayment(o.orderId);
+          } catch { confirmPayment(o.orderId); }
+        },
+        modal: { ondismiss: () => { btn.disabled = false; say('Payment window closed. You have not been charged.'); api('/payments/cancel', { method: 'POST', body: { orderId: o.orderId } }).catch(() => {}); } },
+      });
+      rzp.on('payment.failed', (r) => { btn.disabled = false; say(r?.error?.description ? `${r.error.description} You can try again.` : 'The payment failed. You can try again.'); });
+      rzp.open();
       return;
     }
-    await loadScript('https://sdk.cashfree.com/js/v3/cashfree.js');
-    const cf = Cashfree({ mode: o.sdkMode });
-    await cf.checkout({ paymentSessionId: o.paymentSessionId, redirectTarget: '_self' });
+    if (o.provider === 'cashfree') {
+      await loadScript('https://sdk.cashfree.com/js/v3/cashfree.js');
+      await window.Cashfree({ mode: o.sdkMode }).checkout({ paymentSessionId: o.paymentSessionId, redirectTarget: '_self' });
+      return;
+    }
+    throw new Error('Unknown payment method.');
   } catch (e) {
-    msg.textContent = e.message; btn.disabled = false;
+    say(e.message || 'Something went wrong. You have not been charged.'); btn.disabled = false;
   }
+}
+
+async function start() {
+  state('Loading film…');
+  try { playback = await api(`/movies/${encodeURIComponent(slug)}/playback`); }
+  catch { state('The film could not be loaded.', { retry: true }); return; }
+  renderInfo();
+  if (!playback.url) { state(''); showPaywall(); return; }
+  const cap = playback.mode === 'preview' ? Math.max(0, playback.previewSeconds - 5) : Infinity;
+  attach(playback.url, Math.min(savedPos(), cap));
 }
 
 async function boot() {
@@ -79,28 +146,24 @@ async function boot() {
   mountNav(user);
   let data;
   try { data = await api(`/movies/${encodeURIComponent(slug)}`); } catch { location.replace('/404.html'); return; }
-  ({ movie, owns } = data); mode = data.paymentsMode;
-  renderInfo();
-
+  movie = data.movie; mode = data.paymentsMode;
   await loadScript('/vendor/hls.js').catch(() => {});
-  if (owns) {
-    $('#badge').textContent = 'Full film';
-    attach(`/media/${movie.id}/full.m3u8`, savedPos());
-  } else {
-    attach(`/media/${movie.id}/preview.m3u8`, Math.min(savedPos(), movie.preview_sec - 5));
-    video.addEventListener('ended', () => { localStorage.setItem(posKey(), movie.preview_sec); showPaywall(); });
+  await start();
+  if (playback.mode === 'preview') {
+    video.addEventListener('ended', () => { savePos(playback.previewSeconds); showPaywall(); });
     $('#paywall-buy').addEventListener('click', unlock);
   }
   let last = 0;
-  video.addEventListener('timeupdate', () => {
-    if (video.currentTime - last > 5 || video.currentTime < last) { last = video.currentTime; localStorage.setItem(posKey(), Math.floor(last)); }
-  });
+  video.addEventListener('timeupdate', () => { if (Math.abs(video.currentTime - last) > 5) { last = video.currentTime; savePos(last); } });
+  video.addEventListener('waiting', () => { if (!video.paused) state('Buffering…'); });
+  for (const ev of ['playing', 'canplay']) video.addEventListener(ev, () => state(''));
+  video.addEventListener('contextmenu', (e) => e.preventDefault());
 
   $('#pay-go').addEventListener('click', pay);
-  $('#modal-x').addEventListener('click', () => $('#modal').classList.remove('open'));
-  $('#modal').addEventListener('click', (e) => { if (e.target.id === 'modal') $('#modal').classList.remove('open'); });
-  if (location.hash === '#unlock' && !owns) unlock();
+  $('#modal-x').addEventListener('click', closeModal);
+  $('#modal').addEventListener('click', (e) => { if (e.target.id === 'modal') closeModal(); });
+  addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('#modal').classList.contains('open')) closeModal(); });
+  if (location.hash === '#unlock' && playback.mode !== 'full') unlock();
   initMotion();
 }
 boot();
-document.getElementById('video').addEventListener('contextmenu', (e) => e.preventDefault());

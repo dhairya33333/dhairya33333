@@ -1,33 +1,34 @@
 import { Router } from 'express';
 import multer from 'multer';
-import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
-import { db, allSettings, setSetting, getSetting } from '../db.js';
+import { db, allSettings, setSetting, tx } from '../db.js';
 import { dirs, config } from '../config.js';
-import { requireAdmin, asyncHandler, hashPassword } from '../auth.js';
-import { enqueueTranscode, hlsDir } from '../transcode.js';
+import { requireAdmin, asyncHandler, randomId } from '../auth.js';
+import { hlsDir, usageReport } from '../storage.js';
+import { enqueueTranscode } from '../transcode.js';
 import { syncInstagram } from '../instagram.js';
 import { SITE_DEFAULTS, EDITABLE_KEYS } from '../defaults.js';
+import uploadRoutes from './uploads.js';
 
 const r = Router();
 r.use(requireAdmin);
+r.use(uploadRoutes);
 
-const rand = () => crypto.randomBytes(8).toString('hex');
 const slugify = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'film';
+const has = (v) => v !== undefined && v !== null && String(v).trim() !== '' && Number.isFinite(Number(v));
 const bad = (res, msg, code = 400) => res.status(code).json({ error: msg });
 
+// Small images / short trailers only. Feature films go through the chunked upload route.
 const imageUpload = multer({
-  storage: multer.diskStorage({ destination: dirs.uploads, filename: (_q, f, cb) => cb(null, rand() + path.extname(f.originalname).toLowerCase()) }),
-  limits: { fileSize: 40 * 1024 * 1024 },
+  storage: multer.diskStorage({ destination: dirs.uploads, filename: (_q, f, cb) => cb(null, randomId() + path.extname(f.originalname).toLowerCase()) }),
+  limits: { fileSize: 60 * 1024 * 1024 },
   fileFilter: (_q, f, cb) => cb(null, /\.(jpe?g|png|webp|avif|mp4|webm)$/i.test(f.originalname)),
 });
-const videoUpload = multer({
-  storage: multer.diskStorage({ destination: dirs.source, filename: (_q, f, cb) => cb(null, rand() + path.extname(f.originalname).toLowerCase()) }),
-  fileFilter: (_q, f, cb) => cb(null, /\.(mp4|mov|mkv|avi|webm|m4v)$/i.test(f.originalname)),
-});
-
 const unlink = (rel) => { if (rel?.startsWith('/uploads/')) fs.rm(path.join(dirs.uploads, path.basename(rel)), () => {}); };
+
+/** What the admin UI may see about a film. Server file paths never leave the server. */
+const adminMovie = ({ source_file, ...m }) => ({ ...m, has_source: !!source_file, source_in_library: !!source_file?.startsWith(dirs.source) });
 
 // ---------- Dashboard ----------
 r.get('/stats', (_req, res) => {
@@ -35,12 +36,16 @@ r.get('/stats', (_req, res) => {
   res.json({
     revenue_paise: one("SELECT COALESCE(SUM(amount_paise),0) v FROM orders WHERE status='PAID'").v,
     orders_paid: one("SELECT COUNT(*) v FROM orders WHERE status='PAID'").v,
+    orders_refunded: one("SELECT COUNT(*) v FROM orders WHERE status='REFUNDED'").v,
     users: one("SELECT COUNT(*) v FROM users WHERE role='user'").v,
     movies: one('SELECT COUNT(*) v FROM movies').v,
     recent: db.prepare(`SELECT o.order_id, o.amount_paise, o.paid_at, u.name, m.title FROM orders o JOIN users u ON u.id=o.user_id JOIN movies m ON m.id=o.movie_id WHERE o.status='PAID' ORDER BY o.paid_at DESC LIMIT 8`).all(),
     paymentsMode: config.paymentsMode,
+    googleConfigured: !!config.google.clientId,
   });
 });
+
+r.get('/storage', (_req, res) => res.json(usageReport()));
 
 // ---------- Movies ----------
 const movieFields = (b) => ({
@@ -54,29 +59,31 @@ const movieFields = (b) => ({
   featured: b.featured ? 1 : 0,
 });
 
-r.get('/movies', (_req, res) => res.json({ movies: db.prepare('SELECT * FROM movies ORDER BY id DESC').all() }));
+r.get('/movies', (_req, res) => res.json({ movies: db.prepare('SELECT * FROM movies ORDER BY id DESC').all().map(adminMovie) }));
 
 r.post('/movies', (req, res) => {
   const f = movieFields(req.body);
   if (!f.title) return bad(res, 'Title is required.');
   let slug = slugify(f.title);
-  while (db.prepare('SELECT 1 FROM movies WHERE slug = ?').get(slug)) slug += '-' + rand().slice(0, 3);
+  while (db.prepare('SELECT 1 FROM movies WHERE slug = ?').get(slug)) slug += '-' + randomId(2);
   const { lastInsertRowid } = db.prepare('INSERT INTO movies (slug, title, tagline, description, year, price_paise, preview_sec, published, featured) VALUES (?,?,?,?,?,?,?,0,0)')
-    .run(slug, f.title, f.tagline, f.description, f.year, f.price_paise || 29900, f.preview_sec || 1800);
+    .run(slug, f.title, f.tagline, f.description, f.year,
+      has(req.body.price_rupees) ? f.price_paise : 29900,                 // blank price = default Rs 299
+      has(req.body.preview_minutes) ? f.preview_sec : 1800);              // blank preview = default 30 minutes
   res.json({ id: Number(lastInsertRowid) });
 });
 
 r.put('/movies/:id', (req, res) => {
   const m = db.prepare('SELECT * FROM movies WHERE id = ?').get(Number(req.params.id));
   if (!m) return bad(res, 'Not found.', 404);
-  const f = movieFields({ ...{ price_rupees: m.price_paise / 100, preview_minutes: m.preview_sec / 60 }, ...req.body });
+  const f = movieFields({ price_rupees: m.price_paise / 100, preview_minutes: m.preview_sec / 60, ...req.body });
   if (!f.title) return bad(res, 'Title is required.');
-  if (f.published && m.status !== 'ready') return bad(res, 'Upload and process the film before publishing it.');
-  db.exec('BEGIN');
-  if (f.featured) db.prepare('UPDATE movies SET featured = 0').run();
-  db.prepare('UPDATE movies SET title=?, tagline=?, description=?, year=?, price_paise=?, preview_sec=?, published=?, featured=? WHERE id=?')
-    .run(f.title, f.tagline, f.description, f.year, f.price_paise, f.preview_sec, f.published, f.featured, m.id);
-  db.exec('COMMIT');
+  if (f.published && !(m.status === 'ready' && m.validated)) return bad(res, 'Upload and process the film (and let it pass validation) before publishing it.');
+  tx(() => {
+    if (f.featured) db.prepare('UPDATE movies SET featured = 0').run();
+    db.prepare('UPDATE movies SET title=?, tagline=?, description=?, year=?, price_paise=?, preview_sec=?, published=?, featured=? WHERE id=?')
+      .run(f.title, f.tagline, f.description, f.year, f.price_paise, f.preview_sec, f.published, f.featured, m.id);
+  });
   res.json({ ok: true });
 });
 
@@ -91,51 +98,48 @@ for (const kind of ['poster', 'trailer']) {
   });
 }
 
-r.post('/movies/:id/video', videoUpload.single('file'), (req, res) => {
-  const m = db.prepare('SELECT id FROM movies WHERE id = ?').get(Number(req.params.id));
-  if (!m || !req.file) return bad(res, 'Choose a video file (mp4, mov, mkv…).');
-  enqueueTranscode(m.id, req.file.path);
-  res.json({ ok: true });
-});
-
-r.get('/incoming', (_req, res) => {
-  const files = fs.readdirSync(dirs.incoming).filter((f) => /\.(mp4|mov|mkv|avi|webm|m4v)$/i.test(f))
-    .map((f) => ({ name: f, size: fs.statSync(path.join(dirs.incoming, f)).size }));
-  res.json({ dir: dirs.incoming, files });
-});
-
-r.post('/movies/:id/import', (req, res) => {
-  const m = db.prepare('SELECT id FROM movies WHERE id = ?').get(Number(req.params.id));
-  const file = path.join(dirs.incoming, path.basename(String(req.body.file || '')));
-  if (!m || !fs.existsSync(file)) return bad(res, 'File not found in the incoming folder.');
-  enqueueTranscode(m.id, file);
-  res.json({ ok: true });
-});
-
 r.post('/movies/:id/reprocess', (req, res) => {
   const m = db.prepare('SELECT * FROM movies WHERE id = ?').get(Number(req.params.id));
   if (!m?.source_file || !fs.existsSync(m.source_file)) return bad(res, 'The original file is no longer on the server. Upload it again.');
+  if (['queued', 'processing'].includes(m.encode_state)) return bad(res, 'This film is already being processed.', 409);
   enqueueTranscode(m.id, m.source_file);
+  res.json({ ok: true });
+});
+
+// Explicit, typed-confirmation removal of an uploaded original, allowed only once validated output exists.
+r.post('/movies/:id/cleanup-source', (req, res) => {
+  const m = db.prepare('SELECT * FROM movies WHERE id = ?').get(Number(req.params.id));
+  if (!m) return bad(res, 'Not found.', 404);
+  if (req.body.confirm !== 'DELETE') return bad(res, 'Type DELETE to confirm.');
+  if (!(m.status === 'ready' && m.validated && m.encode_state === 'idle')) return bad(res, 'The processed film must be ready and validated first.', 409);
+  if (!m.source_file?.startsWith(dirs.source + path.sep) || !fs.existsSync(m.source_file)) return bad(res, 'There is no uploaded original to remove. (Files in the incoming folder are never touched.)', 409);
+  fs.rmSync(m.source_file, { force: true });
+  db.prepare('UPDATE movies SET source_file = NULL WHERE id = ?').run(m.id);
   res.json({ ok: true });
 });
 
 r.delete('/movies/:id', (req, res) => {
   const m = db.prepare('SELECT * FROM movies WHERE id = ?').get(Number(req.params.id));
   if (!m) return bad(res, 'Not found.', 404);
-  if (db.prepare('SELECT 1 FROM purchases WHERE movie_id = ? LIMIT 1').get(m.id)) return bad(res, 'This film has buyers. Unpublish it instead of deleting.');
-  db.prepare('DELETE FROM orders WHERE movie_id = ?').run(m.id);
-  db.prepare('DELETE FROM movies WHERE id = ?').run(m.id);
+  if (db.prepare('SELECT 1 FROM purchases WHERE movie_id = ? LIMIT 1').get(m.id) || db.prepare("SELECT 1 FROM orders WHERE movie_id = ? AND status IN ('PAID','REFUNDED') LIMIT 1").get(m.id))
+    return bad(res, 'This film has paying customers or payment history. Unpublish it instead of deleting.', 409);
+  if (m.source_file?.startsWith(dirs.source + path.sep) && fs.existsSync(m.source_file))
+    return bad(res, 'The original movie file is still stored on the server. Originals are never deleted automatically: use "Remove original" (after the film is validated) or remove it manually, then delete the film.', 409);
+  tx(() => {
+    db.prepare('DELETE FROM uploads WHERE movie_id = ?').run(m.id);
+    db.prepare('DELETE FROM orders WHERE movie_id = ?').run(m.id);
+    db.prepare('DELETE FROM movies WHERE id = ?').run(m.id);
+  });
   unlink(m.poster); unlink(m.trailer);
-  fs.rmSync(hlsDir(m.id), { recursive: true, force: true });
-  if (m.source_file?.startsWith(dirs.source)) fs.rm(m.source_file, () => {});
+  fs.rmSync(hlsDir(m.id), { recursive: true, force: true });   // processed output only; incoming-folder originals are never touched
   res.json({ ok: true });
 });
 
 // ---------- Orders / users ----------
-r.get('/orders', (_req, res) => res.json({ orders: db.prepare(`SELECT o.order_id, o.amount_paise, o.status, o.gateway, o.created_at, o.paid_at, u.name, u.email, m.title FROM orders o JOIN users u ON u.id=o.user_id JOIN movies m ON m.id=o.movie_id ORDER BY o.id DESC LIMIT 300`).all() }));
+r.get('/orders', (_req, res) => res.json({ orders: db.prepare(`SELECT o.order_id, o.amount_paise, o.status, o.provider, o.failure_reason, o.created_at, o.paid_at, u.name, u.email, m.title FROM orders o JOIN users u ON u.id=o.user_id JOIN movies m ON m.id=o.movie_id ORDER BY o.id DESC LIMIT 300`).all() }));
 
 r.get('/users', (_req, res) => res.json({
-  users: db.prepare(`SELECT u.id, u.name, u.email, u.phone, u.role, u.created_at, (SELECT COUNT(*) FROM purchases p WHERE p.user_id=u.id) purchases FROM users u ORDER BY u.id DESC LIMIT 500`).all(),
+  users: db.prepare(`SELECT u.id, u.name, u.email, u.phone, u.role, u.created_at, (u.google_sub IS NOT NULL) AS google, (SELECT COUNT(*) FROM purchases p WHERE p.user_id=u.id) purchases FROM users u ORDER BY u.id DESC LIMIT 500`).all(),
 }));
 
 r.post('/grant', (req, res) => {
@@ -151,18 +155,14 @@ r.post('/grant', (req, res) => {
 r.post('/users/:id/role', (req, res) => {
   const id = Number(req.params.id);
   if (id === req.user.id) return bad(res, 'You cannot change your own role.');
-  db.prepare('UPDATE users SET role = ? WHERE id = ?').run(req.body.role === 'admin' ? 'admin' : 'user', id);
-  res.json({ ok: true });
-});
-
-r.post('/password', (req, res) => {
-  const pw = String(req.body.password || '');
-  if (pw.length < 10) return bad(res, 'Use at least 10 characters for the admin password.');
-  db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(hashPassword(pw), req.user.id);
+  db.prepare('UPDATE users SET role = ?, token_version = token_version + 1 WHERE id = ?').run(req.body.role === 'admin' ? 'admin' : 'user', id);
   res.json({ ok: true });
 });
 
 // ---------- Site content ----------
+const isUrl = (v) => { try { return ['http:', 'https:'].includes(new URL(v).protocol); } catch { return false; } };
+const URL_KEYS = new Set(['social_instagram', 'social_youtube', 'social_x', 'social_facebook', 'social_linkedin']);
+
 r.get('/settings', (_req, res) => {
   const s = { ...SITE_DEFAULTS, ...allSettings() };
   res.json({
@@ -172,28 +172,37 @@ r.get('/settings', (_req, res) => {
 });
 
 r.put('/settings', (req, res) => {
-  for (const k of EDITABLE_KEYS) if (k in req.body) setSetting(k, String(req.body[k]).slice(0, 8000));
+  for (const k of EDITABLE_KEYS) {
+    if (!(k in req.body)) continue;
+    const v = String(req.body[k]).trim().slice(0, 8000);
+    if (URL_KEYS.has(k) && v && !isUrl(v)) return bad(res, `${k.replace('social_', '')} must be a full http(s) link.`);
+  }
+  for (const k of EDITABLE_KEYS) if (k in req.body) setSetting(k, String(req.body[k]).trim().slice(0, 8000));
   res.json({ ok: true });
 });
 
-// ---------- Works (timeline) ----------
+// ---------- Journey / articles ----------
+const KINDS = ['career', 'book', 'film', 'talk', 'article', 'honour'];
 const workFields = (b) => ({
-  kind: ['career', 'book', 'film', 'talk', 'honour'].includes(b.kind) ? b.kind : 'career',
+  kind: KINDS.includes(b.kind) ? b.kind : 'career',
   title: String(b.title || '').trim().slice(0, 160),
   subtitle: String(b.subtitle || '').trim().slice(0, 400),
   period: String(b.period || '').trim().slice(0, 40),
+  url: String(b.url || '').trim().slice(0, 400),
   sort: Number(b.sort) || 0,
 });
 r.get('/works', (_req, res) => res.json({ works: db.prepare('SELECT * FROM works ORDER BY sort, id').all() }));
 r.post('/works', (req, res) => {
   const w = workFields(req.body); if (!w.title) return bad(res, 'Title is required.');
+  if (w.url && !isUrl(w.url)) return bad(res, 'The link must start with http:// or https://');
   const max = db.prepare('SELECT COALESCE(MAX(sort),0) v FROM works').get().v;
-  const { lastInsertRowid } = db.prepare('INSERT INTO works (kind,title,subtitle,period,sort) VALUES (?,?,?,?,?)').run(w.kind, w.title, w.subtitle, w.period, w.sort || max + 1);
+  const { lastInsertRowid } = db.prepare('INSERT INTO works (kind,title,subtitle,period,url,sort) VALUES (?,?,?,?,?,?)').run(w.kind, w.title, w.subtitle, w.period, w.url, w.sort || max + 1);
   res.json({ id: Number(lastInsertRowid) });
 });
 r.put('/works/:id', (req, res) => {
   const w = workFields(req.body); if (!w.title) return bad(res, 'Title is required.');
-  db.prepare('UPDATE works SET kind=?,title=?,subtitle=?,period=?,sort=? WHERE id=?').run(w.kind, w.title, w.subtitle, w.period, w.sort, Number(req.params.id));
+  if (w.url && !isUrl(w.url)) return bad(res, 'The link must start with http:// or https://');
+  db.prepare('UPDATE works SET kind=?,title=?,subtitle=?,period=?,url=?,sort=? WHERE id=?').run(w.kind, w.title, w.subtitle, w.period, w.url, w.sort, Number(req.params.id));
   res.json({ ok: true });
 });
 r.delete('/works/:id', (req, res) => { db.prepare('DELETE FROM works WHERE id = ?').run(Number(req.params.id)); res.json({ ok: true }); });
@@ -209,8 +218,10 @@ r.post('/instagram/sync', asyncHandler(async (_req, res) => res.json(await syncI
 r.get('/social', (_req, res) => res.json({ posts: db.prepare("SELECT * FROM social_posts ORDER BY COALESCE(posted_at,'') DESC, id DESC LIMIT 100").all() }));
 r.post('/social', imageUpload.single('file'), (req, res) => {
   if (!req.file) return bad(res, 'Choose an image.');
+  const link = String(req.body.permalink || '').trim().slice(0, 400);
+  if (link && !isUrl(link)) return bad(res, 'The link must start with http:// or https://');
   db.prepare("INSERT INTO social_posts (source, ext_id, caption, media_type, thumb, permalink, posted_at) VALUES ('manual', ?, ?, 'IMAGE', ?, ?, datetime('now'))")
-    .run(rand(), String(req.body.caption || '').slice(0, 500), '/uploads/' + req.file.filename, String(req.body.permalink || '').slice(0, 400));
+    .run(randomId(), String(req.body.caption || '').slice(0, 500), '/uploads/' + req.file.filename, link);
   res.json({ ok: true });
 });
 r.put('/social/:id', (req, res) => { db.prepare('UPDATE social_posts SET hidden = ? WHERE id = ?').run(req.body.hidden ? 1 : 0, Number(req.params.id)); res.json({ ok: true }); });

@@ -99,3 +99,9 @@ export function initMotion() {
     p.addEventListener('mouseleave', () => (p.style.transform = ''));
   });
 }
+
+export const loadScript = (src) => new Promise((res, rej) => {
+  if (document.querySelector(`script[src="${src}"]`)) return res();
+  const s = document.createElement('script'); s.src = src; s.async = true; s.onload = res; s.onerror = () => rej(new Error('Could not load ' + src));
+  document.head.appendChild(s);
+});

@@ -19,7 +19,7 @@ th { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: v
 .tablewrap { overflow-x: auto; }
 .pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; border: 1px solid var(--line); }
 .pill.ready, .pill.PAID, .pill.pub { color: var(--ok); border-color: rgba(47,138,85,.45); }
-.pill.failed, .pill.FAILED { color: var(--danger); border-color: rgba(196,64,47,.45); }
+.pill.failed, .pill.FAILED, .pill.CANCELLED, .pill.REFUNDED { color: var(--danger); border-color: rgba(196,64,47,.45); }
 .pill.processing, .pill.CREATED { color: var(--gold); border-color: rgba(154,116,48,.45); }
 .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; } .spread { justify-content: space-between; }
 .btn.s { --h: 36px; padding: 0 16px; font-size: 12px; } .btn.danger { color: var(--danger); } .btn.danger:hover { border-color: var(--danger); }

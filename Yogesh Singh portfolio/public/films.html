@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#fbfaf7">
+<title>Films — Y. P. Singh</title>
+<meta name="description" content="Films by Yogesh Pratap Singh. The first part of every film is free to watch.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/site.css">
+<style>
+.lib { padding: 140px 0 100px; }
+.grid-films { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: clamp(20px, 3vw, 40px); margin-top: 48px; }
+.fcard { display: block; }
+.fcard .poster { max-width: none; }
+.fcard h3 { font-family: var(--serif); font-weight: 400; font-size: 30px; line-height: 1.05; margin: 18px 0 6px; }
+.fcard p { margin: 0 0 10px; color: var(--muted); font-size: 15px; }
+.empty { margin-top: 48px; padding: 48px; border: 1px dashed var(--line); border-radius: 8px; text-align: center; color: var(--muted); }
+</style></head>
+<body>
+<header class="nav stuck"><div class="wrap"><a href="/" class="brand"><i></i>Y. P. Singh</a><nav class="nav-links"><a href="/films" aria-current="page">Films</a><a href="/#about">About</a><a href="/#journey">Journey</a><a href="/#contact">Contact</a><span id="nav-auth" style="display:contents"></span></nav><button class="burger" aria-label="Menu"><span></span><span></span></button></div></header>
+<main class="lib"><div class="wrap">
+  <span class="eyebrow">Films</span>
+  <h1 class="h2">The <em>library</em></h1>
+  <p style="color:var(--muted);max-width:560px;margin-top:18px">The first part of every film is free to watch. Unlock the rest with a single one-time payment.</p>
+  <div class="grid-films" id="grid" aria-live="polite"><p class="muted">Loading…</p></div>
+</div></main>
+<div class="cursor"></div>
+<script type="module" src="/js/films.js"></script>
+</body></html>

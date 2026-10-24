@@ -7,12 +7,22 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/site.css"><title>My account — Y. P. Singh</title></head>
 <body>
-<header class="nav stuck"><div class="wrap"><a href="/" class="brand"><i></i>Y. P. Singh</a><nav class="nav-links"><a href="/#film">Film</a><a href="/#about">About</a><a href="/#contact">Contact</a><span id="nav-auth" style="display:contents"></span></nav><button class="burger" aria-label="Menu"><span></span><span></span></button></div></header>
+<header class="nav stuck"><div class="wrap"><a href="/" class="brand"><i></i>Y. P. Singh</a><nav class="nav-links"><a href="/films">Films</a><a href="/#about">About</a><a href="/#contact">Contact</a><span id="nav-auth" style="display:contents"></span></nav><button class="burger" aria-label="Menu"><span></span><span></span></button></div></header>
 <main class="page" style="align-items:start"><div class="card" style="width:min(640px,100%)">
-  <h1 id="hello">My account</h1><p class="sub" id="email"></p>
+  <h1 id="hello" tabindex="-1">My account</h1><p class="sub" id="email"></p>
   <span class="eyebrow">Your films</span>
   <div id="list" style="margin:18px 0 30px"></div>
-  <button class="btn" id="logout">Sign out</button>
+  <span class="eyebrow">Sign-in methods</span>
+  <div id="signin" style="margin:18px 0 26px"></div>
+  <div id="google-wrap" hidden style="margin-bottom:26px"><div id="google-btn"></div></div>
+  <span class="eyebrow">Password</span>
+  <form id="pw-form" style="margin:18px 0 8px" novalidate>
+    <label class="field" id="cur-field"><span>Current password</span><input name="current" type="password" autocomplete="current-password"></label>
+    <label class="field"><span>New password</span><input name="password" type="password" autocomplete="new-password" minlength="8"></label>
+    <div class="msg" id="pw-msg" role="alert" aria-live="polite"></div>
+    <button class="btn s">Update password</button>
+  </form>
+  <button class="btn" id="logout" style="margin-top:20px">Sign out</button>
 </div></main>
 <script type="module" src="/js/account.js"></script>
 </body></html>

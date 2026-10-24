@@ -5,18 +5,19 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='16' fill='%23fbfaf7'/%3E%3Ctext x='16' y='22' font-size='18' text-anchor='middle' fill='%239a7430' font-family='serif'%3EY%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/css/site.css"><title>Sign in — Y. P. Singh</title></head>
+<link rel="stylesheet" href="/css/site.css"><title>Sign in — Y. P. Singh</title><style>.or{display:flex;align-items:center;gap:12px;margin:22px 0 16px;color:var(--muted);font-size:12px;letter-spacing:.16em;text-transform:uppercase}.or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}</style></head>
 <body>
-<header class="nav stuck"><div class="wrap"><a href="/" class="brand"><i></i>Y. P. Singh</a><nav class="nav-links"><a href="/#film">Film</a><a href="/#about">About</a><a href="/#contact">Contact</a><span id="nav-auth" style="display:contents"></span></nav><button class="burger" aria-label="Menu"><span></span><span></span></button></div></header>
+<header class="nav stuck"><div class="wrap"><a href="/" class="brand"><i></i>Y. P. Singh</a><nav class="nav-links"><a href="/films">Films</a><a href="/#about">About</a><a href="/#contact">Contact</a><span id="nav-auth" style="display:contents"></span></nav><button class="burger" aria-label="Menu"><span></span><span></span></button></div></header>
 <main class="page"><div class="card">
   <h1 id="h">Welcome back</h1><p class="sub" id="sub">Sign in to watch the full film.</p>
   <form id="form" novalidate>
     <label class="field" id="f-name" hidden><span>Full name</span><input name="name" autocomplete="name"></label>
     <label class="field"><span>Email</span><input name="email" type="email" autocomplete="email" required></label>
     <label class="field"><span>Password</span><input name="password" type="password" autocomplete="current-password" minlength="8" required></label>
-    <div class="msg" id="msg"></div>
+    <div class="msg" id="msg" role="alert" aria-live="polite"></div>
     <button class="btn gold" id="go">Sign in</button>
   </form>
+  <div id="google-wrap" hidden><div class="or"><span>or</span></div><div id="google-btn" style="display:flex;justify-content:center"></div></div>
   <div class="switch"><span id="sw-text">New here?</span> <a href="#" class="link" id="sw">Create an account</a></div>
 </div></main>
 <script type="module" src="/js/login.js"></script>

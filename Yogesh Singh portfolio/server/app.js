@@ -1,0 +1,119 @@
+import express from 'express';
+import cookieParser from 'cookie-parser';
+import path from 'node:path';
+import fs from 'node:fs';
+import { config, dirs, ROOT } from './config.js';
+import { db } from './db.js';
+import { attachUser, sameOrigin } from './auth.js';
+import { WORKS_SEED } from './defaults.js';
+import { recoverInterrupted, cleanupStaleUploads } from './transcode.js';
+import { publicSettings } from './routes/public.js';
+import authRoutes from './routes/auth.js';
+import publicRoutes from './routes/public.js';
+import mediaRoutes from './routes/media.js';
+import paymentRoutes, { webhook } from './routes/payments.js';
+import adminRoutes from './routes/admin.js';
+
+/** Content-Security-Policy that only allows third parties for integrations that are actually configured. */
+export function buildCsp() {
+  const script = ["'self'"], frame = [], connect = ["'self'"], style = ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'];
+  if (config.google.clientId) {
+    script.push('https://accounts.google.com/gsi/client'); frame.push('https://accounts.google.com/gsi/');
+    connect.push('https://accounts.google.com/gsi/'); style.push('https://accounts.google.com/gsi/style');
+  }
+  if (config.paymentsMode === 'razorpay') {
+    script.push('https://checkout.razorpay.com'); frame.push('https://api.razorpay.com', 'https://checkout.razorpay.com');
+    connect.push('https://api.razorpay.com', 'https://lumberjack.razorpay.com');
+  }
+  if (config.paymentsMode === 'cashfree') {
+    script.push('https://sdk.cashfree.com'); frame.push('https://sdk.cashfree.com', 'https://payments.cashfree.com', 'https://sandbox.cashfree.com');
+    connect.push('https://sdk.cashfree.com', 'https://api.cashfree.com', 'https://sandbox.cashfree.com');
+  }
+  return [
+    "default-src 'self'", `script-src ${script.join(' ')}`, `style-src ${style.join(' ')}`, "font-src 'self' https://fonts.gstatic.com",
+    "img-src 'self' data: blob: https:", "media-src 'self' blob:", `connect-src ${connect.join(' ')}`,
+    `frame-src ${frame.length ? frame.join(' ') : "'none'"}`, "worker-src 'self' blob:", "object-src 'none'", "base-uri 'self'",
+    "form-action 'self' https://payments.cashfree.com https://sandbox.cashfree.com", "frame-ancestors 'self'",
+  ].join('; ');
+}
+
+const esc = (s = '') => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const withMeta = (file, meta) => {
+  const html = fs.readFileSync(path.join(ROOT, 'public', file), 'utf8');
+  return html
+    .replace(/<title>.*?<\/title>/, `<title>${esc(meta.title)}</title>`)
+    .replace('</head>', `<meta name="description" content="${esc(meta.description)}"><meta property="og:title" content="${esc(meta.title)}"><meta property="og:description" content="${esc(meta.description)}">${meta.image ? `<meta property="og:image" content="${esc(config.siteUrl + meta.image)}">` : ''}<meta property="og:type" content="website"><meta name="twitter:card" content="summary_large_image"></head>`);
+};
+
+export function createApp() {
+  const app = express();
+  app.disable('x-powered-by');
+  app.set('trust proxy', 1);
+  const csp = buildCsp();
+
+  app.use((_req, res, next) => {
+    res.set({
+      'X-Content-Type-Options': 'nosniff', 'X-Frame-Options': 'SAMEORIGIN', 'Referrer-Policy': 'strict-origin-when-cross-origin',
+      'Permissions-Policy': 'camera=(), microphone=(), geolocation=()', 'Content-Security-Policy': csp,
+      'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',   // Google sign-in popup needs this relaxed value
+    });
+    if (config.isProd) res.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    next();
+  });
+
+  // Webhooks need the untouched bytes for signature checking, so they go before express.json().
+  app.post('/api/payments/webhook', express.raw({ type: '*/*', limit: '1mb' }), webhook);
+
+  app.use(express.json({ limit: '1mb' }));
+  app.use(cookieParser());
+  app.use(attachUser);
+  app.use('/api', sameOrigin);
+
+  app.use('/api/auth', authRoutes);
+  app.use('/api/payments', paymentRoutes);
+  app.use('/api/admin', adminRoutes);
+  app.use('/api', publicRoutes);
+  app.use('/media', mediaRoutes);
+
+  app.use('/uploads', express.static(dirs.uploads, { maxAge: '7d', index: false, dotfiles: 'deny' }));
+  app.use('/vendor/hls.js', express.static(path.join(ROOT, 'node_modules/hls.js/dist/hls.min.js'), { maxAge: '30d' }));
+
+  // Admin shell is only handed to admins; the API enforces this independently.
+  app.get('/admin', (req, res) => req.user?.role === 'admin' ? res.sendFile(path.join(ROOT, 'public/admin/index.html')) : res.redirect('/login.html?next=/admin'));
+  app.use('/admin', (req, res, next) => (req.user?.role === 'admin' ? next() : res.status(404).end()), express.static(path.join(ROOT, 'public/admin')));
+
+  app.get('/film/:slug', (req, res) => {
+    const m = db.prepare('SELECT * FROM movies WHERE slug = ? AND published = 1').get(req.params.slug);
+    if (!m) return res.status(404).sendFile(path.join(ROOT, 'public/404.html'));
+    res.type('html').send(withMeta('film.html', { title: `${m.title} — Y. P. Singh`, description: m.tagline || m.description.slice(0, 160), image: m.poster }));
+  });
+  app.get('/', (_req, res) => {
+    const s = publicSettings();
+    const first = db.prepare('SELECT poster FROM movies WHERE published = 1 ORDER BY featured DESC, id DESC LIMIT 1').get();
+    res.type('html').send(withMeta('index.html', { title: s.site_title, description: s.meta_description, image: first?.poster }));
+  });
+
+  app.use(express.static(path.join(ROOT, 'public'), { extensions: ['html'], maxAge: config.isProd ? '1h' : 0 }));
+  app.use((_req, res) => res.status(404).sendFile(path.join(ROOT, 'public/404.html')));
+
+  // eslint-disable-next-line no-unused-vars
+  app.use((err, _req, res, _next) => {
+    // Malformed bodies are not logged at all: a JSON parse message can quote part of the body (e.g. a password).
+    if (err.type === 'entity.parse.failed') return res.status(400).json({ error: 'Malformed request.' });
+    if (err.code === 'LIMIT_FILE_SIZE') return res.status(413).json({ error: 'File too large.' });
+    console.error(err.stack ? err.stack.split('\n').slice(0, 4).join('\n') : String(err));   // never sent to the client
+    res.status(500).json({ error: 'Something went wrong.' });
+  });
+  return app;
+}
+
+/** Startup housekeeping, run once by the real server (tests call it explicitly when they need it). */
+export function runStartupTasks() {
+  if (db.prepare('SELECT COUNT(*) c FROM works').get().c === 0 && !db.prepare("SELECT 1 FROM settings WHERE key = 'works_seeded'").get()) {
+    const ins = db.prepare('INSERT INTO works (kind,title,subtitle,period,sort) VALUES (?,?,?,?,?)');
+    WORKS_SEED.forEach((w) => ins.run(...w));
+    db.prepare("INSERT INTO settings (key, value) VALUES ('works_seeded', '1')").run();
+  }
+  recoverInterrupted();
+  cleanupStaleUploads();
+}
