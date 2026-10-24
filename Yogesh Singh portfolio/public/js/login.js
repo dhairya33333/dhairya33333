@@ -34,3 +34,15 @@ initGoogle(async (credential) => {
   catch (err) { say(err.message); }
 });
 paint();
+
+// Self-service reset appears only when the server has email set up.
+api('/auth/config').then((c) => {
+  if (!c.emailReset) return;
+  $('#forgot-ask').hidden = true; $('#forgot-mail').hidden = false;
+  $('#forgot-mail').addEventListener('click', async (e) => {
+    e.preventDefault();
+    const email = $('#form').email.value.trim();
+    if (!email) return say('Type your email above first, then choose this again.');
+    try { say((await api('/auth/forgot', { method: 'POST', body: { email } })).message, true); } catch (err) { say(err.message); }
+  });
+}).catch(() => {});

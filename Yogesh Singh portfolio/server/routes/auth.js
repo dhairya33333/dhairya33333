@@ -3,9 +3,11 @@ import rateLimit from 'express-rate-limit';
 import { db } from '../db.js';
 import { config } from '../config.js';
 import {
-  hashPassword, checkPassword, passwordProblem, startSession, endSession, publicUser, asyncHandler, requireAuth, GOOGLE_ONLY_HASH,
+  randomId, hashPassword, checkPassword, passwordProblem, startSession, endSession, publicUser, asyncHandler, requireAuth, GOOGLE_ONLY_HASH,
 } from '../auth.js';
 import crypto from 'node:crypto';
+import { log } from '../log.js';
+import { mailConfigured, sendReset } from '../mailer.js';
 import { verifyGoogleIdToken, GoogleAuthError } from '../google.js';
 
 const r = Router();
@@ -13,7 +15,7 @@ const limiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: config.rate.auth, s
 const googleLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: config.rate.auth + 10, standardHeaders: true, legacyHeaders: false, message: { error: 'Too many attempts. Try again in a few minutes.' } });
 const emailOk = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e) && e.length <= 160;
 
-r.get('/config', (_req, res) => res.json({ googleClientId: config.google.clientId || null }));
+r.get('/config', (_req, res) => res.json({ googleClientId: config.google.clientId || null, emailReset: mailConfigured() }));
 
 r.post('/register', limiter, asyncHandler(async (req, res) => {
   const name = String(req.body.name || '').trim().slice(0, 80);
@@ -109,6 +111,22 @@ r.post('/reset', limiter, asyncHandler(async (req, res) => {
     db.exec('COMMIT');
   } catch (e) { db.exec('ROLLBACK'); throw e; }
   res.json({ ok: true });
+}));
+
+// Self-service reset by email. The answer is identical whether or not the address has an account (no account enumeration),
+// and it only works when email is configured. Rate limited like the other auth routes.
+r.post('/forgot', limiter, asyncHandler(async (req, res) => {
+  const email = String(req.body.email || '').trim().toLowerCase().slice(0, 160);
+  const same = { ok: true, message: 'If that address has an account, a reset link is on its way. It works once and expires in 60 minutes.' };
+  if (!mailConfigured()) return res.status(503).json({ error: 'Email is not set up on this site yet. Please ask the site admin for a reset link.' });
+  const u = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && db.prepare('SELECT id, email FROM users WHERE email = ?').get(email);
+  if (u) {
+    const token = randomId(24);
+    db.prepare('INSERT INTO password_resets (token_hash, user_id, expires_at, created_by) VALUES (?, ?, ?, NULL)').run(crypto.createHash('sha256').update(token).digest('hex'), u.id, Date.now() + 60 * 60 * 1000);
+    sendReset(u.email, `${config.siteUrl}/reset-password.html?token=${token}`);   // not awaited: response time must not reveal whether the account exists
+    log('info', 'password_reset.emailed', { user: u.id });
+  }
+  res.json(same);
 }));
 
 r.post('/logout', (req, res) => { endSession(req, res); res.json({ ok: true }); });

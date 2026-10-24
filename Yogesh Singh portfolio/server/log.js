@@ -9,6 +9,7 @@ const PATHS = Object.entries({ source: dirs.source, media: dirs.media, incoming:
 export function scrub(text) {
   let s = String(text ?? '');
   for (const [name, p] of PATHS) if (p.length > 1) s = s.split(p).join(`<${name}>`);
+  s = s.replace(/\b(pass(?:word)?|pwd|token|secret|api[_-]?key|authorization)\b(\s*[=:]\s*)\S+/gi, '$1$2[redacted]');   // key=value secrets inside error text
   return s.replace(/\/(?:home|root|var|srv|opt|tmp|etc)\/[^\s'"]+/g, '<path>');
 }
 

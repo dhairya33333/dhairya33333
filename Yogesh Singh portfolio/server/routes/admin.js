@@ -17,6 +17,7 @@ import { LEGAL_DEFAULTS, LEGAL_TITLES } from '../legal-defaults.js';
 
 import { adminRevoke } from '../payments/ledger.js';
 import { log } from '../log.js';
+import { mailConfigured, sendMail, notifyAddress } from '../mailer.js';
 
 const r = Router();
 r.use(requireAdmin);
@@ -248,6 +249,14 @@ r.put('/works/:id', (req, res) => {
   res.json({ ok: true });
 });
 r.delete('/works/:id', (req, res) => { db.prepare('DELETE FROM works WHERE id = ?').run(Number(req.params.id)); res.json({ ok: true }); });
+
+// Sends one test message to the owner's notification address so email setup can be checked without waiting for a real sale.
+r.post('/email/test', asyncHandler(async (_req, res) => {
+  if (!mailConfigured()) return bad(res, 'Email is not configured. Set SMTP_HOST, SMTP_USER, SMTP_PASS and SMTP_FROM in the server settings.');
+  const to = notifyAddress(); if (!to) return bad(res, 'Set NOTIFY_EMAIL on the server, or a contact email under Site content, so there is somewhere to send it.');
+  const out = await sendMail({ to, subject: 'Test email from your website', text: 'If you can read this, email from your website works.' });
+  out.ok ? res.json({ ok: true, to: to.replace(/^(.).*(@.*)$/, '$1***$2') }) : bad(res, 'The mail server refused or could not be reached. Check the SMTP settings and the server log.', 502);
+}));
 
 // ---------- Portrait and gallery ----------
 const photoUpload = multer({

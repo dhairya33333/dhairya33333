@@ -9,6 +9,7 @@
 //   PAID, PARTIALLY_REFUNDED  -> access kept   (a partial refund is a goodwill gesture, not a withdrawal of the sale)
 //   REFUNDED (refunds total >= price), CHARGEBACK -> access revoked immediately
 //   open dispute -> access kept, order flagged for the admin to review
+import { sendReceipt } from '../mailer.js';
 import { db, tx } from '../db.js';
 import { log } from '../log.js';
 
@@ -31,7 +32,8 @@ function transition(o, to, ref = {}) {
  * The paid amount, currency and payment id MUST be supplied by verified gateway data. A missing value is a rejection, never a skipped check.
  */
 export function markPaid(orderId, { providerPaymentId, amountPaise, currency } = {}) {
-  return tx(() => {
+  let newlyPaid = false;
+  const result = tx(() => {
     const o = getOrder(orderId);
     if (!o) return { ok: false, reason: 'unknown_order' };
     if (!Number.isInteger(amountPaise) || typeof currency !== 'string' || !currency || !providerPaymentId) {
@@ -46,13 +48,15 @@ export function markPaid(orderId, { providerPaymentId, amountPaise, currency } =
 
     if (OPEN.includes(o.status)) {
       db.prepare(`UPDATE orders SET status = 'PAID', paid_at = ${now}, updated_at = ${now}, failure_reason = NULL, provider_payment_id = ? WHERE order_id = ?`).run(providerPaymentId, orderId);
-      transition(o, 'PAID', { payment: providerPaymentId });
+      transition(o, 'PAID', { payment: providerPaymentId }); newlyPaid = true;
     } else if (o.provider_payment_id && o.provider_payment_id !== providerPaymentId) {
       return { ok: false, reason: 'already_paid_with_other_payment' };
     }
     db.prepare('INSERT OR IGNORE INTO purchases (user_id, movie_id, order_id) VALUES (?, ?, ?)').run(o.user_id, o.movie_id, orderId);
     return { ok: true, order: getOrder(orderId) };
   });
+  if (newlyPaid) sendReceipt(orderId)?.catch?.(() => {});          // after commit; once per order; never affects the payment
+  return result;
 }
 
 /** A payment is in flight (e.g. authorized, not yet captured). Grants nothing. */

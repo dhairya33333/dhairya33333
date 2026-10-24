@@ -3,6 +3,7 @@ import rateLimit from 'express-rate-limit';
 import { db } from '../db.js';
 import { config } from '../config.js';
 import { log } from '../log.js';
+import { notifyContact } from '../mailer.js';
 
 const r = Router();
 export const TOPICS = ['general', 'speaking', 'film', 'press', 'collaboration', 'other'];
@@ -26,6 +27,7 @@ r.post('/', limiter, (req, res) => {
   if (/https?:\/\/\S+/i.test(message) && (message.match(/https?:\/\//gi) || []).length > 3) errors.message = 'Please include at most 3 links.';
   if (Object.keys(errors).length) return res.status(400).json({ error: 'Please check the highlighted fields.', fields: errors });
   db.prepare('INSERT INTO messages (name, email, phone, topic, organisation, message) VALUES (?, ?, ?, ?, ?, ?)').run(name, email, phone || null, topic, organisation || null, message);
+  notifyContact({ name, email, phone, topic, organisation, message });   // after the message is safely stored
   log('info', 'contact.received', { topic });         // no personal details in the log
   res.json({ ok: true });
 });

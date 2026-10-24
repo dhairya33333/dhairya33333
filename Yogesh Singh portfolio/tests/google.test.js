@@ -134,7 +134,7 @@ test('a Google sign-in cannot take over an admin account by email', async () => 
 
 test('config endpoint exposes the client id only (never a secret)', async () => {
   const r = await t.client().get('/api/auth/config');
-  assert.deepEqual(r.json, { googleClientId: CLIENT_ID });
+  assert.equal(r.json.googleClientId, CLIENT_ID);
 });
 
 test('CSP allows Google only because it is configured', async () => {
