@@ -38,7 +38,8 @@ export const purgeRevoked = () => db.prepare('DELETE FROM revoked_tokens WHERE e
 
 export const publicUser = (u) => u && ({
   id: u.id, name: u.name, email: u.email, phone: u.phone, role: u.role,
-  hasPassword: !String(u.password_hash).startsWith('!'), googleLinked: !!u.google_sub,
+  hasPassword: !String(u.password_hash).startsWith('!'), googleLinked: !!u.google_sub, twofa: !!u.totp_enabled,
+  twofaRequired: u.role === 'admin' && config.admin2fa && !u.totp_enabled,
 });
 
 export function attachUser(req, _res, next) {
@@ -62,6 +63,7 @@ export function requireAuth(req, res, next) {
 export function requireAdmin(req, res, next) {
   if (!req.user) return res.status(401).json({ error: 'Please sign in.' });
   if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admins only.' });
+  if (config.admin2fa && !req.user.totp_enabled) return res.status(403).json({ error: 'Turn on two-step sign-in (Security) before using the admin panel.', code: '2fa_required' });
   next();
 }
 

@@ -67,6 +67,7 @@ export const config = {
   })(),
   // Optional outgoing email (contact notifications, receipts, password resets). Empty SMTP_HOST means email is off.
   mail: { host: (env.SMTP_HOST || '').trim(), port: num(env.SMTP_PORT, 587), user: env.SMTP_USER || '', pass: env.SMTP_PASS || '', from: env.SMTP_FROM || env.SMTP_USER || 'no-reply@localhost', notifyTo: (env.NOTIFY_EMAIL || '').trim() },
+  admin2fa: /^(1|true|yes)$/i.test(env.ADMIN_2FA_REQUIRED || ''),   // admins cannot use the admin panel until two-step sign-in is on
   paymentProvider: provider,
   razorpay,
   cashfree,

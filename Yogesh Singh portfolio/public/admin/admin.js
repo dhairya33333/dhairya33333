@@ -273,8 +273,30 @@ const views = {
   },
 
   async account() {
-    view.innerHTML = head('Security', 'Change your password. All your other signed-in devices are signed out.') + `<div class="panel" style="max-width:420px"><label class="field"><span>Current password</span><input id="pwc" type="password" autocomplete="current-password"></label><label class="field"><span>New password (10+ characters recommended)</span><input id="pw" type="password" autocomplete="new-password"></label><button class="btn gold s" id="pwgo">Update password</button></div>`;
+    const { user } = await api('/auth/me');
+    view.innerHTML = head('Security', 'Your password and two-step sign-in.') + `
+      ${user.twofaRequired ? '<div class="panel" style="border-left:4px solid var(--danger);margin-bottom:16px"><b>Two-step sign-in is required for the admin panel.</b> Turn it on below to continue.</div>' : ''}
+      <div class="grid g2"><div class="panel"><h3>Password</h3><p class="muted small">All your other signed-in devices are signed out.</p>
+        <label class="field"><span>Current password</span><input id="pwc" type="password" autocomplete="current-password"></label><label class="field"><span>New password (10+ characters recommended)</span><input id="pw" type="password" autocomplete="new-password"></label><button class="btn gold s" id="pwgo">Update password</button></div>
+      <div class="panel" id="tf"><h3>Two-step sign-in <span class="pill ${user.twofa ? 'PAID' : 'CREATED'}">${user.twofa ? 'on' : 'off'}</span></h3>
+        <p class="muted small">${user.twofa ? 'Sign-in needs a code from your authenticator app as well as your password.' : 'Adds a 6-digit code from an authenticator app (Google Authenticator, Authy, 1Password) to sign-in. Strongly recommended for the admin account.'}</p>
+        <label class="field"><span>Your password</span><input id="tf-pw" type="password" autocomplete="current-password"></label>
+        ${user.twofa ? '<label class="field"><span>Current code (or a recovery code)</span><input id="tf-code" inputmode="numeric" autocomplete="one-time-code"></label><button class="btn s" id="tf-off">Turn off</button>' : '<button class="btn gold s" id="tf-on">Set up two-step sign-in</button>'}
+        <div id="tf-out"></div></div></div>`;
     $('#pwgo').onclick = () => act(async () => { await api('/auth/password', { method: 'POST', body: { current: $('#pwc').value, password: $('#pw').value } }); $('#pw').value = ''; $('#pwc').value = ''; }, 'Password updated');
+    $('#tf-on')?.addEventListener('click', () => act(async () => {
+      const r = await api('/auth/2fa/setup', { method: 'POST', body: { password: $('#tf-pw').value } });
+      $('#tf-out').innerHTML = `<p class="small" style="margin-top:14px"><b>1.</b> Scan this with your authenticator app, or type the key by hand.<br><b>2.</b> Type the 6-digit code it shows.</p>
+        <img src="${esc(r.qr)}" alt="QR code for your authenticator app" width="220" height="220" style="display:block;margin:10px 0"><code style="word-break:break-all">${esc(r.secret)}</code>
+        <label class="field" style="margin-top:12px"><span>Code from the app</span><input id="tf-c" inputmode="numeric" autocomplete="one-time-code" maxlength="8"></label><button class="btn gold s" id="tf-ok">Turn on</button>`;
+      $('#tf-ok').onclick = () => act(async () => {
+        const d = await api('/auth/2fa/enable', { method: 'POST', body: { code: $('#tf-c').value } });
+        $('#tf').innerHTML = `<h3>Two-step sign-in is on</h3><div class="panel" style="border-left:4px solid var(--danger)"><b>Save these recovery codes now.</b> Each works once if you lose your phone. They will not be shown again.
+          <pre style="font-size:16px;line-height:1.8;user-select:all">${d.recoveryCodes.map(esc).join('\n')}</pre></div><button class="btn gold s" id="tf-done" style="margin-top:12px">I have saved them</button>`;
+        $('#tf-done').onclick = () => location.reload();
+      });
+    }));
+    $('#tf-off')?.addEventListener('click', () => confirm('Turn off two-step sign-in?') && act(async () => { await api('/auth/2fa/disable', { method: 'POST', body: { password: $('#tf-pw').value, code: $('#tf-code').value } }); route(); }, 'Turned off'));
   },
 };
 
@@ -351,7 +373,8 @@ async function route() {
   const [name, arg] = (location.hash.slice(1) || 'dashboard').split('/');
   const key = views[name] ? name : 'dashboard';
   $$('#menu a').forEach((a) => a.classList.toggle('on', a.getAttribute('href') === '#' + (key === 'film' ? 'films' : key)));
-  try { await views[key](arg); } catch (e) { view.innerHTML = `<p style="color:var(--danger)">${esc(e.message)}</p>`; }
+  try { await views[key](arg); } catch (e) {
+    if (e.code === '2fa_required' && key !== 'account') { location.hash = '#account'; return; } view.innerHTML = `<p style="color:var(--danger)">${esc(e.message)}</p>`; }
 }
 
 $('#logout').onclick = async (e) => { e.preventDefault(); await api('/auth/logout', { method: 'POST' }); location.href = '/'; };

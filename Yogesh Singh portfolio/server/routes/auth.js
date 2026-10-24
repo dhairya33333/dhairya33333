@@ -6,7 +6,10 @@ import {
   randomId, hashPassword, checkPassword, passwordProblem, startSession, endSession, publicUser, asyncHandler, requireAuth, GOOGLE_ONLY_HASH,
 } from '../auth.js';
 import crypto from 'node:crypto';
+import jwt from 'jsonwebtoken';
+import QRCode from 'qrcode';
 import { log } from '../log.js';
+import { newSecret, verifyTotp, otpauthUri, sealSecret, openSecret, newRecoveryCodes, hashRecovery } from '../totp.js';
 import { mailConfigured, sendReset } from '../mailer.js';
 import { verifyGoogleIdToken, GoogleAuthError } from '../google.js';
 
@@ -14,6 +17,78 @@ const r = Router();
 const limiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: config.rate.auth, standardHeaders: true, legacyHeaders: false, message: { error: 'Too many attempts. Try again in a few minutes.' } });
 const googleLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: config.rate.auth + 10, standardHeaders: true, legacyHeaders: false, message: { error: 'Too many attempts. Try again in a few minutes.' } });
 const emailOk = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e) && e.length <= 160;
+
+// ---- two-step sign-in ----
+// After a correct password (or Google token) a user with two-step on gets a short-lived ticket, NOT a session. The ticket
+// only works at /2fa/verify, allows 5 wrong codes, and is single use.
+const tickets = new Map();                                  // jti -> failed attempts (in memory: a restart just makes the user sign in again)
+function finishLogin(res, user) {
+  if (!user.totp_enabled) { startSession(res, user); return res.json({ user: publicUser(user) }); }
+  const jti = randomId(12); tickets.set(jti, 0); setTimeout(() => tickets.delete(jti), 5 * 60 * 1000).unref();
+  const ticket = jwt.sign({ uid: user.id, jti, purpose: '2fa' }, config.jwtSecret, { expiresIn: '5m', algorithm: 'HS256' });
+  res.json({ twofa: true, ticket });
+}
+/** True if `code` is a valid authenticator code (not reused) or an unused recovery code; consumes whichever matched. */
+function checkSecondFactor(user, code) {
+  const step = verifyTotp(openSecret(user.totp_secret), code, { lastStep: user.totp_last_step });
+  if (step) { db.prepare('UPDATE users SET totp_last_step = ? WHERE id = ?').run(step, user.id); return true; }
+  const h = hashRecovery(code);
+  if (String(code).replace(/[^a-fA-F0-9]/g, '').length === 10) {
+    const used = db.prepare("UPDATE recovery_codes SET used_at = datetime('now') WHERE user_id = ? AND code_hash = ? AND used_at IS NULL").run(user.id, h);
+    if (used.changes) { log('warn', 'twofa.recovery_used', { user: user.id }); return true; }
+  }
+  return false;
+}
+r.post('/2fa/verify', limiter, asyncHandler(async (req, res) => {
+  let p; try { p = jwt.verify(String(req.body.ticket || ''), config.jwtSecret, { algorithms: ['HS256'] }); } catch { return res.status(401).json({ error: 'Your sign-in expired. Please sign in again.', code: 'ticket_expired' }); }
+  if (p.purpose !== '2fa' || !tickets.has(p.jti)) return res.status(401).json({ error: 'Your sign-in expired. Please sign in again.', code: 'ticket_expired' });
+  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(p.uid);
+  if (!user || !user.totp_enabled) return res.status(401).json({ error: 'Please sign in again.', code: 'ticket_expired' });
+  if (!checkSecondFactor(user, req.body.code)) {
+    const n = (tickets.get(p.jti) || 0) + 1; if (n >= 5) tickets.delete(p.jti); else tickets.set(p.jti, n);
+    log('warn', 'twofa.failed', { user: user.id });
+    return res.status(401).json({ error: n >= 5 ? 'Too many wrong codes. Please sign in again.' : 'That code is not right. Check your authenticator app and try again.', code: n >= 5 ? 'ticket_expired' : 'bad_code' });
+  }
+  tickets.delete(p.jti);
+  const fresh = db.prepare('SELECT * FROM users WHERE id = ?').get(user.id);
+  startSession(res, fresh); res.json({ user: publicUser(fresh) });
+}));
+
+const needPassword = (user, body) => String(user.password_hash).startsWith('!') || checkPassword(String(body.password || ''), user.password_hash);
+
+r.post('/2fa/setup', limiter, requireAuth, asyncHandler(async (req, res) => {
+  if (req.user.totp_enabled) return res.status(400).json({ error: 'Two-step sign-in is already on.' });
+  if (!needPassword(req.user, req.body)) return res.status(400).json({ error: 'Your password is incorrect.' });
+  const secret = newSecret();
+  db.prepare('UPDATE users SET totp_pending = ? WHERE id = ?').run(sealSecret(secret), req.user.id);
+  const uri = otpauthUri(secret, req.user.email, 'Yogesh Singh');
+  res.json({ secret: secret.match(/.{1,4}/g).join(' '), uri, qr: await QRCode.toDataURL(uri, { margin: 1, width: 220 }) });
+}));
+r.post('/2fa/enable', limiter, requireAuth, asyncHandler(async (req, res) => {
+  const u = req.user; if (u.totp_enabled || !u.totp_pending) return res.status(400).json({ error: 'Start setup first.' });
+  const step = verifyTotp(openSecret(u.totp_pending), req.body.code);
+  if (!step) return res.status(400).json({ error: 'That code is not right. Check your authenticator app and try again.' });
+  const codes = newRecoveryCodes();
+  db.exec('BEGIN');
+  try {
+    db.prepare('UPDATE users SET totp_secret = totp_pending, totp_pending = NULL, totp_enabled = 1, totp_last_step = ?, token_version = token_version + 1 WHERE id = ?').run(step, u.id);
+    db.prepare('DELETE FROM recovery_codes WHERE user_id = ?').run(u.id);
+    for (const c of codes) db.prepare('INSERT INTO recovery_codes (user_id, code_hash) VALUES (?, ?)').run(u.id, hashRecovery(c));
+    db.exec('COMMIT');
+  } catch (e) { db.exec('ROLLBACK'); throw e; }
+  log('info', 'twofa.enabled', { user: u.id });
+  startSession(res, db.prepare('SELECT * FROM users WHERE id = ?').get(u.id));        // other devices are signed out
+  res.json({ ok: true, recoveryCodes: codes });
+}));
+r.post('/2fa/disable', limiter, requireAuth, asyncHandler(async (req, res) => {
+  const u = req.user; if (!u.totp_enabled) return res.status(400).json({ error: 'Two-step sign-in is not on.' });
+  if (!needPassword(u, req.body)) return res.status(400).json({ error: 'Your password is incorrect.' });
+  if (!checkSecondFactor(u, req.body.code)) return res.status(400).json({ error: 'That code is not right.' });
+  db.prepare('UPDATE users SET totp_secret = NULL, totp_pending = NULL, totp_enabled = 0, token_version = token_version + 1 WHERE id = ?').run(u.id);
+  db.prepare('DELETE FROM recovery_codes WHERE user_id = ?').run(u.id);
+  log('warn', 'twofa.disabled', { user: u.id });
+  startSession(res, db.prepare('SELECT * FROM users WHERE id = ?').get(u.id)); res.json({ ok: true });
+}));
 
 r.get('/config', (_req, res) => res.json({ googleClientId: config.google.clientId || null, emailReset: mailConfigured() }));
 
@@ -37,8 +112,7 @@ r.post('/login', limiter, asyncHandler(async (req, res) => {
   const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
   if (user?.password_hash === GOOGLE_ONLY_HASH) return res.status(401).json({ error: 'This account uses Google sign-in. Use the "Continue with Google" button.' });
   if (!user || !checkPassword(String(req.body.password || ''), user.password_hash)) return res.status(401).json({ error: 'Incorrect email or password.' });
-  startSession(res, user);
-  res.json({ user: publicUser(user) });
+  finishLogin(res, user);
 }));
 
 /**
@@ -68,8 +142,7 @@ r.post('/google', googleLimiter, asyncHandler(async (req, res) => {
       .run(g.name, g.email, GOOGLE_ONLY_HASH, g.sub);
     user = db.prepare('SELECT * FROM users WHERE id = ?').get(lastInsertRowid);
   }
-  startSession(res, user);
-  res.json({ user: publicUser(user) });
+  finishLogin(res, user);
 }));
 
 // Link Google to the account you are already signed into. The Google email must match the account email.

@@ -7,7 +7,7 @@ export async function api(path, { method = 'GET', body, form } = {}) {
     credentials: 'same-origin',
   });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) { const e = new Error(data.error || 'Something went wrong.'); e.status = res.status; e.fields = data.fields; throw e; }
+  if (!res.ok) { const e = new Error(data.error || 'Something went wrong.'); e.status = res.status; e.fields = data.fields; e.code = data.code; throw e; }
   return data;
 }
 

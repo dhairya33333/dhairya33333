@@ -124,6 +124,14 @@ const MIGRATIONS = [
       id INTEGER PRIMARY KEY, src TEXT NOT NULL, thumb TEXT NOT NULL, w INTEGER DEFAULT 0, h INTEGER DEFAULT 0,
       caption TEXT DEFAULT '', sort INTEGER NOT NULL DEFAULT 0, hidden INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL DEFAULT (datetime('now')))`);
   },
+  // 8: two-step sign-in
+  () => {
+    addColumn('users', 'totp_secret', 'TEXT');                 // encrypted; set only while two-step is on
+    addColumn('users', 'totp_pending', 'TEXT');                // encrypted; a secret shown but not yet confirmed
+    addColumn('users', 'totp_enabled', 'INTEGER NOT NULL DEFAULT 0');
+    addColumn('users', 'totp_last_step', 'INTEGER NOT NULL DEFAULT 0');
+    db.exec(`CREATE TABLE IF NOT EXISTS recovery_codes (user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, code_hash TEXT NOT NULL, used_at TEXT, PRIMARY KEY (user_id, code_hash))`);
+  },
 ];
 
 const current = db.prepare('PRAGMA user_version').get().user_version;

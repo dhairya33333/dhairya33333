@@ -11,7 +11,8 @@
     "test": "NODE_ENV=test node --test --test-concurrency=1 \"tests/*.test.js\"",
     "check": "for f in $(find server scripts public tests -name '*.js'); do node --check $f || exit 1; done && echo 'syntax OK'",
     "backup-db": "node scripts/backup-db.js",
-    "verify-data": "node scripts/verify-data.js"
+    "verify-data": "node scripts/verify-data.js",
+    "reset-2fa": "node scripts/reset-2fa.js"
   },
   "engines": {
     "node": ">=22.13"
@@ -25,6 +26,7 @@
     "hls.js": "^1.7.3",
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.5.0",
-    "nodemailer": "^10.2.1"
+    "nodemailer": "^10.2.1",
+    "qrcode": "^1.5.4"
   }
 }
