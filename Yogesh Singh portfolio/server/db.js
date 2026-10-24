@@ -101,6 +101,13 @@ const MIGRATIONS = [
     db.exec('CREATE INDEX IF NOT EXISTS uploads_movie ON uploads(movie_id, status)');
     db.exec('CREATE INDEX IF NOT EXISTS users_google ON users(google_sub)');
   },
+  // 4: contact-form inbox
+  () => {
+    db.exec(`CREATE TABLE IF NOT EXISTS messages (
+      id INTEGER PRIMARY KEY, name TEXT NOT NULL, email TEXT NOT NULL, phone TEXT, topic TEXT NOT NULL DEFAULT 'general',
+      organisation TEXT, message TEXT NOT NULL, is_read INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL DEFAULT (datetime('now')))`);
+    db.exec('CREATE INDEX IF NOT EXISTS messages_read ON messages(is_read, id)');
+  },
 ];
 
 const current = db.prepare('PRAGMA user_version').get().user_version;

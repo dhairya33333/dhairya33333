@@ -102,11 +102,16 @@ async function boot() {
 
   $('#speak-title').textContent = s.speaking_title;
   $('#speak-body').textContent = s.speaking_body;
-  const mail = s.contact_email ? `mailto:${s.contact_email}` : '#contact';
-  $('#speak-cta').href = mail; $('#foot-mail').href = mail;
-  $('#foot-mail').textContent = s.contact_email ? s.contact_email + ' →' : 'Let’s talk →';
+  $('#speak-cta').href = '/contact?topic=speaking';
+  $('#foot-mail').href = '/contact';
+  $('#foot-mail').textContent = 'Let’s talk →';
 
   renderSocial(site.social, s);
+  api('/social').then((so) => {
+    if (!so.embeds.length) return;
+    $('#social').hidden = false;
+    if (!$('#ig').children.length) { $('#ig').style.display = 'none'; $('#social').classList.add('compact'); }   // embeds live on /social; keep the teaser slim
+  }).catch(() => {});
 
   const socials = [['Instagram', s.social_instagram], ['YouTube', s.social_youtube], ['X', s.social_x], ['Facebook', s.social_facebook], ['LinkedIn', s.social_linkedin]].filter(([, u]) => u);
   $('#socials').innerHTML = socials.map(([n, u]) => `<a href="${esc(u)}" target="_blank" rel="noopener">${n}</a>`).join('');

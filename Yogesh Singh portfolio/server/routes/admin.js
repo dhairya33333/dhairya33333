@@ -45,6 +45,7 @@ r.get('/stats', (_req, res) => {
     recent: db.prepare(`SELECT o.order_id, o.amount_paise, o.paid_at, u.name, m.title FROM orders o JOIN users u ON u.id=o.user_id JOIN movies m ON m.id=o.movie_id WHERE o.status='PAID' ORDER BY o.paid_at DESC LIMIT 8`).all(),
     paymentsMode: config.paymentsMode,
     googleConfigured: !!config.google.clientId,
+    unread_messages: one('SELECT COUNT(*) v FROM messages WHERE is_read = 0').v,
     ffmpegOk: checkFfmpeg().ok,
   });
 });
@@ -237,7 +238,32 @@ r.put('/works/:id', (req, res) => {
 });
 r.delete('/works/:id', (req, res) => { db.prepare('DELETE FROM works WHERE id = ?').run(Number(req.params.id)); res.json({ ok: true }); });
 
+// ---------- Contact inbox ----------
+r.get('/messages', (_req, res) => res.json({
+  messages: db.prepare('SELECT * FROM messages ORDER BY id DESC LIMIT 300').all(),
+  unread: db.prepare('SELECT COUNT(*) c FROM messages WHERE is_read = 0').get().c,
+}));
+r.put('/messages/:id', (req, res) => { db.prepare('UPDATE messages SET is_read = ? WHERE id = ?').run(req.body.read === false ? 0 : 1, Number(req.params.id)); res.json({ ok: true }); });
+r.delete('/messages/:id', (req, res) => { db.prepare('DELETE FROM messages WHERE id = ?').run(Number(req.params.id)); res.json({ ok: true }); });
+
 // ---------- Social / Instagram ----------
+/** Accepts only real Instagram post/reel links. Returns { code, kind } or null. Lookalike hosts, other schemes and extra path are refused. */
+export function parseInstagramLink(input) {
+  let u; try { u = new URL(String(input || '').trim()); } catch { return null; }
+  if (u.protocol !== 'https:' || !['www.instagram.com', 'instagram.com'].includes(u.hostname) || u.username || u.password || u.port) return null;
+  const m = /^\/(?:[A-Za-z0-9._]+\/)?(p|reel|reels|tv)\/([A-Za-z0-9_-]{5,40})\/?$/.exec(u.pathname);
+  return m ? { code: m[2], kind: m[1] === 'p' ? 'p' : 'reel' } : null;
+}
+
+r.post('/social/embed', (req, res) => {
+  const link = parseInstagramLink(req.body.url);
+  if (!link) return bad(res, 'Paste a link to an Instagram post or reel, like https://www.instagram.com/p/XXXXXXXXXXX/ or https://www.instagram.com/reel/XXXXXXXXXXX/');
+  const exists = db.prepare("SELECT id FROM social_posts WHERE source = 'embed' AND ext_id = ?").get(link.code);
+  if (exists) return bad(res, 'That post is already on the Social page.', 409);
+  db.prepare("INSERT INTO social_posts (source, ext_id, caption, media_type, permalink, posted_at) VALUES ('embed', ?, ?, ?, ?, datetime('now'))")
+    .run(link.code, String(req.body.caption || '').slice(0, 300), link.kind === 'reel' ? 'REEL' : 'POST', `https://www.instagram.com/${link.kind}/${link.code}/`);
+  res.json({ ok: true });
+});
 r.put('/instagram', (req, res) => {
   if ('user_id' in req.body) setSetting('ig_user_id', String(req.body.user_id).trim());
   if (req.body.token) { setSetting('ig_token', String(req.body.token).trim()); setSetting('ig_token_refreshed_at', Date.now()); }

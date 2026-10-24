@@ -43,6 +43,12 @@ Tick every line; most items need the client's accounts and cannot be done by the
 - [ ] Phone check on a **real iPhone (Safari)** and a real Android phone (Chrome): browse, sign in, pay, play, seek, rotate. iOS Safari has not been tested at all yet
 - [ ] From outside the server, play the film from two or three different networks at the same time and watch the server (`top`, `journalctl`)
 
+**Pages**
+- [ ] Contact page: send a real test message; it appears in Admin → Inbox with the unread badge; "Reply by email" opens your mail app
+- [ ] Contact email, phone and city entered in Admin → Site content (shown on the Contact page)
+- [ ] Social page: paste at least 3 real Instagram post/reel links in Admin → Social feed and confirm they display on a computer **and a phone** (this needs the real Instagram and the account must be public; it has not been exercised against live Instagram)
+- [ ] About page text reviewed by Yogesh Singh
+
 **Content**
 - [ ] Homepage text, biography, awards, links and contact email replaced with Yogesh Singh's real content (currently placeholders built from public sources; verify every fact)
 - [ ] Articles/press entries added (Admin → Journey, type *article*)

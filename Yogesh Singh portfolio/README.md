@@ -4,6 +4,17 @@ Self-hosted website for Yogesh Pratap Singh (former IPS officer, author, film di
 
 **Stack:** Node 22 (Express 4, built-in SQLite) · vanilla JS front end (no build step) · FFmpeg → HLS · Razorpay (or Cashfree) · nginx + Let's Encrypt on a Hostinger KVM VPS.
 
+## Pages and how content gets onto them
+| Page | What it shows | Where the owner edits it |
+|---|---|---|
+| `/` Home | Hero, featured film, short story, journey, Instagram teaser | Admin → Site content / Journey |
+| `/films` and `/film/<name>` | Film library, free preview, payment | Admin → Films |
+| `/about` | Biography, stats, timeline, speaking invitation | Admin → Site content (About, Stats) and Journey |
+| `/contact` | Contact details + message form (spam-protected) | Details: Admin → Site content. **Messages arrive in Admin → Inbox** (with an unread count); reply with the "Reply by email" button |
+| `/social` | Instagram posts and reels exactly as on Instagram | **Admin → Social feed → paste the post/reel link → "Add to website"** (no token needed). Optional: connect an Instagram token for hands-free sync |
+
+Notes: the contact form does not send email by itself (there is no email service configured), so messages are kept in the Inbox and the admin sees an unread badge. Instagram posts are shown through Instagram's own embed, which needs the visitor's browser to reach instagram.com and works for **public** accounts; it could not be exercised against the live Instagram from the build environment.
+
 ## Documentation
 | Guide | |
 |---|---|
@@ -27,7 +38,7 @@ Without payment keys (and outside production) checkout runs in clearly labelled 
 
 ## Test
 ```bash
-npm test          # 134 automated tests (needs ffmpeg), about 2 minutes, uses temp directories and simulated gateways. No real charges
+npm test          # 146 automated tests (needs ffmpeg), about 2 minutes, uses temp directories and simulated gateways. No real charges
 npm run check     # syntax check of every source file
 npm run verify-data   # payments, refunds and entitlements agree (read-only; run it on the server too)
 ```

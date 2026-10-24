@@ -7,14 +7,17 @@ const fmt = (d) => d ? new Date(d.replace(' ', 'T') + 'Z').toLocaleString('en-IN
 const head = (t, l) => `<h1 class="t">${t}</h1><p class="lede">${l}</p>`;
 let poll;
 
+function setBadge(n) { const a = $('#inbox-link'); if (a) a.innerHTML = 'Inbox' + (n ? `<span class="badge-n">${n}</span>` : ''); }
+
 const views = {
   async dashboard() {
-    const s = await api('/admin/stats');
+    const s = await api('/admin/stats'); setBadge(s.unread_messages);
     view.innerHTML = head('Dashboard', 'How the film is doing.') + `
       <div class="grid g4">
         <div class="panel kpi"><b>${rupees(s.revenue_paise)}</b><span>Revenue</span></div>
         <div class="panel kpi"><b>${s.orders_paid}</b><span>Paid orders</span></div>
         <div class="panel kpi"><b>${s.users}</b><span>Viewers signed up</span></div>
+        <a class="panel kpi" href="#inbox" style="display:block"><b>${s.unread_messages}</b><span>Unread messages</span></a>
         <div class="panel kpi"><b>${s.movies}</b><span>Films</span></div>
       </div>
       <div class="grid g2" style="margin-top:16px">
@@ -107,6 +110,26 @@ const views = {
     if (busy) poll = setTimeout(() => route(), 4000);
   },
 
+  async inbox() {
+    const { messages, unread } = await api('/admin/messages');
+    setBadge(unread);
+    const topic = { general: 'General', speaking: 'Speaking', film: 'Film', press: 'Press', collaboration: 'Collaboration', other: 'Other' };
+    view.innerHTML = head('Inbox', 'Messages sent through the Contact page. Reply from your own email: the button opens a pre-filled message.') +
+      (messages.map((m) => `<div class="msg-card ${m.is_read ? '' : 'unread'}" data-id="${m.id}">
+        <h4>${esc(m.name)} <span class="pill">${esc(topic[m.topic] || m.topic)}</span></h4>
+        <div class="meta">${esc(m.email)}${m.phone ? ' · ' + esc(m.phone) : ''}${m.organisation ? ' · ' + esc(m.organisation) : ''} · ${fmt(m.created_at)}</div>
+        <div class="body">${esc(m.message)}</div>
+        <div class="row" style="margin-top:14px"><a class="btn gold s" href="mailto:${esc(m.email)}?subject=${encodeURIComponent('Re: your message to Yogesh Singh')}" data-read>Reply by email</a>
+          <button class="btn s" data-toggle="${m.is_read ? 0 : 1}">${m.is_read ? 'Mark unread' : 'Mark read'}</button><button class="btn danger s" data-del>Delete</button></div></div>`).join('')
+        || '<div class="panel"><p class="muted">No messages yet. Messages from the Contact page will appear here.</p></div>');
+    $$('.msg-card').forEach((c) => {
+      const id = c.dataset.id;
+      $('[data-toggle]', c).onclick = (e) => act(async () => { await api('/admin/messages/' + id, { method: 'PUT', body: { read: e.target.dataset.toggle === '1' } }); route(); });
+      $('[data-read]', c).onclick = () => api('/admin/messages/' + id, { method: 'PUT', body: { read: true } }).catch(() => {});
+      $('[data-del]', c).onclick = () => confirm('Delete this message permanently?') && act(async () => { await api('/admin/messages/' + id, { method: 'DELETE' }); route(); }, 'Deleted');
+    });
+  },
+
   async orders() {
     const { orders } = await api('/admin/orders');
     view.innerHTML = head('Orders', 'Latest 300 orders.') + `<div class="panel tablewrap"><table><tr><th>Date</th><th>Order</th><th>Viewer</th><th>Film</th><th>Amount</th><th>Gateway</th><th>Status</th></tr>
@@ -137,8 +160,8 @@ const views = {
         <div class="panel"><h3>Hero</h3>${txt('hero_name', 'Name')}${txt('hero_roles', 'Roles (comma separated)')}${txt('hero_tagline', 'Tagline', 3)}</div>
         <div class="panel"><h3>About</h3>${txt('about_title', 'Heading')}${txt('about_body', 'Biography (blank line = new paragraph)', 10)}${txt('stats', 'Stats: one per line as  number|label', 5)}</div>
         <div class="panel"><h3>Quote</h3>${txt('quote', 'Pull quote', 3)}<h3 style="margin-top:20px">Speaking invitation</h3>${txt('speaking_title', 'Heading')}${txt('speaking_body', 'Text', 3)}</div>
-        <div class="panel"><h3>Contact &amp; social links</h3>${txt('contact_email', 'Contact email')}${txt('social_instagram', 'Instagram URL')}${txt('social_youtube', 'YouTube URL')}${txt('social_x', 'X / Twitter URL')}${txt('social_facebook', 'Facebook URL')}${txt('social_linkedin', 'LinkedIn URL')}
-          <h3 style="margin-top:20px">SEO</h3>${txt('site_title', 'Browser title')}${txt('meta_description', 'Description for Google', 3)}</div>
+        <div class="panel"><h3>Contact page &amp; social links</h3>${txt('contact_intro', 'Contact page intro', 3)}${txt('contact_email', 'Contact email (shown on the Contact page)')}${txt('contact_phone', 'Phone (optional)')}${txt('contact_location', 'Based in (optional)')}${txt('social_instagram', 'Instagram URL')}${txt('social_youtube', 'YouTube URL')}${txt('social_x', 'X / Twitter URL')}${txt('social_facebook', 'Facebook URL')}${txt('social_linkedin', 'LinkedIn URL')}
+          <h3 style="margin-top:20px">Social page</h3>${txt('social_title', 'Heading')}${txt('social_intro', 'Intro text', 2)}<h3 style="margin-top:20px">SEO</h3>${txt('site_title', 'Browser title')}${txt('meta_description', 'Description for Google', 3)}</div>
       </div><div class="row" style="margin-top:18px"><button class="btn gold" id="save">Save content</button></div>`;
     $('#save').onclick = () => act(() => api('/admin/settings', { method: 'PUT', body: Object.fromEntries($$('[data-k]').map((e) => [e.dataset.k, e.value])) }), 'Content saved');
   },
@@ -166,22 +189,27 @@ const views = {
 
   async social() {
     const [{ settings: s, instagram: ig }, { posts }] = await Promise.all([api('/admin/settings'), api('/admin/social')]);
-    view.innerHTML = head('Social feed', 'Instagram posts and reels are pulled in automatically every hour.') + `
+    view.innerHTML = head('Social feed', 'Two ways to fill the website\'s Social page: paste post links (works immediately, no setup), or connect an access token so new posts arrive automatically every hour.') + `
       <div class="grid g2">
         <div class="panel"><h3>Instagram connection</h3>
           <p class="muted small">Status: ${esc(ig.status)} · Token: ${ig.hasToken ? 'saved ✓' : 'not set'}</p>
           <label class="field"><span>Access token (Instagram API with Instagram Login, long-lived)</span><input id="ig-token" type="password" placeholder="${ig.hasToken ? '•••••••• (leave blank to keep)' : 'Paste token'}" autocomplete="off"></label>
           <div class="row"><button class="btn gold s" id="ig-save">Save</button><button class="btn s" id="ig-sync">Sync now</button></div>
           <p class="muted small" style="margin-top:14px">Create a token at developers.facebook.com → your app → Instagram → API setup. The profile must be a Professional (Business/Creator) account. The site refreshes the token automatically.</p></div>
+        <div class="panel" style="grid-column:1/-1"><h3>Add an Instagram post or reel by link</h3>
+          <p class="muted small">Paste the link from Instagram (the post's “…” menu → <b>Copy link</b>). It appears on the website's Social page exactly as it looks on Instagram, with the video, caption and a link to open it. Works for public accounts.</p>
+          <div class="linkrow"><input id="ig-link" type="url" placeholder="https://www.instagram.com/reel/XXXXXXXXXXX/" autocomplete="off"><button class="btn gold s" id="ig-add">Add to website</button></div>
+          ${posts.filter((p) => p.source === 'embed').length ? `<div style="margin-top:18px">${posts.filter((p) => p.source === 'embed').map((p) => `<div class="row spread" style="padding:9px 0;border-top:1px solid var(--line)"><a class="link" href="${esc(p.permalink)}" target="_blank" rel="noopener">${esc(p.permalink.replace('https://www.instagram.com', ''))}</a><span class="row"><span class="pill ${p.hidden ? '' : 'pub'}">${p.hidden ? 'hidden' : 'shown'}</span><button class="btn s" data-hide="${p.id}" data-h="${p.hidden ? 0 : 1}">${p.hidden ? 'Show' : 'Hide'}</button><button class="btn danger s" data-rm="${p.id}">Remove</button></span></div>`).join('')}</div>` : ''}</div>
         <div class="panel"><h3>Add a post manually</h3>
           <label class="field"><span>Image</span><input type="file" id="m-file" accept="image/*"></label>
           <label class="field"><span>Caption</span><input id="m-cap"></label>
           <label class="field"><span>Link (Instagram / YouTube URL)</span><input id="m-link"></label>
           <button class="btn s" id="m-add">Add post</button></div>
       </div>
-      <div class="panel" style="margin-top:16px"><h3>Feed (${posts.length})</h3><div class="ig">
-        ${posts.map((p) => `<div class="it ${p.hidden ? 'hid' : ''}">${p.thumb ? `<img src="${esc(p.thumb)}" alt="" loading="lazy">` : ''}<div class="acts">
+      <div class="panel" style="margin-top:16px"><h3>Feed thumbnails (${posts.filter((p) => p.source !== 'embed').length})</h3><div class="ig">
+        ${posts.filter((p) => p.source !== 'embed').map((p) => `<div class="it ${p.hidden ? 'hid' : ''}">${p.thumb ? `<img src="${esc(p.thumb)}" alt="" loading="lazy">` : ''}<div class="acts">
           <button data-hide="${p.id}" data-h="${p.hidden ? 0 : 1}">${p.hidden ? 'Show' : 'Hide'}</button><button data-rm="${p.id}">✕</button></div></div>`).join('') || '<span class="muted">Nothing yet.</span>'}</div></div>`;
+    $('#ig-add').onclick = () => act(async () => { await api('/admin/social/embed', { method: 'POST', body: { url: $('#ig-link').value } }); route(); }, 'Added to the Social page');
     $('#ig-save').onclick = () => act(async () => { await api('/admin/instagram', { method: 'PUT', body: { token: $('#ig-token').value } }); route(); }, 'Saved');
     $('#ig-sync').onclick = () => act(async () => { const r = await api('/admin/instagram/sync', { method: 'POST' }); if (!r.ok) throw new Error(r.message); route(); }, 'Synced');
     $('#m-add').onclick = () => { const f = $('#m-file').files[0]; if (!f) return toast('Choose an image', true); const fd = new FormData(); fd.append('caption', $('#m-cap').value); fd.append('permalink', $('#m-link').value); fd.append('file', f); act(async () => { await api('/admin/social', { method: 'POST', form: fd }); route(); }, 'Added'); };
@@ -273,4 +301,4 @@ async function route() {
 
 $('#logout').onclick = async (e) => { e.preventDefault(); await api('/auth/logout', { method: 'POST' }); location.href = '/'; };
 addEventListener('hashchange', route);
-getUser().then((u) => (u?.role === 'admin' ? route() : (location.href = '/login.html?next=/admin')));
+getUser().then((u) => { if (u?.role === 'admin') { route(); api('/admin/stats').then((s) => setBadge(s.unread_messages)).catch(() => {}); } else location.href = '/login.html?next=/admin'; });

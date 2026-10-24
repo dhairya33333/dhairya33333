@@ -70,7 +70,7 @@ export const config = {
   cashfree,
   // provider name when configured, "demo" locally without keys (simulated, never in production), else "unconfigured"
   paymentsMode: configured ? provider : (isProd ? 'unconfigured' : 'demo'),
-  rate: { auth: num(env.RATE_LIMIT_AUTH, 30), payments: num(env.RATE_LIMIT_PAYMENTS, 20), api: num(env.RATE_LIMIT_API, 1500) },   // requests per 15 min per IP
+  rate: { auth: num(env.RATE_LIMIT_AUTH, 30), payments: num(env.RATE_LIMIT_PAYMENTS, 20), api: num(env.RATE_LIMIT_API, 1500), contact: num(env.RATE_LIMIT_CONTACT, 5) },   // requests per 15 min per IP
   limits: {
     maxUploadBytes: num(env.MAX_UPLOAD_BYTES, 16 * GB),   // 10.8 GB source fits with headroom
     chunkBytes: num(env.UPLOAD_CHUNK_BYTES, 32 * 1024 * 1024),

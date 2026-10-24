@@ -15,10 +15,12 @@ import publicRoutes from './routes/public.js';
 import mediaRoutes from './routes/media.js';
 import paymentRoutes, { webhook } from './routes/payments.js';
 import adminRoutes from './routes/admin.js';
+import contactRoutes from './routes/contact.js';
 
 /** Content-Security-Policy that only allows third parties for integrations that are actually configured. */
 export function buildCsp() {
-  const script = ["'self'"], frame = [], connect = ["'self'"], style = ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'];
+  const script = ["'self'"], frame = ['https://www.instagram.com'],   // official Instagram post/reel embeds
+         connect = ["'self'"], style = ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'];
   if (config.google.clientId) {
     script.push('https://accounts.google.com/gsi/client'); frame.push('https://accounts.google.com/gsi/');
     connect.push('https://accounts.google.com/gsi/'); style.push('https://accounts.google.com/gsi/style');
@@ -89,6 +91,7 @@ export function createApp() {
   app.use('/api/auth', authRoutes);
   app.use('/api/payments', paymentRoutes);
   app.use('/api/admin', adminRoutes);
+  app.use('/api/contact', contactRoutes);
   app.use('/api', publicRoutes);
   app.use('/media', mediaRoutes);
 
@@ -97,7 +100,7 @@ export function createApp() {
     `User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api/\nDisallow: /media/\nDisallow: /account.html\nDisallow: /login.html\nDisallow: /reset-password.html\nDisallow: /payment-return.html\n\nSitemap: ${config.siteUrl}/sitemap.xml\n`));
   app.get('/sitemap.xml', (_req, res) => {
     const films = db.prepare('SELECT slug FROM movies WHERE published = 1 ORDER BY id').all();
-    const urls = ['/', '/films', ...films.map((f) => `/film/${f.slug}`)];
+    const urls = ['/', '/films', '/about', '/social', '/contact', ...films.map((f) => `/film/${f.slug}`)];
     res.type('application/xml').send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map((u) => `  <url><loc>${esc(config.siteUrl + u)}</loc></url>`).join('\n')}\n</urlset>\n`);
   });
 
@@ -121,6 +124,13 @@ export function createApp() {
     };
     res.type('html').send(withMeta('film.html', { title: `${m.title} — ${set.hero_name}`, description, image: m.poster, path: `/film/${m.slug}`, siteName: set.hero_name, ogType: 'video.movie', jsonLd }));
   });
+  const page = (route, file, title, desc) => app.get(route, (_req, res) => {
+    const set = publicSettings();
+    res.type('html').send(withMeta(file, { title: `${title} — ${set.hero_name}`, description: desc(set), path: route, siteName: set.hero_name }));
+  });
+  page('/about', 'about.html', 'About', (s) => `About ${s.hero_name}: ${s.hero_roles.split(',').map((x) => x.trim()).join(', ')}.`);
+  page('/contact', 'contact.html', 'Contact', (s) => `Contact ${s.hero_name} for speaking invitations, film enquiries, press and collaborations.`);
+  page('/social', 'social.html', 'Social media', (s) => `Instagram posts and reels from ${s.hero_name}.`);
   app.get('/films', (_req, res) => {
     const set = publicSettings();
     res.type('html').send(withMeta('films.html', { title: `Films — ${set.hero_name}`, description: `Films by ${set.hero_name}. The first part of every film is free to watch; one payment unlocks the rest.`, path: '/films', siteName: set.hero_name }));

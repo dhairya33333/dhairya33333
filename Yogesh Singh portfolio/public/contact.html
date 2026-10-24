@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#fbfaf7">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='16' fill='%23fbfaf7'/%3E%3Ctext x='16' y='22' font-size='18' text-anchor='middle' fill='%239a7430' font-family='serif'%3EY%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/site.css"><title>Contact — Y. P. Singh</title></head>
+<body>
+<div class="rail"></div><div class="cursor"></div>
+<div id="chrome-nav"></div>
+<main>
+  <section class="page-hero"><div class="wrap">
+    <span class="eyebrow pg-in">Contact</span>
+    <h1>Let’s <em>talk.</em></h1>
+    <p class="lede pg-in" id="intro" style="animation-delay:.35s"></p>
+  </div></section>
+
+  <section class="section" style="padding-top:0"><div class="wrap contact-grid">
+    <aside data-reveal><div class="info-list" id="info"></div></aside>
+
+    <div class="form-card" data-reveal>
+      <h2>Send a message</h2><p class="sub">All fields marked * are required. You will get a reply by email.</p>
+      <form id="form" novalidate>
+        <div class="frow">
+          <label class="field" data-f="name"><span>Name *</span><input name="name" autocomplete="name" maxlength="100" required><i class="err" role="alert"></i></label>
+          <label class="field" data-f="email"><span>Email *</span><input name="email" type="email" autocomplete="email" maxlength="160" required><i class="err" role="alert"></i></label>
+        </div>
+        <div class="frow">
+          <label class="field" data-f="phone"><span>Phone (optional)</span><input name="phone" type="tel" autocomplete="tel" maxlength="30"><i class="err" role="alert"></i></label>
+          <label class="field" data-f="organisation"><span>Organisation (optional)</span><input name="organisation" autocomplete="organization" maxlength="120"><i class="err" role="alert"></i></label>
+        </div>
+        <label class="field" data-f="topic"><span>What is this about?</span>
+          <select name="topic"><option value="general">General enquiry</option><option value="speaking">Speaking invitation</option><option value="film">The film</option><option value="press">Press and media</option><option value="collaboration">Collaboration</option><option value="other">Something else</option></select></label>
+        <label class="field" data-f="message"><span>Message *</span><textarea name="message" maxlength="4000" required></textarea><i class="err" role="alert"></i><div class="counter"><span id="count">0</span> / 4000</div></label>
+        <label class="hp" aria-hidden="true">Website <input name="website" tabindex="-1" autocomplete="off"></label>
+        <div class="msg" id="msg" role="alert" aria-live="polite"></div>
+        <button class="btn gold" id="go" type="submit"><span class="spin" aria-hidden="true"></span><span class="t">Send message</span> <span class="arrow">→</span></button>
+      </form>
+      <div class="sent" id="sent" role="status" aria-live="polite">
+        <div><svg class="tick" viewBox="0 0 84 84" aria-hidden="true"><circle cx="42" cy="42" r="40"/><path d="M26 44l11 11 22-24"/></svg>
+        <h2 class="serif" style="font-size:40px">Message sent</h2><p style="color:var(--muted);max-width:340px;margin:0 auto 22px">Thank you. Your message has been delivered and you will hear back by email.</p>
+        <button class="btn" id="again" type="button">Send another</button></div>
+      </div>
+    </div>
+  </div></section>
+</main>
+<div id="chrome-foot"></div>
+<script type="module" src="/js/contact.js"></script>
+</body></html>

@@ -7,7 +7,7 @@ export async function api(path, { method = 'GET', body, form } = {}) {
     credentials: 'same-origin',
   });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) { const e = new Error(data.error || 'Something went wrong.'); e.status = res.status; throw e; }
+  if (!res.ok) { const e = new Error(data.error || 'Something went wrong.'); e.status = res.status; e.fields = data.fields; throw e; }
   return data;
 }
 
@@ -42,7 +42,7 @@ export function initMotion() {
   const io = new IntersectionObserver((entries) => entries.forEach((e) => {
     if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
   }), { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
-  $$('[data-reveal], .mask').forEach((el) => io.observe(el));
+  $$('[data-reveal], [data-stagger], .mask, .timeline').forEach((el) => io.observe(el));
 
   // scroll progress rail
   const rail = $('.rail');

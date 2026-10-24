@@ -3,6 +3,14 @@
 Incremental changes to the existing codebase (no rewrite). Findings and fixes: [AUDIT.md](AUDIT.md). Security model and limits: [SECURITY.md](SECURITY.md).
 Round 1 added Google sign-in, Razorpay, resumable uploads and the validated HLS pipeline. **Round 2 (this report's focus) hardened payments, authentication, media access, uploads, data integrity, SEO and deployment, and measured performance.**
 
+## 0. Latest addition: About, Contact and Social pages
+* **New pages** `/about`, `/contact`, `/social` with a shared header/footer, page-reveal animations, staggered cards, an animated timeline and counters. Navigation on every page now reads Films · About · Social · Contact.
+* **Contact form** (`POST /api/contact`): validated, spam-protected (honeypot, 5/hour/IP, link limit), stored in a new `messages` table (migration 4). **Admin → Inbox** lists messages with an unread badge, mark read/unread, delete, and a "Reply by email" button. No email is sent automatically (no email service configured).
+* **Social page**: the admin pastes Instagram post/reel links (Admin → Social feed); they are shown through Instagram's official embed. Optional token sync still works. Links are strictly validated; only the short code reaches the browser; CSP allows `https://www.instagram.com` as a frame only.
+* **12 new tests** (`tests/pages.test.js`): pages, canonicals, sitemap, form validation/limits/honeypot/rate limit, inbox permissions, Instagram link parsing (look-alike hosts, credentials, ports, scripts), embed API, CSP. Browser check `tests/e2e/pages.cjs`: all three pages and the admin screens render, no horizontal scrolling on desktop or phone, no JS errors.
+* **Not verified:** the Instagram embeds were checked with a local stand-in, not the live Instagram (no internet access in the build environment). Test with real links on the staging site.
+* Test count is now **146 (all pass)**.
+
 ## 1. Summary of round-2 audit findings
 18 findings, 8 of them High or Medium-High: the main ones were a payment comparison that was silently **skipped** when a webhook omitted a field, a Cashfree path that never supplied the paid amount to the ledger, refund "full" judged from webhook numbers, logout not revoking the session token, no password recovery, and a **paywall button clipped out of view on phones**. Full table: `AUDIT.md` (R1 to R18).
 

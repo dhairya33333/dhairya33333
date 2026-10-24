@@ -25,6 +25,10 @@ The preview policy is the same in the front end (player loads `/api/movies/:slug
 * Payments: see `PAYMENTS.md`: server-side prices, signature checks, authoritative lookups, idempotency, one payment per order, transactional ledger.
 * Dependencies: production dependencies only (`npm ci --omit=dev`); `npm audit --omit=dev` reported 0 known vulnerabilities at the time of the last run.
 
+## Contact form and Instagram embeds
+* Contact form: server-side validation, length limits, control characters removed, 5 messages per IP per hour (`RATE_LIMIT_CONTACT`), hidden honeypot field (bots get a normal "sent" reply and nothing is stored), same-origin check. Message text is stored as plain text and always HTML-escaped when shown in the admin Inbox; nothing a visitor types is reflected into any page. Messages contain personal data (name, email, optional phone): keep the admin account secure and delete messages you no longer need (Admin → Inbox → Delete).
+* Instagram links are accepted only for `https://(www.)instagram.com/(p|reel|reels|tv)/<code>/`; other hosts, look-alike domains, credentials, ports and extra path are refused. The browser receives only the short code and builds the embed address itself. The embed runs in a sandboxed, lazily loaded iframe; the Content-Security-Policy allows `https://www.instagram.com` **as a frame only** (never as a script source) and the embed content itself is controlled by Instagram.
+
 ## Limitations you should know about (honest list)
 1. **No DRM.** HLS is served in clear (no encryption keys). A paying viewer can capture the stream or record the screen, and anything a browser has downloaded or cached cannot be recalled. Per-request authorisation stops casual sharing of links and non-buyers, not a determined buyer.
 2. **Why not expiring signed URLs?** A 2.5-hour film outlives any short-lived URL (it would need a token-refresh protocol), Safari's native HLS cannot rewrite segment URLs, and a signed URL would keep working after a refund until it expired. The per-request database check revokes immediately. If a CDN is added later, signed URLs (or signed cookies) become necessary and the design must be revisited.
