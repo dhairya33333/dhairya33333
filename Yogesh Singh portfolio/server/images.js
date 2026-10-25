@@ -24,6 +24,7 @@ const run = (args, timeout = 30_000) => new Promise((resolve, reject) => {
   p.on('close', (c) => { clearTimeout(timer); c === 0 ? resolve() : reject(new Error(scrub(err.trim()) || `ffmpeg exited ${c}`)); });
 });
 
+const MAX_PIXELS = 50_000_000;
 function dims(file) {
   return new Promise((resolve) => {
     const p = spawn('ffprobe', ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=width,height', '-of', 'csv=p=0', file]); let out = '';
@@ -37,6 +38,8 @@ function dims(file) {
  */
 export async function optimizeImage(uploadedPath, { folder = '', maxWidth = 1800, thumbWidth = 640, thumb = true } = {}) {
   if (!looksLikeImage(uploadedPath)) { fs.rmSync(uploadedPath, { force: true }); throw new Error('That file is not a JPG, PNG or WebP image.'); }
+  const probe = await dims(uploadedPath);                                // a tiny PNG can declare 30000x30000 pixels and exhaust memory when decoded
+  if (probe.w * probe.h > MAX_PIXELS || probe.w > 20000 || probe.h > 20000) { fs.rmSync(uploadedPath, { force: true }); throw new Error('That image is too large in pixels. Please use one under 50 megapixels (for example 7000 x 7000).'); }
   const dir = path.join(dirs.uploads, folder); fs.mkdirSync(dir, { recursive: true });
   const id = randomId(8), rel = (name) => `/uploads/${folder ? folder + '/' : ''}${name}`;
   const main = path.join(dir, `${id}.webp`), small = path.join(dir, `${id}-t.webp`);

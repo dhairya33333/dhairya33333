@@ -5,7 +5,7 @@ Round 1 added Google sign-in, Razorpay, resumable uploads and the validated HLS 
 
 
 ## 00. Round 3: production extras (this section is the newest)
-Done in this order, each with tests. **201 automated tests, all pass** (was 157). The browser smoke test (real ffmpeg encode, upload, paywall, purchase, phone layout, keyboard) passes with the new consent box.
+Done in this order, each with tests. **203 automated tests, all pass** (was 157). The browser smoke test (real ffmpeg encode, upload, paywall, purchase, phone layout, keyboard) passes with the new consent box.
 
 | # | Feature | Where | Tests |
 |---|---|---|---|

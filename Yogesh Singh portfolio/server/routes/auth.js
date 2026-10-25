@@ -193,7 +193,8 @@ r.post('/forgot', limiter, asyncHandler(async (req, res) => {
   const same = { ok: true, message: 'If that address has an account, a reset link is on its way. It works once and expires in 60 minutes.' };
   if (!mailConfigured()) return res.status(503).json({ error: 'Email is not set up on this site yet. Please ask the site admin for a reset link.' });
   const u = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && db.prepare('SELECT id, email FROM users WHERE email = ?').get(email);
-  if (u) {
+  // At most one reset email per account every 2 minutes, so the form cannot be used to flood someone's inbox.
+  if (u && !db.prepare("SELECT 1 FROM password_resets WHERE user_id = ? AND created_by IS NULL AND created_at > datetime('now', '-2 minutes')").get(u.id)) {
     const token = randomId(24);
     db.prepare('INSERT INTO password_resets (token_hash, user_id, expires_at, created_by) VALUES (?, ?, ?, NULL)').run(crypto.createHash('sha256').update(token).digest('hex'), u.id, Date.now() + 60 * 60 * 1000);
     sendReset(u.email, `${config.siteUrl}/reset-password.html?token=${token}`);   // not awaited: response time must not reveal whether the account exists

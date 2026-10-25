@@ -90,3 +90,11 @@ test('gallery page is served, in the sitemap and linked in the nav script', asyn
   assert.ok((await t.client().get('/sitemap.xml')).text.includes('/gallery<'));
   assert.match((await t.client().get('/js/layout.js')).text, /\/gallery/);
 });
+
+test('a tiny file that declares an enormous pixel size is refused before it is decoded; oversize files get a clear error', { skip: !hasFfmpeg }, async () => {
+  const bomb = path.join(dir, 'bomb.png'); spawnSync('ffmpeg', ['-y', '-f', 'lavfi', '-i', 'color=black:size=9000x9000', '-frames:v', '1', bomb]);
+  assert.ok(fs.statSync(bomb).size < 2_000_000, 'fixture is small on disk');
+  const r = await send(admin, '/api/admin/gallery', form('files', [read(bomb)])); assert.equal(r.status, 400); assert.match(r.json.error, /too large in pixels/);
+  const big = { name: 'huge.jpg', data: Buffer.alloc(26 * 1024 * 1024, 1) };
+  const r2 = await send(admin, '/api/admin/portrait', form('file', [big])); assert.ok(r2.status >= 400 && r2.status < 500, `status ${r2.status}`); assert.ok(r2.json?.error, r2.text.slice(0, 80));
+});

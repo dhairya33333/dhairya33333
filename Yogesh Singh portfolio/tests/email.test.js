@@ -43,6 +43,12 @@ test('forgot-password: same answer for known and unknown addresses, one email on
   assert.equal((await t.client().post('/api/auth/login', { email: 'viewer@example.com', password: 'a-brand-new-password-1' })).status, 200);
 });
 
+test('forgot-password cannot be used to flood an inbox: one email per account per 2 minutes, same answer each time', async () => {
+  await signedUpUser(t, 'victim@example.com'); sent.length = 0;
+  const answers = []; for (let i = 0; i < 4; i++) answers.push((await t.client().post('/api/auth/forgot', { email: 'victim@example.com' })).json);
+  await flush(); assert.equal(sent.length, 1); assert.ok(answers.every((a) => JSON.stringify(a) === JSON.stringify(answers[0])));
+});
+
 test('the admin can send a test email; the address is masked in the reply', async () => {
   const r = await admin.post('/api/admin/email/test', {}); assert.equal(r.status, 200); assert.equal(r.json.to, 'o***@site.test'); assert.equal(sent.length, 1);
   fake.fail = true; assert.equal((await admin.post('/api/admin/email/test', {})).status, 502);

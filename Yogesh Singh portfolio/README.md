@@ -47,7 +47,7 @@ Without payment keys (and outside production) checkout runs in clearly labelled 
 
 ## Test
 ```bash
-npm test          # 201 automated tests (needs ffmpeg), about 2 minutes, uses temp directories and simulated gateways. No real charges
+npm test          # 203 automated tests (needs ffmpeg), about 2 minutes, uses temp directories and simulated gateways. No real charges
 npm run check     # syntax check of every source file
 npm run verify-data   # payments, refunds and entitlements agree (read-only; run it on the server too)
 ```
