@@ -1,5 +1,5 @@
 // Every on-screen word, in English (en), Hindi (hi), Marathi (mr). Prices: no GST shown (not GST-registered yet).
-window.SETTINGS = { showClientWork: false };   // true only after AtWork India / SH Gifting / Nexa Car Care approve
+window.SETTINGS = { showClientWork: true };   // SAMPLE: set false until AtWork India / SH Gifting / Nexa Car Care approve (falls back to "Everything under one roof")
 window.C = {
  s1:{ kick:{en:"Devdha · Dombivli",hi:"Devdha · डोंबिवली",mr:"Devdha · डोंबिवली"},
       a:{en:"WEBSITES",hi:"वेबसाइट",mr:"वेबसाइट"}, b:{en:"PRINTING",hi:"प्रिंटिंग",mr:"प्रिंटिंग"}, c:{en:"GIFTS",hi:"गिफ्ट्स",mr:"गिफ्ट्स"},
@@ -7,10 +7,11 @@ window.C = {
  s2:{ title:{en:"Personalised Gifts",hi:"पर्सनलाइज़्ड गिफ्ट्स",mr:"पर्सनलाइज्ड गिफ्ट्स"},
       i1:{en:"Photo mugs",hi:"फोटो मग",mr:"फोटो मग"}, p1:{en:"from ₹249",hi:"₹249 से",mr:"₹249 पासून"},
       i2:{en:"Magic mugs",hi:"मैजिक मग",mr:"मॅजिक मग"}, p2:{en:"from ₹499",hi:"₹499 से",mr:"₹499 पासून"},
-      i3:{en:"Mouse pads",hi:"माउस पैड",mr:"माउस पॅड"}, p3:{en:"from ₹129",hi:"₹129 से",mr:"₹129 पासून"},
-      i4:{en:"Custom keychains",hi:"कस्टम कीचेन",mr:"कस्टम कीचेन"}, p4:{en:"from ₹69",hi:"₹69 से",mr:"₹69 पासून"},
+      i3:{en:"T-shirts",hi:"टी-शर्ट",mr:"टी-शर्ट"}, p3:{en:"from ₹399",hi:"₹399 से",mr:"₹399 पासून"},
+      i4:{en:"Mouse pads",hi:"माउस पैड",mr:"माउस पॅड"}, p4:{en:"from ₹129",hi:"₹129 से",mr:"₹129 पासून"},
+      i5:{en:"Custom keychains",hi:"कस्टम कीचेन",mr:"कस्टम कीचेन"}, p5:{en:"from ₹69",hi:"₹69 से",mr:"₹69 पासून"},
       tag:{en:"Your Photo. Your Name. Your Design.",hi:"आपकी फोटो। आपका नाम। आपका डिज़ाइन।",mr:"तुमचा फोटो. तुमचं नाव. तुमचं डिझाइन."},
-      note:{en:"Sample designs shown",hi:"नमूना डिज़ाइन",mr:"नमुना डिझाइन"} },
+      note:{en:"Photos of our own work",hi:"हमारे अपने काम की तस्वीरें",mr:"आमच्या स्वतःच्या कामाचे फोटो"} },
  s3:{ title:{en:"Business Printing",hi:"बिज़नेस प्रिंटिंग",mr:"बिझनेस प्रिंटिंग"},
       i1:{en:"Visiting cards",hi:"विज़िटिंग कार्ड",mr:"व्हिजिटिंग कार्ड"},
       i2:{en:"Letterheads & envelopes",hi:"लेटरहेड और लिफ़ाफ़े",mr:"लेटरहेड आणि लिफाफे"},
@@ -31,9 +32,9 @@ window.C = {
       i2:{en:"We design & produce",hi:"हम डिज़ाइन और तैयार करते हैं",mr:"आम्ही डिझाइन व निर्मिती करतो"},
       i3:{en:"Collect your order",hi:"अपना ऑर्डर पाएँ",mr:"तुमची ऑर्डर घ्या"} },
  s7:{ title:{en:"Our Work",hi:"हमारा काम",mr:"आमचे काम"},
-      i1:{en:"AtWork India",hi:"AtWork India",mr:"AtWork India"}, d1:{en:"Website & blog platform",hi:"वेबसाइट और ब्लॉग प्लेटफ़ॉर्म",mr:"वेबसाइट आणि ब्लॉग प्लॅटफॉर्म"},
-      i2:{en:"SH Gifting",hi:"SH Gifting",mr:"SH Gifting"}, d2:{en:"Online catalogue viewer",hi:"ऑनलाइन कैटलॉग व्यूअर",mr:"ऑनलाइन कॅटलॉग व्ह्यूअर"},
-      i3:{en:"Nexa Car Care",hi:"Nexa Car Care",mr:"Nexa Car Care"}, d3:{en:"Booking & invoicing",hi:"बुकिंग और इनवॉइसिंग",mr:"बुकिंग आणि इनव्हॉइसिंग"} },
+      i1:{en:"AtWork India",hi:"AtWork India",mr:"AtWork India"}, d1:{en:"Branded mugs, mouse pads & print",hi:"ब्रांडेड मग, माउस पैड और प्रिंट",mr:"ब्रँडेड मग, माउस पॅड आणि प्रिंट"},
+      i2:{en:"SH Gifting",hi:"SH Gifting",mr:"SH Gifting"}, d2:{en:"Festive offer posters & design",hi:"त्योहार ऑफ़र पोस्टर और डिज़ाइन",mr:"सणासुदीचे ऑफर पोस्टर आणि डिझाइन"},
+      i3:{en:"Nexa Car Care",hi:"Nexa Car Care",mr:"Nexa Car Care"}, d3:{en:"Service flyers & booking",hi:"सर्विस फ़्लायर और बुकिंग",mr:"सर्व्हिस फ्लायर आणि बुकिंग"} },
  s7b:{ title:{en:"Everything Under One Roof",hi:"सब कुछ, एक ही छत के नीचे",mr:"सर्व काही, एकाच छताखाली"},
       i1:{en:"Design, print & gifts together",hi:"डिज़ाइन, प्रिंट और गिफ्ट्स एक साथ",mr:"डिझाइन, प्रिंट आणि गिफ्ट्स एकत्र"},
       i2:{en:"Websites, software & 3D printing",hi:"वेबसाइट, सॉफ़्टवेयर और 3D प्रिंटिंग",mr:"वेबसाइट, सॉफ्टवेअर आणि 3D प्रिंटिंग"},

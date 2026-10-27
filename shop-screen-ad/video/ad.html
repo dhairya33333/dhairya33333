@@ -58,24 +58,25 @@ body{font-family:P,D,sans-serif;color:#fff;position:relative}
   <div class="a li" data-d="1.5" style="top:550px"><span class="ck">✓</span><span data-k="s3.i3"></span></div>
   <div class="a li" data-d="2.0" style="top:670px"><span class="ck">✓</span><span data-k="s3.i4"></span></div>
   <div class="a pill" data-d="3.0" data-k="s3.cta" style="left:96px;top:860px"></div>
-  <img class="a img" data-d=".3" src="img/cards.jpg" style="left:1030px;top:130px;width:500px;height:500px">
-  <img class="a img" data-d=".8" src="img/env.jpg" style="left:1390px;top:330px;width:440px;height:440px">
-  <img class="a img" data-d="1.3" src="img/lh.jpg" style="left:1060px;top:580px;width:420px;height:420px">
+  <img class="a img" data-d=".3" src="img/real/posters.jpg" style="left:1020px;top:130px;width:500px;height:475px">
+  <img class="a img" data-d=".8" src="img/real/prachitam.jpg" style="left:1450px;top:200px;width:390px;height:539px">
+  <img class="a img" data-d="1.3" src="img/real/card.jpg" style="left:1090px;top:640px;width:380px;height:380px">
 </div>
 <div class="sc" id="s4">
   <div class="a t title" data-d="0" data-k="s4.title" style="font-size:76px"></div>
   <div id="s4rows"></div>
-  <img class="a img" data-d=".4" src="img/web.jpg" style="left:1120px;top:250px;width:620px;height:620px">
-  <img class="a img" data-d="1.2" src="img/logo.jpg" style="left:1420px;top:640px;width:380px;height:380px">
-  <img class="a img" data-d="1.8" src="img/post.jpg" style="left:1020px;top:700px;width:330px;height:330px">
+  <img class="a img" data-d=".4" src="img/real/diwali.jpg" style="left:1030px;top:270px;width:340px;height:510px">
+  <img class="a img" data-d="1.0" src="img/real/minimen.jpg" style="left:1420px;top:240px;width:310px;height:551px">
+  <img class="a img" data-d="1.6" src="img/real/culturist.jpg" style="left:1240px;top:810px;width:470px;height:236px">
 </div>
 <div class="sc" id="s5">
   <div class="a t title" data-d="0" data-k="s5.title"></div>
   <div class="a t blue" data-d=".5" data-k="s5.sub" style="left:96px;top:270px;font-size:62px;max-width:900px"></div>
   <div class="a" data-d="1.0" id="s5fmt" style="left:96px;top:480px;width:1000px"></div>
   <div class="a" data-d="1.6" data-k="s5.reply" style="left:96px;top:700px;font-size:44px;font-weight:700;color:#CFE0FF;max-width:900px;line-height:1.35"></div>
-  <div class="a" id="s5svg" data-d=".2" style="left:1180px;top:140px;width:640px;height:800px"></div>
-  <div class="a" data-d="1" style="left:1180px;top:960px;font-size:24px;color:#ffffff66;width:640px;text-align:center">Sample animation · real print footage coming</div>
+  <img class="a img" data-d=".2" src="img/real/print1.jpg" style="left:1060px;top:130px;width:300px;height:400px">
+  <img class="a img" data-d=".8" src="img/real/print2.jpg" style="left:1440px;top:200px;width:300px;height:400px">
+  <img class="a img" data-d="1.4" src="img/real/print3.jpg" style="left:1250px;top:580px;width:300px;height:400px">
 </div>
 <div class="sc" id="s6">
   <div class="a t title" data-d="0" data-k="s6.title"></div>
@@ -125,25 +126,20 @@ $('#lg1').innerHTML=logoSVG(56,'#fff');$('#s1logo').innerHTML=logoSVG(560,'#fff'
 // QR
 fetch('qr.svg').then(r=>r.text()).then(t=>{$('#s9qr').innerHTML=t.replace('<svg ','<svg viewBox="0 0 29 29" style="width:100%;height:100%" ');window.QRREADY=1;}).catch(()=>{window.QRREADY=1});
 // dynamic builders
-const imgs2=['mug','magic','pad','key'];
-$('#s2cards').innerHTML=imgs2.map((m,i)=>`<div class="a" data-d="${.5+i*.55}" style="left:${96+i*430}px;top:260px;width:400px"><img class="img" src="img/${m}.jpg" style="width:400px;height:400px;display:block"><div class="t" data-k="s2.i${i+1}" style="font-size:40px;margin-top:22px"></div><div class="t blue" data-k="s2.p${i+1}" style="font-size:46px"></div></div>`).join('');
+const imgs2=['real/mug','real/magic','real/tee','real/pad','real/key'];
+$('#s2cards').innerHTML=imgs2.map((m,i)=>`<div class="a" data-d="${.5+i*.5}" style="left:${96+i*348}px;top:250px;width:320px"><img class="img" src="img/${m}.jpg" style="width:320px;height:440px;display:block"><div class="t" data-k="s2.i${i+1}" style="font-size:36px;margin-top:20px"></div><div class="t blue" data-k="s2.p${i+1}" style="font-size:42px"></div></div>`).join('');
 $('#s4rows').innerHTML=[1,2,3,4].map(i=>`<div class="a row" data-d="${.4+i*.4}" data-p="left" style="top:${250+(i-1)*135}px"><span class="l" data-k="s4.i${i}"></span><span class="r" data-k="s4.p${i}"></span></div>`).join('');
 $('#s6steps').innerHTML=[1,2,3].map(i=>`<div class="a" data-d="${.6+(i-1)*1.4}" data-p="pop" style="left:${380+(i-1)*580-90}px;top:350px;width:180px;height:180px;border-radius:50%;background:#2F6BFF;display:flex;align-items:center;justify-content:center;font-size:96px;font-weight:800;box-shadow:0 0 0 14px #2F6BFF33">${i}</div><div class="a t" data-d="${.8+(i-1)*1.4}" data-k="s6.i${i}" style="left:${380+(i-1)*580-260}px;top:580px;width:520px;text-align:center;font-size:54px"></div>`).join('');
 // scene 7: work cards or fallback
 function build7(){
  const s=$('#s7');
  if(SETTINGS.showClientWork){
-  s.innerHTML=`<div class="a t title" data-d="0" data-k="s7.title"></div>`+[1,2,3].map(i=>`<div class="a" data-d="${.4+i*.5}" style="left:${96+(i-1)*600}px;top:290px;width:560px;height:600px;background:#ffffff14;border-radius:26px;padding:40px;border:2px solid #ffffff30"><div style="height:300px;border-radius:14px;background:linear-gradient(135deg,#2F6BFF,#16336f);margin-bottom:34px;display:flex;align-items:center;justify-content:center;font-size:26px;color:#ffffffaa">screenshot</div><div class="t" data-k="s7.i${i}" style="font-size:52px"></div><div data-k="s7.d${i}" style="font-size:36px;font-weight:500;color:#CFE0FF;margin-top:10px;line-height:1.3"></div></div>`).join('');
+  s.innerHTML=`<div class="a t title" data-d="0" data-k="s7.title"></div>`+[1,2,3].map(i=>`<div class="a" data-d="${.4+i*.5}" style="left:${96+(i-1)*600}px;top:290px;width:560px;height:600px;background:#ffffff14;border-radius:26px;padding:40px;border:2px solid #ffffff30"><img src="img/real/${['atwork','diwali','nexa'][i-1]}.jpg" style="width:100%;height:300px;border-radius:14px;object-fit:cover;margin-bottom:34px;display:block"><div class="t" data-k="s7.i${i}" style="font-size:52px"></div><div data-k="s7.d${i}" style="font-size:36px;font-weight:500;color:#CFE0FF;margin-top:10px;line-height:1.3"></div></div>`).join('');
  }else{
   s.innerHTML=`<div class="a t title" data-d="0" data-k="s7b.title" style="font-size:88px;max-width:1500px"></div>`+[1,2,3].map(i=>`<div class="a li" data-d="${.6+i*.6}" style="top:${400+(i-1)*140}px;font-size:60px;max-width:1700px"><span class="ck">✓</span><span data-k="s7b.i${i}"></span></div>`).join('');
  }
 }
 build7();
-// 3D scene
-(function(){const N=34,H=15;let h='<svg width="640" height="800" viewBox="0 0 640 800"><rect x="60" y="690" width="520" height="22" rx="8" fill="#ffffff22"/><rect x="40" y="712" width="560" height="12" rx="6" fill="#ffffff14"/>';
- for(let i=0;i<N;i++){const f=i/N,w=190+110*Math.sin(f*Math.PI*1.15)+30*Math.sin(f*18)*0+Math.max(0,.15-f)*200;h+=`<rect class="ly" x="${320-w/2}" y="${690-(i+1)*H}" width="${w}" height="${H-1}" rx="4" fill="hsl(${215+f*12} 90% ${42+f*28}%)"/>`;}
- h+=`<g id="noz"><rect x="-210" y="0" width="420" height="16" rx="8" fill="#9bb6ee"/><path d="M-20 16 L20 16 L6 62 L-6 62 Z" fill="#CFE0FF"/><rect x="-26" y="-28" width="52" height="30" rx="6" fill="#6F9BFF"/></g></svg>`;
- $('#s5svg').innerHTML=h;})();
 $('#s8img').src=OFFER.image;
 // fmt chips
 const fmtCache={};
@@ -187,9 +183,6 @@ window.render=function(t){
  if(si===0)setLogo($('#s1logo'),clamp(sl/1.0));
  if(si===9)setLogo($('#s10logo'),clamp(sl/.9));
  if(si===5)$('#s6line').style.strokeDashoffset=1-ease(clamp((sl-.6)/2.6));
- if(si===4){const n=Math.floor(clamp((sl-.4)/4.4)*34),fr=clamp((sl-.4)/4.4)*34-n;
-   $$('#s5svg .ly').forEach((r,i)=>{r.style.opacity=i<n?1:(i===n?.8:0);});
-   const top=690-(n+1)*15;$('#noz').setAttribute('transform',`translate(${320+Math.sin(sl*9)*(60+30*Math.sin(sl*2))} ${top-62})`);}
  if(si===7&&OFFER.value[L[l]]){const e=ease(clamp((sl-.9)/.8));$('#s8val').style.transform=`scale(${.85+.15*e})`;$('#s8val').style.transformOrigin='left';}
  // wipe
  const w=wipeAt(t),W=$('#wipe');
