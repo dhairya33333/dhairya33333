@@ -1,0 +1,102 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Devdha shop screen video - storyboard v2</title>
+<style>
+@font-face{font-family:P;src:url(fonts/poppins-latin-500-normal.woff2);font-weight:500}
+@font-face{font-family:P;src:url(fonts/poppins-latin-700-normal.woff2);font-weight:700}
+@font-face{font-family:P;src:url(fonts/poppins-latin-800-normal.woff2);font-weight:800}
+@font-face{font-family:D;src:url(fonts/noto-sans-devanagari-devanagari-500-normal.woff2);font-weight:500}
+@font-face{font-family:D;src:url(fonts/noto-sans-devanagari-devanagari-700-normal.woff2);font-weight:700}
+@font-face{font-family:D;src:url(fonts/noto-sans-devanagari-devanagari-800-normal.woff2);font-weight:800}
+@page{size:A4 landscape;margin:0}
+*{box-sizing:border-box;margin:0}
+body{font-family:P,D,sans-serif;color:#0B1B3F;font-size:11px}
+.pg{width:297mm;height:210mm;padding:12mm 13mm;page-break-after:always;position:relative;overflow:hidden;background:#fff}
+h1{font-size:30px;font-weight:800}h2{font-size:19px;font-weight:800;color:#0B1B3F}
+.top{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #2F6BFF;padding-bottom:6px;margin-bottom:10px}
+.top small{color:#5b6b8c;font-size:10px}
+.frame{width:560px;height:315px;border-radius:6px;position:relative;overflow:hidden;background:radial-gradient(120% 120% at 20% 10%,#16336f,#0B1B3F 60%);color:#fff;box-shadow:0 3px 10px #0004;flex:none}
+.frame .t{position:absolute;font-weight:800;line-height:1.15}
+.frame img{position:absolute;border-radius:6px;object-fit:cover;box-shadow:0 4px 12px #0007}
+.row{display:flex;gap:16px}
+table{border-collapse:collapse;width:100%}td,th{border:1px solid #cfd8ea;padding:4px 6px;vertical-align:top;text-align:left}th{background:#EAF0FF;font-size:10px}
+.chip{display:inline-block;background:#2F6BFF;color:#fff;border-radius:10px;padding:1px 8px;font-size:10px;font-weight:700}
+.warn{background:#FFF4D6;border-left:4px solid #E7A800;padding:5px 8px;margin-top:6px}
+.ok{background:#E6F6EC;border-left:4px solid #1F9D55;padding:5px 8px;margin-top:6px}
+ul{padding-left:15px}li{margin:2px 0}
+.tl{display:flex;height:34px;margin:6px 0}.tl div{color:#fff;font-size:9px;font-weight:700;padding:3px;border-right:2px solid #fff;overflow:hidden}
+.lang{font-size:12px;line-height:1.45}
+</style></head><body><div id="root"></div>
+<script src="content.js"></script><script src="offer.js"></script>
+<script>
+const L=['en','hi','mr'], LN={en:'English',hi:'हिन्दी',mr:'मराठी'};
+const g=(k,l)=>{const [s,f]=k.split('.');return C[s][f][l]};
+const SC=[
+ {id:1,t:'0–5 s',n:'Intro',vis:'Dark navy. The Devdha logo mark assembles from two U-shapes, then three words slam in one by one, "+ 3D PRINTING" slides under.',mot:'Logo draw-on 1 s → words stagger 0.3 s apart → soft zoom.',tx:['s1.a','s1.b','s1.c','s1.plus','s1.kick'],assets:'Logo (have)',frame:'intro'},
+ {id:2,t:'5–12 s',n:'Personalised gifts',vis:'Four product pictures glide in one at a time with a price tag; headline on the left, tagline at the bottom.',mot:'Product cards slide up, 0.4 s apart, slow zoom; price tags pop.',tx:['s2.title','s2.i1','s2.p1','s2.i2','s2.p2','s2.i3','s2.p3','s2.i4','s2.p4','s2.tag'],assets:'Real photos of mug, magic mug, mouse pad, keychain (renders used until you supply)',frame:'gifts'},
+ {id:3,t:'12–19 s',n:'Business printing',vis:'Printed cards, envelopes and a letterhead fan in on the right; four items tick in on the left; button-style "Get a Quote".',mot:'List ticks in sequence; CTA pulses once.',tx:['s3.title','s3.i1','s3.i2','s3.i3','s3.i4','s3.cta'],assets:'Photos of stickers/labels and flyers/brochures needed (not in renders)',frame:'print'},
+ {id:4,t:'19–26 s',n:'Websites · Software · Design',vis:'A browser window mock-up with a website, plus logo and social post cards; four price rows.',mot:'Browser window types in; rows slide from left.',tx:['s4.title','s4.i1','s4.p1','s4.i2','s4.p2','s4.i3','s4.p3','s4.i4','s4.p4'],assets:'Screenshot of any approved site; renders used otherwise',frame:'web'},
+ {id:5,t:'26–32 s',n:'Custom 3D printing',vis:'A part builds up layer by layer while the nozzle moves; file-type chips on the right.',mot:'Layer-by-layer growth; chips pop in.',tx:['s5.title','s5.sub','s5.fmt','s5.reply'],assets:'Real 3D printer footage and finished prints (placeholder animation until supplied)',frame:'3d'},
+ {id:6,t:'32–38 s',n:'From idea to reality',vis:'Three numbered circles joined by a line that draws from left to right.',mot:'Line draws; each step lights up in turn.',tx:['s6.title','s6.i1','s6.i2','s6.i3'],assets:'None',frame:'steps'},
+ {id:7,t:'38–44 s',n:'Our work  (or fallback)',vis:'ON: three client cards with a short description. OFF (default until approved): "Everything under one roof" with three points.',mot:'Cards slide in; one-line captions fade in.',tx:['s7.title','s7.i1','s7.d1','s7.i2','s7.d2','s7.i3','s7.d3','s7b.title','s7b.i1','s7b.i2','s7b.i3'],assets:'Client approvals + screenshots for AtWork India, SH Gifting, Nexa Car Care',frame:'work'},
+ {id:8,t:'44–49 s',n:'Offer  (editable)',vis:'Left: tag, headline, big value, short line, how to claim, end date. Right: product picture. Text comes from offer.js.',mot:'Headline wipes in; value counts up; a thin border pulses.',tx:['OFFER'],assets:'Approved offer wording & dates (placeholder-free general promotion is used meanwhile)',frame:'offer'},
+ {id:9,t:'49–57 s',n:'Visit us · scan to order',vis:'Left: phone, address, hours, website. Right: large white QR code to https://devdha.in on a white tile.',mot:'Lines slide in; QR tile scales up.',tx:['s9.title','s9.phone','s9.addr','s9.hours','s9.web','s9.scan'],assets:'None (QR generated; test with a phone from 3 m)',frame:'visit'},
+ {id:10,t:'57–60 s',n:'Loop-back',vis:'Logo, name, tagline, website. Fades cleanly into the next language\'s scene 1.',mot:'Logo pulse; wipe transition into the next block.',tx:['s10.name','s10.tag','s10.web'],assets:'Logo (have)',frame:'end'}
+];
+const T=(l,x,s,st)=>`<div class="t" style="${st}">${x}</div>`;
+function frame(f,l){
+ const o=OFFER, s=(k)=>g(k,l);
+ switch(f){
+ case'intro':return `<div class="t" style="left:30px;top:34px;font-size:13px;color:#7FA6FF">${s('s1.kick')}</div><div class="t" style="left:30px;top:100px;font-size:42px">${s('s1.a')} · ${s('s1.b')} · ${s('s1.c')}</div><div class="t" style="left:30px;top:200px;font-size:24px;color:#7FA6FF">${s('s1.plus')}</div>`;
+ case'gifts':return `<div class="t" style="left:24px;top:22px;font-size:22px">${s('s2.title')}</div>`+['mug','magic','pad','key'].map((m,i)=>`<img src="img/${m}.jpg" style="left:${20+i*136}px;top:78px;width:126px;height:126px"><div class="t" style="left:${20+i*136}px;top:208px;font-size:11px;width:126px">${s('s2.i'+(i+1))}<br><span style="color:#7FA6FF">${s('s2.p'+(i+1))}</span></div>`).join('')+`<div class="t" style="left:24px;top:276px;font-size:15px;color:#BFD2FF">${s('s2.tag')}</div>`;
+ case'print':return `<div class="t" style="left:24px;top:22px;font-size:22px">${s('s3.title')}</div><div class="t" style="left:24px;top:76px;font-size:14px;line-height:1.7">✓ ${s('s3.i1')}<br>✓ ${s('s3.i2')}<br>✓ ${s('s3.i3')}<br>✓ ${s('s3.i4')}</div><img src="img/cards.jpg" style="left:300px;top:20px;width:130px;height:130px"><img src="img/env.jpg" style="left:420px;top:60px;width:130px;height:130px"><img src="img/lh.jpg" style="left:330px;top:160px;width:130px;height:130px"><div class="t" style="left:24px;top:250px;background:#2F6BFF;border-radius:20px;padding:6px 16px;font-size:13px">${s('s3.cta')}</div>`;
+ case'web':return `<div class="t" style="left:24px;top:22px;font-size:19px;width:300px">${s('s4.title')}</div><div class="t" style="left:24px;top:100px;font-size:13px;line-height:1.75">${[1,2,3,4].map(i=>s('s4.i'+i)+' <span style="color:#7FA6FF">'+s('s4.p'+i)+'</span>').join('<br>')}</div><img src="img/web.jpg" style="left:290px;top:30px;width:250px;height:250px">`;
+ case'3d':return `<div class="t" style="left:24px;top:22px;font-size:22px">${s('s5.title')}</div><div class="t" style="left:24px;top:70px;font-size:14px;color:#BFD2FF">${s('s5.sub')}</div><div class="t" style="left:24px;top:120px;font-size:13px;background:#ffffff22;padding:5px 10px;border-radius:12px">${s('s5.fmt')}</div><div class="t" style="left:24px;top:180px;font-size:11px;width:240px;line-height:1.5">${s('s5.reply')}</div><div style="position:absolute;left:330px;top:70px;width:180px;height:190px;border:2px dashed #7FA6FF;border-radius:8px"></div><div class="t" style="left:350px;top:150px;font-size:11px;color:#7FA6FF;width:140px">3D printer clip / layer animation</div>`;
+ case'steps':return `<div class="t" style="left:24px;top:22px;font-size:22px">${s('s6.title')}</div>`+[1,2,3].map(i=>`<div style="position:absolute;left:${40+(i-1)*180}px;top:110px;width:70px;height:70px;border-radius:50%;background:#2F6BFF;text-align:center;line-height:70px;font-size:30px;font-weight:800">${i}</div><div class="t" style="left:${20+(i-1)*180}px;top:195px;width:120px;font-size:12px">${s('s6.i'+i)}</div>`).join('')+`<div style="position:absolute;left:115px;top:144px;width:360px;height:3px;background:#7FA6FF;z-index:0"></div>`;
+ case'work':return `<div class="t" style="left:24px;top:22px;font-size:22px">${s('s7.title')}</div>`+[1,2,3].map(i=>`<div style="position:absolute;left:${24+(i-1)*178}px;top:90px;width:166px;height:150px;background:#ffffff18;border-radius:8px;padding:10px;font-weight:700;font-size:13px">${s('s7.i'+i)}<br><span style="font-size:10px;font-weight:500;color:#BFD2FF">${s('s7.d'+i)}</span></div>`).join('');
+ case'offer':{const k=(x)=>o[x][l];return `<div class="t" style="left:24px;top:30px;font-size:11px;color:#7FA6FF">${k('tag')}</div><div class="t" style="left:24px;top:70px;font-size:26px;width:290px">${k('head')}</div><div class="t" style="left:24px;top:170px;font-size:13px;color:#BFD2FF;width:290px">${k('body')}<br>${k('how')}</div><img src="${o.image}" style="left:340px;top:40px;width:200px;height:200px">`;}
+ case'visit':return `<div class="t" style="left:24px;top:22px;font-size:20px;width:300px">${s('s9.title')}</div><div class="t" style="left:24px;top:90px;font-size:15px;color:#7FA6FF">${s('s9.phone')}</div><div class="t" style="left:24px;top:125px;font-size:10.5px;width:280px;font-weight:500;line-height:1.5">${s('s9.addr')}</div><div class="t" style="left:24px;top:190px;font-size:11px;font-weight:500">${s('s9.hours')}</div><div class="t" style="left:24px;top:225px;font-size:15px">${s('s9.web')}</div><div style="position:absolute;left:350px;top:50px;width:190px;height:190px;background:#fff;border-radius:8px;padding:12px">${QR}</div><div class="t" style="left:340px;top:250px;font-size:10px;width:210px;text-align:center;color:#BFD2FF">${s('s9.scan')}</div>`;
+ case'end':return `<div class="t" style="left:0;width:560px;text-align:center;top:90px;font-size:40px">${s('s10.name')}</div><div class="t" style="left:0;width:560px;text-align:center;top:160px;font-size:15px;color:#7FA6FF">${s('s10.tag')}</div><div class="t" style="left:0;width:560px;text-align:center;top:210px;font-size:15px">${s('s10.web')}</div>`;
+ }}
+let QR='';
+fetch('qr.svg').then(r=>r.text()).then(t=>{QR=t.replace('<svg ','<svg style="width:100%;height:100%" viewBox="0 0 29 29" ');build();});
+function build(){
+ const colors=['#2F6BFF','#1E4FCC','#16336f','#2F6BFF','#1E4FCC','#16336f','#2F6BFF','#E7A800','#1E4FCC','#16336f'];
+ const dur=[5,7,7,7,6,6,6,5,8,3];
+ let h=`<div class="pg" style="background:radial-gradient(120% 120% at 20% 10%,#16336f,#0B1B3F 60%);color:#fff"><div style="margin-top:50mm"><div class="chip">STORYBOARD v2 · PLAN FOR APPROVAL</div><h1 style="font-size:46px;margin:14px 0 6px">Devdha shop-front screen video</h1><div style="font-size:18px;color:#BFD2FF">3 languages · English · हिन्दी · मराठी · 3 × 60 s = 3-minute seamless loop</div><div style="margin-top:26px;font-size:13px;line-height:1.7;max-width:200mm">1920 × 1080 · 16:9 · MP4 H.264 · silent · deep navy / blue / white · plays from the shop PC over HDMI on the second monitor, on loop.<br>The same ten scenes run once in each language. Only the words change; layout, timing and pictures stay identical. One extra 60-second file per language is also exported.<br>Prices as on your website, shown without GST (not GST-registered yet). Offer scene is editable and currently carries a general promotion, not a discount.</div></div></div>`;
+ // overview
+ h+=`<div class="pg"><div class="top"><h2>Timeline</h2><small>Devdha shop-front screen · storyboard v2</small></div><div class="lang">One 60-second block per language, repeating: <b>English 0:00–1:00 → हिन्दी 1:00–2:00 → मराठी 2:00–3:00 → back to English</b>. A language chip in the corner shows which language is running.</div><div class="tl">${SC.map((s,i)=>`<div style="width:${dur[i]/60*100}%;background:${colors[i]}">${s.id}. ${s.n.split(' (')[0]}<br>${s.t}</div>`).join('')}</div>
+ <table><tr><th>#</th><th>Time</th><th>Scene</th><th>What viewers see</th><th>Need from you</th></tr>${SC.map(s=>`<tr><td>${s.id}</td><td>${s.t}</td><td><b>${s.n}</b></td><td>${s.vis}</td><td>${s.assets}</td></tr>`).join('')}</table></div>`;
+ // scenes
+ for(const s of SC){
+  h+=`<div class="pg"><div class="top"><h2>Scene ${s.id} · ${s.n}</h2><small>${s.t} of each 60 s block</small></div><div class="row"><div><div class="frame">${frame(s.frame,'en')}</div><div style="margin-top:4px;color:#5b6b8c;font-size:9px">Frame sketch (English). Final pictures use your photos where supplied; mock-ups are labelled "sample design".</div></div>
+  <div style="flex:1"><table><tr><th>Visual</th><td>${s.vis}</td></tr><tr><th>Motion</th><td>${s.mot}</td></tr><tr><th>Needs</th><td>${s.assets}</td></tr><tr><th>Sound</th><td>None (silent loop)</td></tr></table></div></div>
+  <h2 style="margin:10px 0 4px;font-size:13px">On-screen text, all three languages</h2><div class="row">${L.map(l=>`<div style="flex:1;border:1px solid #cfd8ea;border-radius:6px;padding:6px 9px"><span class="chip">${LN[l]}</span><div class="lang" style="margin-top:4px">${s.tx[0]==='OFFER'?`<b>${OFFER.tag[l]}</b><br>${OFFER.head[l]}<br>${OFFER.body[l]}<br>${OFFER.how[l]}<br><i style="color:#888">(end date: ${OFFER.validTill[l]||'none shown'})</i>`:s.tx.filter(k=>!k.startsWith('s7b')||true).map(k=>{if(s.id===7&&k.startsWith('s7.')&&!SETTINGS.showClientWork)return'';if(s.id===7&&k.startsWith('s7b')&&SETTINGS.showClientWork)return'';return g(k,l)}).filter(Boolean).join('<br>')}</div></div>`).join('')}</div>
+  ${s.id===8?`<div class="warn"><b>Editable segment.</b> Edit <code>offer.js</code> (headline, value, how to claim, end date, picture), run the render script, and the 3-minute loop is rebuilt in a few minutes. Never published with brackets or "TBC".</div>`:''}
+  ${s.id===7?`<div class="warn"><b>Client work is OFF by default</b> until AtWork India, SH Gifting and Nexa Car Care approve. Flip one switch in <code>content.js</code> to turn it on.</div>`:''}
+  ${s.id===5?`<div class="ok"><b>Your answer:</b> WhatsApp replies quickly; detailed quote by email within 12 hours. This is what the screen says (the website still says 24 hours: please update it to match).</div>`:''}
+  ${s.id===2?`<div class="ok">Prices are your catalogue's "from" prices, shown without GST.</div>`:''}
+  </div>`;
+ }
+ // offer page
+ h+=`<div class="pg"><div class="top"><h2>Offer plan (scene 8)</h2><small>decide later · video is built so any option drops in</small></div>
+ <table><tr><th>Option</th><th>Screen wording (EN)</th><th>Needs</th></tr>
+ <tr><td><b>A · Now (default)</b></td><td>Free Design Consultation · Bulk orders also available · Walk in or message us on WhatsApp</td><td>Nothing: no discount, no date</td></tr>
+ <tr><td><b>B · Birthday Memory Pack</b></td><td>₹649 · Mug · 20 Polaroids · Card · Keychain · A5 Frame · Valid till [date]</td><td>Start/end date; stock for 3–6 day turnaround</td></tr>
+ <tr><td><b>C · Website Launch Pack</b></td><td>₹1,999 · Website · Domain &amp; Hosting · Google Profile</td><td>Dates; your capacity</td></tr>
+ <tr><td><b>D · Marketing Print Pack</b></td><td>₹999 · Flyer, banner, poster, brochure designs</td><td>Dates</td></tr></table>
+ <div class="ok"><b>Rules:</b> headline ≤ 5 words · one price · one condition · end date if any · no discount code · bulk slabs stay off-screen ("bulk also available") · "limited" only if true.</div>
+ <div class="warn"><b>Decisions still open:</b> which offer runs first, and from/to dates. Everything else is locked.</div></div>`;
+ // needs page
+ h+=`<div class="pg"><div class="top"><h2>What I still need from you</h2><small>everything else is ready</small></div>
+ <table><tr><th>Item</th><th>Why</th><th>Status</th></tr>
+ <tr><td>Photos of your stickers/labels, flyers/brochures, packaging</td><td>Scene 3 has no renders for these</td><td>Needed</td></tr>
+ <tr><td>3D printer footage (10 s) + 2–3 finished prints</td><td>Scene 5 (placeholder animation until then)</td><td>Needed</td></tr>
+ <tr><td>Client permission + screenshots</td><td>Scene 7 "Our work"</td><td>Optional</td></tr>
+ <tr><td>Real photos of mug / magic mug / mouse pad / keychain</td><td>Scene 2 (renders used if missing)</td><td>Optional</td></tr>
+ <tr><td>Someone to read the Hindi and Marathi wording</td><td>Quality check before the screen goes live</td><td>Needed</td></tr>
+ <tr><td>Approve offer + dates</td><td>Scene 8</td><td>Pending</td></tr>
+ <tr><td>Wordmark spelling: brief says "DEVDHA", you said "Devdha"</td><td>I use Devdha everywhere</td><td>Confirm</td></tr></table>
+ <div class="warn"><b>Playback tips:</b> set the monitor to Extend, play the MP4 in VLC with Loop on, disable sleep/screensaver, hide the cursor. Test the QR from 3 metres with a phone before going live.</div></div>`;
+ document.getElementById('root').innerHTML=h;
+ document.fonts.ready.then(()=>document.body.dataset.ready=1);
+}
+</script></body></html>
