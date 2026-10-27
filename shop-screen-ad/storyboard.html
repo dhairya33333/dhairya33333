@@ -1,0 +1,292 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Devdha — Shop-front screen ad: storyboard &amp; resource list</title>
+<style>
+@page{size:A4 landscape;margin:0}
+:root{--navy:#12324F;--deep:#0B2238;--mid:#1E5B94;--sky:#6FB1F0;--ice:#E8F1FB;--ink:#1b2b3d;--mut:#5b6f84;--warn:#b25b00}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter','Inter Display',sans-serif;color:var(--ink);font-weight:500;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.page{width:297mm;height:210mm;padding:11mm 13mm;position:relative;page-break-after:always;overflow:hidden;background:#fff}
+.foot{position:absolute;left:13mm;right:13mm;bottom:6mm;display:flex;justify-content:space-between;font-size:8pt;color:var(--mut)}
+h1{font-size:30pt;font-weight:800;letter-spacing:-.02em;color:var(--navy);line-height:1.05}
+h2{font-size:16pt;font-weight:800;color:var(--navy);margin-bottom:3mm}
+h3{font-size:10pt;font-weight:800;color:var(--mid);text-transform:uppercase;letter-spacing:.12em;margin:3mm 0 1.5mm}
+p,li{font-size:9.5pt;line-height:1.42}
+ul{padding-left:4.5mm}
+.cover{background:linear-gradient(135deg,#0B2238,#1E5B94);color:#fff}
+.cover h1{color:#fff;font-size:38pt}
+.cover p{color:#cfe3f8;font-size:12pt;line-height:1.5;max-width:175mm;margin-top:5mm}
+.pill{display:inline-block;background:rgba(255,255,255,.14);border-radius:99px;padding:2mm 4.5mm;margin:1.5mm 2mm 0 0;font-size:10pt;font-weight:700}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:7mm}
+.box{background:var(--ice);border-radius:3mm;padding:4mm 5mm}
+.warn{background:#fff4e5;color:var(--warn)}
+table{width:100%;border-collapse:collapse;font-size:8.6pt}
+th{background:var(--navy);color:#fff;text-align:left;padding:1.8mm 2.5mm;font-size:8pt;letter-spacing:.06em;text-transform:uppercase}
+td{padding:1.8mm 2.5mm;border-bottom:1px solid #e1e8f0;vertical-align:top;line-height:1.35}
+tr:nth-child(even) td{background:#f6f9fc}
+.tag{display:inline-block;border-radius:99px;padding:.4mm 2.2mm;font-size:7.5pt;font-weight:800}
+.must{background:#fde8e8;color:#b3261e}.should{background:#fff4d6;color:#8a6a00}.nice{background:#e4f6ea;color:#1a7a40}
+/* storyboard rows */
+.scene{display:grid;grid-template-columns:132mm 1fr;gap:6mm;margin-bottom:5.5mm;align-items:start}
+.frame{width:132mm;height:74.25mm;position:relative;overflow:hidden;background:var(--navy);border-radius:2mm;box-shadow:0 1mm 3mm rgba(0,0,0,.25);color:#fff}
+.sn{font-size:9pt;font-weight:800;color:var(--mid);letter-spacing:.1em;text-transform:uppercase}
+.st{font-size:13pt;font-weight:800;color:var(--navy);margin:.5mm 0 1.5mm}
+.meta{font-size:8.6pt;line-height:1.38}
+.meta b{color:var(--navy)}
+.kv{display:grid;grid-template-columns:19mm 1fr;gap:.6mm 2mm;margin-top:1mm}
+.kv div:nth-child(odd){font-weight:800;color:var(--mid)}
+/* frame internals (frame is 132mm x 74.25mm; units in mm) */
+.a{position:absolute}
+.hl{font-weight:800;line-height:1.02;letter-spacing:-.01em}
+.chip{display:inline-block;background:rgba(255,255,255,.16);border-radius:99px;padding:.8mm 2.6mm;font-size:5.2mm;font-weight:700;margin:0 1mm 1mm 0}
+.img{position:absolute;background-size:cover;background-position:center;box-shadow:0 1.2mm 3mm rgba(0,0,0,.45);border-radius:1.5mm}
+.need{position:absolute;display:flex;align-items:center;justify-content:center;text-align:center;border:.5mm dashed rgba(255,255,255,.7);border-radius:1.5mm;font-size:4.2mm;font-weight:700;color:#cfe3f8;background:rgba(255,255,255,.08);padding:2mm}
+svg{display:block}
+</style></head><body>
+
+<!-- ============ COVER ============ -->
+<div class="page cover">
+  <div style="display:flex;align-items:center;gap:4mm"><svg viewBox="170 80 320 495" height="22mm" width="14.2mm"><path d="M243 360 L243 208.75 A118.75 118.75 0 0 1 480 208.75 L480 445 L437 408 L437 208.75 A74.75 74.75 0 0 0 287 208.75 L287 325 Z" fill="#fff"/><path d="M243 360 L243 208.75 A118.75 118.75 0 0 1 480 208.75 L480 445 L437 408 L437 208.75 A74.75 74.75 0 0 0 287 208.75 L287 325 Z" fill="#fff" transform="rotate(180 329 327.5)"/></svg><div style="font-size:20pt;font-weight:800">Devdha</div></div>
+  <h1 style="margin-top:18mm">Shop-front screen ad<br>Storyboard &amp; resource list</h1>
+  <p>A 60-second silent loop for a 21-inch screen outside your shop. This document has the frame-by-frame storyboard, the exact on-screen text, and the list of things I need from you so I can edit and deliver the video.</p>
+  <div style="margin-top:9mm">
+    <span class="pill">1920 × 1080 · 16:9 landscape</span><span class="pill">60 s seamless loop</span><span class="pill">Silent — no audio needed</span><span class="pill">10 scenes · 4–8 s each</span><span class="pill">MP4 (H.264) for USB / TV box</span>
+  </div>
+  <div style="position:absolute;left:13mm;bottom:14mm;right:13mm;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6mm">
+    <div class="pill" style="border-radius:3mm;display:block;padding:4mm"><div style="font-size:8pt;color:#9fc5ee;margin-bottom:1mm">PAGE 2</div>How the ad works &amp; design rules</div>
+    <div class="pill" style="border-radius:3mm;display:block;padding:4mm"><div style="font-size:8pt;color:#9fc5ee;margin-bottom:1mm">PAGES 3–7</div>Storyboard: all 10 scenes</div>
+    <div class="pill" style="border-radius:3mm;display:block;padding:4mm"><div style="font-size:8pt;color:#9fc5ee;margin-bottom:1mm">PAGES 8–9</div>What to send me · how to capture · timeline</div>
+  </div>
+</div>
+
+<!-- ============ RULES ============ -->
+<div class="page">
+  <h1 style="font-size:22pt">How the ad works</h1>
+  <div class="grid2" style="margin-top:5mm">
+    <div>
+      <h3>The goal of every loop</h3>
+      <ol style="padding-left:5mm"><li>Make a passer-by <b>glance up</b> (movement + bright logo).</li><li>Tell them <b>what the shop is</b> in one line.</li><li>Give a <b>reason to walk in</b> (a price, a service, an offer).</li><li>Make it <b>easy to act</b> (QR, phone, address, hours).</li></ol>
+      <h3>Design rules (outdoor screen, 3–5 m away)</h3>
+      <ul>
+        <li><b>Headline ≥ 8% of screen height</b> (≈ 90 px at 1080p); supporting text ≥ 5% (≈ 55 px). Nothing smaller than 40 px.</li>
+        <li><b>≤ 8 words</b> per scene. People give you 3–5 seconds, so each scene must make sense alone.</li>
+        <li><b>High contrast:</b> white / bright text on deep navy. No thin fonts, no pale pastel text.</li>
+        <li><b>5% safe margin</b> on every side (TVs can crop the edge).</li>
+        <li><b>Silent:</b> street noise wins. Nothing depends on sound.</li>
+        <li>The <b>shop name + area</b> appears in the first and last scene, so every loop re-introduces you.</li>
+        <li><b>Prices are "from ₹…"</b> and match the website. No unprovable claims ("cheapest", "fastest").</li>
+        <li><b>QR code ≥ 15% of screen height</b>, on screen ≥ 8 s, high contrast (dark on white).</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Loop overview</h3>
+      <table>
+        <tr><th>#</th><th>Time</th><th>Scene</th><th>One-line message</th></tr>
+        <tr><td>1</td><td>0–5</td><td>Hook</td><td>Websites · Printing · Gifts</td></tr>
+        <tr><td>2</td><td>5–12</td><td>Personalised gifts</td><td>Mugs, polaroids, T-shirts, frames</td></tr>
+        <tr><td>3</td><td>12–19</td><td>Business printing</td><td>Cards, letterheads, banners</td></tr>
+        <tr><td>4</td><td>19–26</td><td>Logo · website · social</td><td>Get your brand online</td></tr>
+        <tr><td>5</td><td>26–32</td><td>3D printing</td><td>Send your file, we print it</td></tr>
+        <tr><td>6</td><td>32–38</td><td>How it works</td><td>Idea → Design → Made</td></tr>
+        <tr><td>7</td><td>38–44</td><td>Our work</td><td>Local businesses we built for</td></tr>
+        <tr><td>8</td><td>44–49</td><td>This week's offer</td><td>Your current offer</td></tr>
+        <tr><td>9</td><td>49–57</td><td>Visit / scan</td><td>QR · phone · address · hours</td></tr>
+        <tr><td>10</td><td>57–60</td><td>Loop-back</td><td>Logo, matches scene 1</td></tr>
+      </table>
+      <div class="box" style="margin-top:5mm"><b style="color:var(--navy)">Motion style.</b> Calm, bold and readable: words rise in line by line, products slide or scale in, one move per scene. Transitions are quick wipes (0.6 s), so nothing flashes or spins on a busy street. The last frame is identical to the first, so the loop doesn't jump.</div>
+      <div class="box warn" style="margin-top:4mm"><b>Check before publishing:</b> every price shows "plus GST" on your website — decide whether the screen says "+ GST" in small print. Offers need an end date so the screen never advertises something expired.</div>
+    </div>
+  </div>
+  <div class="foot"><span>Devdha · shop-front screen ad</span><span>2</span></div>
+</div>
+
+<!-- ============ STORYBOARD 1/4 ============ -->
+<div class="page">
+  <div class="scene">
+    <div class="frame" style="background:radial-gradient(circle at 50% 40%,#24598f,#0B2238)">
+      <div class="a" style="left:0;right:0;top:7mm;text-align:center"><svg style="margin:0 auto" viewBox="170 80 320 495" height="19mm" width="12.3mm"><path d="M243 360 L243 208.75 A118.75 118.75 0 0 1 480 208.75 L480 445 L437 408 L437 208.75 A74.75 74.75 0 0 0 287 208.75 L287 325 Z" fill="#fff"/><path d="M243 360 L243 208.75 A118.75 118.75 0 0 1 480 208.75 L480 445 L437 408 L437 208.75 A74.75 74.75 0 0 0 287 208.75 L287 325 Z" fill="#fff" transform="rotate(180 329 327.5)"/></svg></div>
+      <div class="a hl" style="left:0;right:0;top:31mm;text-align:center;font-size:7.1mm">WEBSITES · PRINTING · GIFTS</div>
+      <div class="a" style="left:0;right:0;top:42mm;text-align:center;font-size:5.4mm;font-weight:700;color:#8fc5f6">+ 3D PRINTING</div>
+      <div class="a" style="left:0;right:0;bottom:7mm;text-align:center;font-size:5mm;font-weight:700">Devdha · Dombivli, Mumbai</div>
+    </div>
+    <div class="meta"><div class="sn">Scene 1 · 0–5 s</div><div class="st">Hook: who we are</div>
+      <div class="kv"><div>Text</div><div>"WEBSITES · PRINTING · GIFTS" / "+ 3D PRINTING" / "Devdha · Dombivli, Mumbai"</div><div>Motion</div><div>Logo halves slide together (0.8 s), headline words rise in one by one, "3D PRINTING" fades in last.</div><div>Out</div><div>Wipe left.</div><div>Assets</div><div><b>Me:</b> vector logo. <b>You:</b> confirm shop name/area spelling.</div></div></div>
+  </div>
+  <div class="scene">
+    <div class="frame" style="background:linear-gradient(135deg,#12324F,#1E5B94)">
+      <div class="a hl" style="left:6mm;top:6mm;font-size:8mm;width:70mm">PERSONALISED<br>GIFTS</div>
+      <div class="a" style="left:6mm;top:28mm;width:62mm"><span class="chip">Photo mug ₹249</span><span class="chip">Polaroids from ₹99</span><span class="chip">T-shirt ₹499</span><span class="chip">Frame from ₹199</span></div>
+      <div class="a" style="left:6mm;bottom:5mm;font-size:3.8mm;color:#9fc5ee">Your photo · your name</div>
+      <div class="img" style="left:70mm;top:5mm;width:56mm;height:56mm;background-image:url('../product-images/out/all/216-11oz-photo-mug/216-11oz-photo-mug_plain-white_02-threequarter.jpg')"></div>
+      <div class="img" style="left:93mm;top:36mm;width:34mm;height:34mm;background-image:url('../product-images/out/all/229-polaroid-pack-20-pcs/229-polaroid-pack-20-pcs_20-pack_01-top.jpg')"></div>
+      <div class="img" style="left:60mm;top:42mm;width:30mm;height:28mm;background-image:url('../product-images/out/all/222-round-neck-cotton-t-shirt/222-round-neck-cotton-t-shirt_round-white_01-front.jpg')"></div>
+    </div>
+    <div class="meta"><div class="sn">Scene 2 · 5–12 s</div><div class="st">Personalised gifts</div>
+      <div class="kv"><div>Text</div><div>"PERSONALISED GIFTS" + 4 price chips (from your catalogue) + "Your photo · your name · your design"</div><div>Motion</div><div>Headline rises; chips pop in one every 0.5 s; product photos slide in from the right and settle with a gentle float.</div><div>Out</div><div>Wipe left.</div><div>Assets</div><div><b>Me:</b> renders (shown). <b>You:</b> real photos of finished mug/polaroids/T-shirt if you have them — they replace the renders.</div></div></div>
+  </div>
+  <div class="foot"><span>Devdha · shop-front screen ad · storyboard</span><span>3</span></div>
+</div>
+
+<!-- ============ STORYBOARD 2/4 ============ -->
+<div class="page">
+  <div class="scene">
+    <div class="frame" style="background:linear-gradient(135deg,#0B2238,#12324F)">
+      <div class="a hl" style="left:6mm;top:6mm;font-size:8mm;width:70mm">BUSINESS<br>PRINTING</div>
+      <div class="a" style="left:6mm;top:28mm;width:62mm"><span class="chip">Visiting cards from ₹260</span><span class="chip">Letterheads</span><span class="chip">Envelopes</span><span class="chip">Banners</span></div>
+      <div class="a" style="left:6mm;bottom:5mm;font-size:3.8mm;color:#9fc5ee">Ready in 3–7 working days</div>
+      <div class="img" style="left:68mm;top:4mm;width:58mm;height:58mm;background-image:url('../product-images/out/all/239-visiting-cards-choose-paper-finish-and-quantity/239-visiting-cards-choose-paper-finish-and-quantity_standard_01-stack.jpg')"></div>
+      <div class="img" style="left:88mm;top:40mm;width:38mm;height:30mm;background-image:url('../product-images/out/all/242-flex-vinyl-and-board-printing/242-flex-vinyl-and-board-printing_flex_01-front.jpg')"></div>
+    </div>
+    <div class="meta"><div class="sn">Scene 3 · 12–19 s</div><div class="st">Business printing</div>
+      <div class="kv"><div>Text</div><div>"BUSINESS PRINTING" + chips + "Ready in 3–7 working days" (your catalogue's production time)</div><div>Motion</div><div>Card stack slides up and a second item overlaps; the "from ₹260" chip scales once to draw the eye.</div><div>Out</div><div>Wipe left.</div><div>Assets</div><div><b>Me:</b> renders. <b>You:</b> photo of a real printed card set / banner (best), plus confirm turnaround wording.</div></div></div>
+  </div>
+  <div class="scene">
+    <div class="frame" style="background:linear-gradient(135deg,#12324F,#1E5B94)">
+      <div class="a hl" style="left:6mm;top:5mm;font-size:7.2mm;width:58mm">LOGO ·<br>WEBSITE ·<br>SOCIAL</div>
+      <div class="a" style="left:6mm;top:33mm;width:60mm"><span class="chip" style="font-size:4.4mm">Logo ₹499</span><span class="chip" style="font-size:4.4mm">Website from ₹1,999</span><span class="chip" style="font-size:4.4mm">Social post ₹99</span></div>
+      <div class="a" style="left:6mm;bottom:5mm;font-size:3.8mm;color:#9fc5ee">Get your business online</div>
+      <div class="img" style="left:66mm;top:4mm;width:60mm;height:60mm;background-image:url('../product-images/out/all/194-multi-page-website-custom/194-multi-page-website-custom_digital-mockup_01-mockup.jpg')"></div>
+    </div>
+    <div class="meta"><div class="sn">Scene 4 · 19–26 s</div><div class="st">Logo · website · social media</div>
+      <div class="kv"><div>Text</div><div>"LOGO · WEBSITE · SOCIAL" + "Logo ₹499 · Website from ₹1,999 · Social post ₹99" + "Get your business online"</div><div>Motion</div><div>Laptop mock-up scales in; the screen content scrolls once; the three chips pop in sequence.</div><div>Out</div><div>Wipe left.</div><div>Assets</div><div><b>Me:</b> mock-ups (shown). <b>You:</b> 1–2 real website screenshots you built, if you want them shown instead.</div></div></div>
+  </div>
+  <div class="foot"><span>Devdha · shop-front screen ad · storyboard</span><span>4</span></div>
+</div>
+
+<!-- ============ STORYBOARD 3/4 ============ -->
+<div class="page">
+  <div class="scene">
+    <div class="frame" style="background:linear-gradient(135deg,#0B2238,#1E5B94)">
+      <div class="a hl" style="left:6mm;top:6mm;font-size:8mm;width:60mm">3D PRINTING</div>
+      <div class="a hl" style="left:6mm;top:17mm;font-size:5.6mm;color:#8fc5f6;width:60mm">Send your file.<br>We print it.</div>
+      <div class="a" style="left:6mm;top:40mm;width:58mm"><span class="chip">Models</span><span class="chip">Prototypes</span><span class="chip">Custom parts</span></div>
+      <div class="a" style="left:6mm;bottom:5mm;font-size:3.8mm;color:#9fc5ee">PLA · PETG · ABS · TPU</div>
+      <div class="need" style="left:66mm;top:5mm;width:60mm;height:64mm">PHOTO / VIDEO NEEDED<br>your 3D printer running, or a finished printed part</div>
+    </div>
+    <div class="meta"><div class="sn">Scene 5 · 26–32 s</div><div class="st">3D printing</div>
+      <div class="kv"><div>Text</div><div>"3D PRINTING" / "Send your file. We print it." + 3 chips + materials from your website (PLA, PETG, ABS, TPU)</div><div>Motion</div><div>Real clip or photo with a slow zoom; text slides in over a dark gradient.</div><div>Out</div><div>Wipe left.</div><div>Assets</div><div><b>You (needed):</b> a 6–10 s clip of the printer running + 2–3 photos of finished prints. I have nothing real for this scene yet.</div></div></div>
+  </div>
+  <div class="scene">
+    <div class="frame" style="background:#12324F">
+      <div class="a hl" style="left:0;right:0;top:6mm;text-align:center;font-size:7.4mm">HOW IT WORKS</div>
+      <div class="a" style="left:10mm;top:24mm;width:34mm;text-align:center"><div style="width:20mm;height:20mm;margin:0 auto;border-radius:50%;background:#6FB1F0;color:#0B2238;font-size:10mm;font-weight:800;line-height:20mm">1</div><div class="hl" style="font-size:6mm;margin-top:3mm">SHARE<br>YOUR IDEA</div></div>
+      <div class="a" style="left:49mm;top:24mm;width:34mm;text-align:center"><div style="width:20mm;height:20mm;margin:0 auto;border-radius:50%;background:#6FB1F0;color:#0B2238;font-size:10mm;font-weight:800;line-height:20mm">2</div><div class="hl" style="font-size:6mm;margin-top:3mm">WE<br>DESIGN IT</div></div>
+      <div class="a" style="left:88mm;top:24mm;width:34mm;text-align:center"><div style="width:20mm;height:20mm;margin:0 auto;border-radius:50%;background:#6FB1F0;color:#0B2238;font-size:10mm;font-weight:800;line-height:20mm">3</div><div class="hl" style="font-size:6mm;margin-top:3mm">WE<br>MAKE IT</div></div>
+      <div class="a" style="left:32mm;top:34mm;width:20mm;border-top:.8mm dashed #6FB1F0"></div><div class="a" style="left:71mm;top:34mm;width:20mm;border-top:.8mm dashed #6FB1F0"></div>
+      <div class="a" style="left:0;right:0;bottom:5mm;text-align:center;font-size:4mm;color:#9fc5ee">Digital delivery or pick-up from our shop</div>
+    </div>
+    <div class="meta"><div class="sn">Scene 6 · 32–38 s</div><div class="st">How it works</div>
+      <div class="kv"><div>Text</div><div>"HOW IT WORKS" · "1 SHARE YOUR IDEA · 2 WE DESIGN IT · 3 WE MAKE IT" · "Digital delivery or pick-up from our shop"</div><div>Motion</div><div>Steps appear one by one with the dashed line drawing between them.</div><div>Out</div><div>Wipe left.</div><div>Assets</div><div><b>Me:</b> everything. <b>You:</b> confirm "pick-up from our shop" and whether you deliver.</div></div></div>
+  </div>
+  <div class="foot"><span>Devdha · shop-front screen ad · storyboard</span><span>5</span></div>
+</div>
+
+<!-- ============ STORYBOARD 4/4 ============ -->
+<div class="page">
+  <div class="scene">
+    <div class="frame" style="background:linear-gradient(135deg,#12324F,#0B2238)">
+      <div class="a hl" style="left:6mm;top:5mm;font-size:6.8mm">OUR WORK</div>
+      <div class="a" style="left:6mm;top:15mm;font-size:4mm;color:#9fc5ee">Built for local businesses</div>
+      <div class="need" style="left:6mm;top:25mm;width:38mm;height:36mm">SCREENSHOT<br>client 1</div>
+      <div class="need" style="left:47mm;top:25mm;width:38mm;height:36mm">SCREENSHOT<br>client 2</div>
+      <div class="need" style="left:88mm;top:25mm;width:38mm;height:36mm">SCREENSHOT<br>client 3</div>
+      <div class="a" style="left:6mm;right:6mm;bottom:4mm;font-size:3.6mm;color:#cfe3f8;display:flex;justify-content:space-between"><span>Name · what we built</span><span>Name · what we built</span><span>Name · what we built</span></div>
+    </div>
+    <div class="meta"><div class="sn">Scene 7 · 38–44 s</div><div class="st">Our work</div>
+      <div class="kv"><div>Text</div><div>"OUR WORK" · "Built for local businesses" + 3 project names with a few words each</div><div>Motion</div><div>Three cards rise in turn, each holds 1.5 s.</div><div>Out</div><div>Wipe left.</div><div>Assets</div><div><b>You (needed):</b> which 3 projects to feature (your site lists AtWork India, AARAMBAN, SH Gifting, AVS Protective Services, Nexa Car Care, FINOX, Culturist), <b>written OK from each client</b> to show their name and screen, and a screenshot of each.</div></div></div>
+  </div>
+  <div class="scene">
+    <div class="frame" style="background:radial-gradient(circle at 70% 30%,#2b6fb3,#0B2238)">
+      <div class="a" style="left:0;right:0;top:6mm;text-align:center;font-size:4.6mm;font-weight:800;letter-spacing:.3em;color:#8fc5f6">THIS WEEK</div>
+      <div class="a hl" style="left:6mm;right:6mm;top:17mm;text-align:center;font-size:14mm;color:#fff">[YOUR OFFER]</div>
+      <div class="a" style="left:0;right:0;top:44mm;text-align:center"><span class="chip" style="font-size:6mm;background:#6FB1F0;color:#0B2238">[from ₹ / % off]</span></div>
+      <div class="a" style="left:0;right:0;bottom:6mm;text-align:center;font-size:5mm;font-weight:700">Valid till [date] · Ask at the counter</div>
+    </div>
+    <div class="meta"><div class="sn">Scene 8 · 44–49 s</div><div class="st">This week's offer (editable slot)</div>
+      <div class="kv"><div>Text</div><div>Headline ≤ 5 words, one price or %, an end date. Example form: "FREE DESIGN WITH ANY PRINT ORDER · Valid till 30 Nov".</div><div>Motion</div><div>Big number scales in with a soft glow.</div><div>Out</div><div>Wipe left.</div><div>Assets</div><div><b>You:</b> the offer wording and end date each month. I keep it in one settings file, so updates are quick.</div></div></div>
+  </div>
+  <div class="foot"><span>Devdha · shop-front screen ad · storyboard</span><span>6</span></div>
+</div>
+
+<!-- ============ SCENE 9 + 10 ============ -->
+<div class="page">
+  <div class="scene">
+    <div class="frame" style="background:#12324F">
+      <div class="a hl" style="left:6mm;top:5mm;font-size:7.6mm">VISIT US · SCAN TO ORDER</div>
+      <div class="a" style="left:6mm;top:18mm;width:40mm;height:40mm;background:#fff;border-radius:2mm;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 21 21" width="34mm" height="34mm"><rect width="21" height="21" fill="#fff"/><g fill="#0B2238"><rect x="1" y="1" width="7" height="7"/><rect x="13" y="1" width="7" height="7"/><rect x="1" y="13" width="7" height="7"/><rect x="2" y="2" width="5" height="5" fill="#fff"/><rect x="14" y="2" width="5" height="5" fill="#fff"/><rect x="2" y="14" width="5" height="5" fill="#fff"/><rect x="3" y="3" width="3" height="3"/><rect x="15" y="3" width="3" height="3"/><rect x="3" y="15" width="3" height="3"/><rect x="10" y="2" width="2" height="2"/><rect x="9" y="9" width="3" height="3"/><rect x="14" y="10" width="2" height="2"/><rect x="11" y="14" width="3" height="3"/><rect x="16" y="15" width="3" height="3"/><rect x="9" y="17" width="2" height="2"/></g></svg></div>
+      <div class="a" style="left:52mm;top:18mm;font-size:4.9mm;font-weight:700;line-height:1.5"><div style="color:#8fc5f6;font-size:3.6mm;letter-spacing:.2em">CALL / WHATSAPP</div>+91 [phone number]<div style="color:#8fc5f6;font-size:3.6mm;letter-spacing:.2em;margin-top:1.5mm">FIND US</div>[Shop no., building, area]<br>Dombivli, Mumbai<div style="color:#8fc5f6;font-size:3.6mm;letter-spacing:.2em;margin-top:1.5mm">OPEN</div>[Mon–Sat, hh–hh]</div>
+      <div class="a" style="left:6mm;bottom:4mm;font-size:4mm;color:#cfe3f8">devdha.in · [Instagram handle]</div>
+    </div>
+    <div class="meta"><div class="sn">Scene 9 · 49–57 s</div><div class="st">Visit us · scan to order</div>
+      <div class="kv"><div>Text</div><div>"VISIT US · SCAN TO ORDER" + QR + phone/WhatsApp + address + hours + website/Instagram</div><div>Motion</div><div>QR appears first and holds the full 8 s; contact lines fade in after 1 s.</div><div>Out</div><div>Cross-fade to loop-back.</div><div>Assets</div><div><b>You (needed):</b> phone/WhatsApp, full address + landmark, hours, and what the QR should open (devdha.in, a WhatsApp chat link, or Google Maps). I generate the QR and test-scan it.</div></div></div>
+  </div>
+  <div class="scene" style="margin-bottom:0">
+    <div class="frame" style="background:radial-gradient(circle at 50% 40%,#24598f,#0B2238)">
+      <div class="a" style="left:0;right:0;top:7mm;text-align:center"><svg style="margin:0 auto" viewBox="170 80 320 495" height="19mm" width="12.3mm"><path d="M243 360 L243 208.75 A118.75 118.75 0 0 1 480 208.75 L480 445 L437 408 L437 208.75 A74.75 74.75 0 0 0 287 208.75 L287 325 Z" fill="#fff"/><path d="M243 360 L243 208.75 A118.75 118.75 0 0 1 480 208.75 L480 445 L437 408 L437 208.75 A74.75 74.75 0 0 0 287 208.75 L287 325 Z" fill="#fff" transform="rotate(180 329 327.5)"/></svg></div>
+      <div class="a hl" style="left:0;right:0;top:31mm;text-align:center;font-size:7.1mm">WEBSITES · PRINTING · GIFTS</div>
+      <div class="a" style="left:0;right:0;top:42mm;text-align:center;font-size:5.4mm;font-weight:700;color:#8fc5f6">+ 3D PRINTING</div>
+      <div class="a" style="left:0;right:0;bottom:7mm;text-align:center;font-size:5mm;font-weight:700">Devdha · Dombivli, Mumbai</div>
+    </div>
+    <div class="meta"><div class="sn">Scene 10 · 57–60 s</div><div class="st">Loop-back</div>
+      <div class="kv"><div>Text</div><div>Identical to scene 1's final frame, so the loop restarts without a visible jump.</div><div>Motion</div><div>Hold; only the 0.6 s wipe moves.</div></div></div>
+  </div>
+  <div class="foot"><span>Devdha · shop-front screen ad · storyboard</span><span>7</span></div>
+</div>
+
+<!-- ============ RESOURCES ============ -->
+<div class="page">
+  <h2>What I need from you</h2>
+  <table>
+    <tr><th style="width:42mm">Item</th><th style="width:20mm">Priority</th><th>What exactly</th><th style="width:60mm">Format / how</th></tr>
+    <tr><td><b>Screen details</b></td><td><span class="tag must">MUST</span></td><td>Landscape or upright? Exact size/model, native resolution (usually 1920×1080), what inputs/USB it has.</td><td>Type it, or send a photo of the model sticker.</td></tr>
+    <tr><td><b>Playback device</b></td><td><span class="tag must">MUST</span></td><td>USB stick straight into the TV, Android TV box / Fire Stick, or a mini PC/laptop? Does it loop and auto-start after power-off?</td><td>Name of the device.</td></tr>
+    <tr><td><b>Shop details</b></td><td><span class="tag must">MUST</span></td><td>Shop name spelling, full address + landmark, phone / WhatsApp, opening hours, website, Instagram handle.</td><td>Typed text.</td></tr>
+    <tr><td><b>QR target</b></td><td><span class="tag must">MUST</span></td><td>What should scanning open: devdha.in, a WhatsApp chat link, or Google Maps?</td><td>The exact link.</td></tr>
+    <tr><td><b>Offer of the month</b></td><td><span class="tag must">MUST</span></td><td>Offer wording, price or %, end date (or tell me to skip scene 8).</td><td>Typed text.</td></tr>
+    <tr><td><b>Language</b></td><td><span class="tag must">MUST</span></td><td>English only, or add Marathi / Hindi? Give me your preferred wording for the headlines.</td><td>Typed text (I'll check the font).</td></tr>
+    <tr><td><b>Price confirmation</b></td><td><span class="tag must">MUST</span></td><td>OK the "from" prices on screens 2–4, and whether to show "+ GST".</td><td>"Yes" or the corrected list.</td></tr>
+    <tr><td><b>Logo files</b></td><td><span class="tag should">SHOULD</span></td><td>Your original logo, if you have it. I have a vector version redrawn from the image you sent earlier.</td><td>SVG, AI, PDF or PNG ≥ 1000 px.</td></tr>
+    <tr><td><b>Real product photos</b></td><td><span class="tag should">SHOULD</span></td><td>8–12 photos of real finished items: mugs, T-shirts, polaroids, frames, printed cards, banners. They beat the renders.</td><td>JPG from a phone; landscape; plain background; daylight.</td></tr>
+    <tr><td><b>3D printing visuals</b></td><td><span class="tag must">MUST</span></td><td>A 6–10 s clip of your printer running + 2–3 photos of finished prints. Scene 5 has no real content yet.</td><td>MP4 from a phone, landscape, held steady.</td></tr>
+    <tr><td><b>Client permission + screenshots</b></td><td><span class="tag should">SHOULD</span></td><td>Which 3 projects, written OK from each client, and a screenshot or photo of each.</td><td>PNG/JPG; WhatsApp message as permission is fine.</td></tr>
+    <tr><td><b>Photos of the shop</b></td><td><span class="tag nice">NICE</span></td><td>Shop front and counter, and a photo taken from 3–5 m in front of where the screen hangs.</td><td>JPG. It helps me judge glare and text size.</td></tr>
+    <tr><td><b>Brand colours / fonts</b></td><td><span class="tag nice">NICE</span></td><td>Only if different from the navy and sky blue we've been using.</td><td>Hex codes or font names.</td></tr>
+    <tr><td><b>Inspiration</b></td><td><span class="tag nice">NICE</span></td><td>1–2 shop-screen ads you like, and anything you dislike.</td><td>Links or screen recordings.</td></tr>
+  </table>
+  <div class="foot"><span>Devdha · shop-front screen ad · storyboard</span><span>8</span></div>
+</div>
+
+<!-- ============ CAPTURE GUIDE + TIMELINE ============ -->
+<div class="page">
+  <div class="grid2">
+    <div>
+      <h2>How to capture photos &amp; clips (phone is fine)</h2>
+      <h3>Product photos</h3>
+      <ul><li><b>Landscape</b>, phone held level, as close as you can while the product fills 60–70% of the frame.</li><li>Plain background (a white sheet or table), <b>daylight near a window</b>, no flash, no filters.</li><li>Take 3 angles per item: front, slightly angled, close-up of the print.</li><li>Clean the item first; fingerprints and dust show on screen.</li></ul>
+      <h3>3D printer clip</h3>
+      <ul><li>6–10 seconds, <b>landscape</b>, phone on a stack of books or tripod so it doesn't shake.</li><li>Show the nozzle moving, then a finished part held up. Good light, no people's faces unless they agree.</li></ul>
+      <h3>Shop &amp; screen-location photos</h3>
+      <ul><li>One photo of the shop front, one of where the screen will hang, and one <b>from 3–5 m away</b> at normal eye height.</li><li>Tell me if the spot gets direct sun, and at what time.</li></ul>
+      <h3>How to send</h3>
+      <ul><li>Attach files in this chat, or give a shared Google Drive / WhatsApp-to-self link. Send originals, not screenshots.</li></ul>
+    </div>
+    <div>
+      <h2>Timeline &amp; approvals</h2>
+      <table>
+        <tr><th>Step</th><th>What happens</th><th>Who</th></tr>
+        <tr><td>1</td><td>You send the <span class="tag must">MUST</span> items (page 8).</td><td>You</td></tr>
+        <tr><td>2</td><td>I build the animatic: all 10 scenes with your real text, using renders where photos are missing.</td><td>Me</td></tr>
+        <tr><td>3</td><td>You review: wording, prices, order of scenes, anything to cut.</td><td>You</td></tr>
+        <tr><td>4</td><td>I swap in your real photos/clips and finalise motion, then test at 21-inch size.</td><td>Me</td></tr>
+        <tr><td>5</td><td>Final delivery: 1080p MP4 (H.264) + a backup copy. QR test-scanned. A one-page "how to update the offer" note.</td><td>Me</td></tr>
+        <tr><td>6</td><td>You test it on the real screen, at the real spot, in daylight. Tell me what to change.</td><td>You</td></tr>
+      </table>
+      <div class="box" style="margin-top:5mm"><b style="color:var(--navy)">Screen set-up checklist</b>
+        <ul style="margin-top:1.5mm"><li>Brightness at maximum; screen saver and sleep off.</li><li>Autoplay + loop on power-up (test by switching the power off and on).</li><li>Mount in shade or under an awning, angled slightly down to cut glare.</li><li>USB sticks: format FAT32 or exFAT; if FAT32, the file must be under 4 GB (ours will be far smaller).</li></ul></div>
+      <div class="box warn" style="margin-top:4mm"><b>What I won't do:</b> invent offers, prices, client names, awards or customer numbers. Anything on screen comes from your catalogue or from you.</div>
+      <div class="box" style="margin-top:4mm"><b style="color:var(--navy)">Optional extras</b><ul style="margin-top:1.5mm"><li>An <b>upright</b> (1080 × 1920) version of the same loop.</li><li>A 15-second <b>short loop</b> for slow evenings.</li><li>A <b>monthly refresh</b>: send me the new offer and I re-export.</li></ul></div>
+    </div>
+  </div>
+  <div class="foot"><span>Devdha · shop-front screen ad · storyboard</span><span>9</span></div>
+</div>
+
+</body></html>
