@@ -1,0 +1,10 @@
+const {chromium}=require('playwright');const path=require('path');
+(async()=>{const b=await chromium.launch({executablePath:'/opt/pw-browsers/chromium-1194/chrome-linux/chrome',args:['--disable-gpu']});
+const mm=96/25.4;const W=Math.round(240*mm),H=Math.round(200*mm);
+const c=await b.newContext({viewport:{width:W,height:H},deviceScaleFactor:300/96});const p=await c.newPage();
+await p.goto('file://'+path.join(__dirname,'pad.html'));await p.evaluate(()=>document.fonts.ready);await p.waitForTimeout(400);
+await p.screenshot({path:'Devdha-mousepad-print-240x200mm-300dpi.png',clip:{x:0,y:0,width:W,height:H}});
+await p.pdf({path:'Devdha-mousepad-print-240x200mm.pdf',width:'240mm',height:'200mm',printBackground:true});
+await p.evaluate(()=>document.body.classList.add('g'));
+await p.screenshot({path:'Devdha-mousepad-guides-preview.png',clip:{x:0,y:0,width:W,height:H}});
+await b.close();})();

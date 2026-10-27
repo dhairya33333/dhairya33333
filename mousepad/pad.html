@@ -1,0 +1,45 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+@font-face{font-family:P;src:url(poppins-latin-500-normal.woff2);font-weight:500}
+@font-face{font-family:P;src:url(poppins-latin-800-normal.woff2);font-weight:800}
+@page{size:240mm 200mm;margin:0}
+*{margin:0;box-sizing:border-box}
+html,body{width:240mm;height:200mm;background:#0B1B3F}
+.pad{position:relative;width:240mm;height:200mm;overflow:hidden;font-family:P,sans-serif;color:#fff;
+ background:radial-gradient(90% 100% at 18% 12%,#1f4aa8 0,#12307a 35%,#0B1B3F 75%)}
+svg.bgsvg{position:absolute;inset:0;width:100%;height:100%}
+.guide{display:none;position:absolute;inset:0}
+body.g .guide{display:block}
+.guide .trim{position:absolute;left:10mm;top:10mm;right:10mm;bottom:10mm;border:.3mm solid #ff2d55}
+.guide .safe{position:absolute;left:15mm;top:15mm;right:15mm;bottom:15mm;border:.3mm dashed #00d27a}
+.c{position:absolute;left:0;right:0;text-align:center}
+</style></head><body>
+<div class="pad">
+<svg class="bgsvg" viewBox="0 0 240 200" preserveAspectRatio="none">
+ <defs>
+  <pattern id="g" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M10 0H0V10" fill="none" stroke="#fff" stroke-opacity=".06" stroke-width=".2"/></pattern>
+  <linearGradient id="ln" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6F9BFF"/><stop offset="1" stop-color="#2F6BFF"/></linearGradient>
+ </defs>
+ <rect width="240" height="200" fill="url(#g)"/>
+ <g fill="none" stroke="#6F9BFF" stroke-opacity=".25" stroke-width=".35">
+  <circle cx="30" cy="185" r="40"/><circle cx="30" cy="185" r="60"/><circle cx="30" cy="185" r="80"/><circle cx="30" cy="185" r="100"/>
+  <circle cx="215" cy="20" r="30"/><circle cx="215" cy="20" r="48"/><circle cx="215" cy="20" r="66"/>
+ </g>
+ <path d="M-5 150 L95 60 L150 110 L250 20" fill="none" stroke="url(#ln)" stroke-width="1.2" stroke-opacity=".55" stroke-linecap="round" stroke-linejoin="round"/>
+ <g fill="#6F9BFF" fill-opacity=".7"><circle cx="95" cy="60" r="2"/><circle cx="150" cy="110" r="2"/></g>
+ <!-- big logo watermark -->
+ <g transform="translate(120 100) scale(.30) translate(-329 -327.5)" fill="#fff" fill-opacity=".07">
+  <path id="u" d="M243 360 L243 208.75 A118.75 118.75 0 0 1 480 208.75 L480 445 L437 408 L437 208.75 A74.75 74.75 0 0 0 287 208.75 L287 325 Z"/>
+  <path d="M243 360 L243 208.75 A118.75 118.75 0 0 1 480 208.75 L480 445 L437 408 L437 208.75 A74.75 74.75 0 0 0 287 208.75 L287 325 Z" transform="rotate(180 329 327.5)"/>
+ </g>
+ <!-- centre logo -->
+ <g transform="translate(120 82) scale(.075) translate(-329 -327.5)" fill="#fff">
+  <path d="M243 360 L243 208.75 A118.75 118.75 0 0 1 480 208.75 L480 445 L437 408 L437 208.75 A74.75 74.75 0 0 0 287 208.75 L287 325 Z"/>
+  <path d="M243 360 L243 208.75 A118.75 118.75 0 0 1 480 208.75 L480 445 L437 408 L437 208.75 A74.75 74.75 0 0 0 287 208.75 L287 325 Z" transform="rotate(180 329 327.5)"/>
+ </g>
+</svg>
+<div class="c" style="top:100mm;font-size:17mm;font-weight:800;letter-spacing:.3mm">Devdha</div>
+<div class="c" style="top:121mm;font-size:4.2mm;font-weight:500;letter-spacing:1.2mm;color:#8FB1FF">TECH · PRINT · MANUFACTURE</div>
+<div style="position:absolute;left:50%;transform:translateX(-50%);top:134mm;width:40mm;height:.6mm;background:#2F6BFF;border-radius:1mm"></div>
+<div class="c" style="top:171mm;font-size:5mm;font-weight:800;color:#CFE0FF;letter-spacing:.4mm">devdha.in</div>
+<div class="guide"><div class="trim"></div><div class="safe"></div></div>
+</div></body></html>
