@@ -15,7 +15,7 @@ canvas{position:absolute;left:0;top:0}#cP{mix-blend-mode:multiply}#cF{mix-blend-
 #edges div{position:absolute;background:#FFD66B;opacity:0;border-radius:6px;box-shadow:0 0 50px 18px #FFD66Baa}
 #arr{position:absolute;opacity:0;width:100px;height:100px;filter:drop-shadow(0 0 18px #FFD66B)}#arr svg{width:100%;height:100%}
 #lbl{position:absolute;opacity:0;font-weight:700;font-size:40px;color:#FFE3A0;text-align:center;text-shadow:0 0 24px #FFB347aa;white-space:nowrap}
-#vq{position:absolute;left:1530px;top:210px;width:300px;height:300px;background:#fff;border-radius:26px;padding:24px;opacity:0;box-shadow:0 0 70px #9ec0ff88}
+#vq{position:absolute;left:1560px;top:200px;width:280px;height:280px;background:#fff;border-radius:26px;padding:24px;opacity:0;box-shadow:0 0 70px #9ec0ff88}
 </style></head><body>
 <canvas id="cA" width="1920" height="1080"></canvas><canvas id="cP" width="1920" height="1080"></canvas>
 <div id="ui"></div><div id="vq"></div>
@@ -87,7 +87,7 @@ mk('idea',`<svg style="position:absolute;left:1080px;top:150px;width:360px;heigh
 mk('drop',T('w1t',X.w1,960,120,100));
 mk('shop','');mk('door','');
 mk('cta','<div style="position:absolute;left:300px;top:200px;width:1400px;height:400px;border-radius:34px;background:rgba(2,12,40,.62);backdrop-filter:blur(10px);box-shadow:0 0 80px rgba(120,160,255,.25)"></div>'+T('e1',X.e1,1000,250,130)+T('e2',X.e2,1000,420,104,'#FFE3A0'));
-mk('visit',`<div class="glass" style="left:700px;top:130px;width:1160px;height:760px"></div>`+T('v1',X.v1,760,170,120,'#fff','left',800)+T('v2','+91 81047 17735',760,320,84,'#FFE3A0','left')+T('v3',X.a1,760,460,46,'#fff','left',500)+T('v4',X.a2,760,520,46,'#fff','left',500)+T('v4b',X.a3,760,580,46,'#fff','left',500)+T('v5',X.hrs,760,690,54,'#BFD2FF','left',600)+T('v6','devdha.in',760,770,110,'#fff','left',800)+T('v7',X.scan,1690,640,34,'#BFD2FF','center',600));
+mk('visit',`<div class="glass" style="left:700px;top:130px;width:1160px;height:760px"></div>`+T('v1',X.v1,760,170,120,'#fff','left',800)+T('v2','+91 81047 17735',760,320,84,'#FFE3A0','left')+T('v3',X.a1,760,460,42,'#fff','left',500)+T('v4',X.a2,760,520,42,'#fff','left',500)+T('v4b',X.a3,760,580,42,'#fff','left',500)+T('v5',X.hrs,760,690,54,'#BFD2FF','left',600)+T('v6','devdha.in',760,770,110,'#fff','left',800)+T('v7',X.scan,1700,640,32,'#BFD2FF','center',600));
 mk('end',`<svg id="lg" style="position:absolute;left:760px;top:140px" viewBox="170 80 320 495" width="400" height="620"><path id="n_a" d="${LT}" fill="#fff" style="filter:drop-shadow(0 0 28px #9ec0ffcc)"/><path id="n_b" d="${LT}" fill="#fff" transform="rotate(180 329 327.5)" style="filter:drop-shadow(0 0 28px #9ec0ffcc)"/></svg>`+T('n1','Devdha',960,720,170,'#fff','center',800)+T('n2',X.tag,960,910,48,'#9FBEFF','center',500)+T('n3','devdha.in',960,975,60,'#fff','center',700));
 fetch('qr.svg').then(r=>r.text()).then(t=>{ID('vq').innerHTML=t.replace('<svg ','<svg viewBox="0 0 29 29" style="width:100%;height:100%" ');window.QR=1}).catch(()=>{window.QR=1});
 const cA=ID('cA').getContext('2d'),cP=ID('cP').getContext('2d'),cF=ID('cF').getContext('2d'),cV=ID('cV').getContext('2d');const GR=makeGrain();
