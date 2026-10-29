@@ -3,7 +3,10 @@
 @font-face{font-family:P;src:url(poppins-latin-500-normal.woff2);font-weight:500}
 @font-face{font-family:P;src:url(poppins-latin-700-normal.woff2);font-weight:700}
 @font-face{font-family:P;src:url(poppins-latin-800-normal.woff2);font-weight:800}
-*{margin:0;box-sizing:border-box}html,body{width:1920px;height:1080px;overflow:hidden;background:#000;font-family:P,sans-serif}
+@font-face{font-family:D;src:url(noto-sans-devanagari-devanagari-500-normal.woff2);font-weight:500}
+@font-face{font-family:D;src:url(noto-sans-devanagari-devanagari-700-normal.woff2);font-weight:700}
+@font-face{font-family:D;src:url(noto-sans-devanagari-devanagari-800-normal.woff2);font-weight:800}
+*{margin:0;box-sizing:border-box}html,body{width:1920px;height:1080px;overflow:hidden;background:#000;font-family:P,D,sans-serif}
 canvas{position:absolute;left:0;top:0}#cP{mix-blend-mode:multiply}#cF{mix-blend-mode:screen}
 #ui{position:absolute;inset:0}.sc{position:absolute;inset:0;display:none}
 .t{position:absolute;color:#fff;font-weight:700;line-height:1.15;text-shadow:0 0 22px #9ec0ffcc,0 0 60px #4d7dff66;opacity:0;white-space:nowrap}
@@ -56,30 +59,36 @@ function route(t){t=Math.max(0,Math.min(74.99,t));
 const TEEP='M-120 -120 l80 -28 q40 36 80 0 l80 28 l56 88 l-72 36 l-24 -40 v184 h-160 v-184 l-24 40 l-72 -36Z';
 const tp=document.createElementNS('http://www.w3.org/2000/svg','path');tp.setAttribute('d',TEEP);const TPL=tp.getTotalLength();const TS=2.2,TX=960,TY=600;
 const sparkPath=t=>route(t);
+const LANG=new URLSearchParams(location.search).get('lang')||'en';
+const TXT={
+en:{psst:'psst… come closer',h1:'got an',h2:'idea?',h3:'is this just',h4:'a screen?',web:'websites',app:'apps',vid:'videos',x1:'but some ideas',x2:'need hands.',lt:'T-shirts',lm:'mugs',l3:'3D prints',c1a:'name',c1b:'anything.',words:['stickers','frames','keychains','3D prints','tees','banners','mugs'],c2:"we'll make it.",c3:"what's your idea?",w1:'follow the spark',e1:'Bring your idea.',e2:"We'll take it from here.",v1:'visit us',a1:'Vastu Shop No. 12, Lodha Heritage,',a2:'Near Hanuman Mandir, Dombivli,',a3:'Maharashtra 421201',hrs:'Mon–Sat · 10 AM – 7 PM',scan:'scan to order',tag:'TECH · PRINT · MANUFACTURE',zl:{T:'look up',R:'look right',B:'look down'}},
+hi:{psst:'सुनो… ज़रा पास आओ',h1:'आइडिया',h2:'है?',h3:'क्या ये सिर्फ़',h4:'एक स्क्रीन है?',web:'वेबसाइट',app:'ऐप',vid:'वीडियो',x1:'पर कुछ आइडिया को',x2:'हाथ चाहिए।',lt:'टी-शर्ट',lm:'मग',l3:'3D प्रिंट',c1a:'कुछ भी',c1b:'बताइए।',words:['स्टिकर','फ्रेम','कीचेन','3D प्रिंट','टी-शर्ट','बैनर','मग'],c2:'हम बनाएँगे।',c3:'आपका आइडिया क्या है?',w1:'चिंगारी के पीछे आइए',e1:'अपना आइडिया लाइए।',e2:'आगे हम संभालेंगे।',v1:'पधारिए',a1:'वास्तु दुकान नं. 12, लोढ़ा हेरिटेज,',a2:'हनुमान मंदिर के पास, डोंबिवली,',a3:'महाराष्ट्र 421201',hrs:'सोमवार–शनिवार · सुबह 10 – शाम 7',scan:'स्कैन करके ऑर्डर करें',tag:'टेक्नोलॉजी · प्रिंटिंग · मैन्युफैक्चरिंग',zl:{T:'ऊपर देखिए',R:'दाएँ देखिए',B:'नीचे देखिए'}},
+mr:{psst:'अरे… जवळ ये',h1:'कल्पना',h2:'आहे का?',h3:'हा फक्त',h4:'स्क्रीन आहे का?',web:'वेबसाइट',app:'ॲप',vid:'व्हिडिओ',x1:'पण काही कल्पनांना',x2:'हात हवेत.',lt:'टी-शर्ट',lm:'मग',l3:'3D प्रिंट',c1a:'काहीही',c1b:'सांगा.',words:['स्टिकर','फ्रेम','कीचेन','3D प्रिंट','टी-शर्ट','बॅनर','मग'],c2:'आम्ही बनवू.',c3:'तुमची कल्पना काय आहे?',w1:'ठिणगीमागे या',e1:'तुमची कल्पना आणा.',e2:'पुढचं आम्ही सांभाळू.',v1:'भेट द्या',a1:'वास्तू दुकान क्र. 12, लोढा हेरिटेज,',a2:'हनुमान मंदिराजवळ, डोंबिवली,',a3:'महाराष्ट्र 421201',hrs:'सोमवार–शनिवार · सकाळी 10 – संध्याकाळी 7',scan:'स्कॅन करून ऑर्डर करा',tag:'टेक्नॉलॉजी · प्रिंटिंग · मॅन्युफॅक्चरिंग',zl:{T:'वर पाहा',R:'उजवीकडे पाहा',B:'खाली पाहा'}}};
+const X=TXT[LANG];
 /* ---------- text + ui ---------- */
 const UI=ID('ui');const SC={};const SEQ=[['hook',0,8],['web',8,13],['app',13,17.5],['vid',17.5,22],['hands',22,25],['tee',25,28.5],['mug',28.5,32],['d3',32,36],['chal',36,42],['shrug',42,45],['idea',45,48],['drop',48,52],['shop',52,56],['door',56,59],['cta',59,64],['visit',64,72],['end',72,75]];
 function mk(k,html){const d=document.createElement('div');d.className='sc';d.id='sc_'+k;d.innerHTML=html;UI.appendChild(d);SC[k]=d}
 const T=(id,txt,x,y,sz,col='#fff',al='center',w=700)=>`<div class="t" id="${id}" style="left:${x}px;top:${y}px;font-size:${sz}px;color:${col};font-weight:${w};${al==='center'?'transform:translateX(-50%);':''}">${txt}</div>`;
-mk('hook',T('h_ps','psst… come closer',0,0,38,'#FFE3A0','left',500)+T('h1','got an',960,330,150)+T('h2','idea?',960,520,190,'#FFE3A0')+T('h3','is this just',960,330,100)+T('h4','a screen?',960,450,130));
+mk('hook',T('h_ps',X.psst,0,0,38,'#FFE3A0','left',500)+T('h1',X.h1,960,330,150)+T('h2',X.h2,960,520,190,'#FFE3A0')+T('h3',X.h3,960,330,100)+T('h4',X.h4,960,450,130));
 const browser=`<div class="glass" id="w_p" style="left:900px;top:170px;width:880px;height:640px;transform:perspective(1800px) rotateY(-9deg) rotateX(3deg)"><div style="height:60px;display:flex;align-items:center;gap:10px;padding:0 24px;border-bottom:1px solid rgba(255,255,255,.2)"><i style="width:14px;height:14px;border-radius:50%;background:#FF6B5B"></i><i style="width:14px;height:14px;border-radius:50%;background:#FFD66B"></i><i style="width:14px;height:14px;border-radius:50%;background:#4CD6A0"></i><div id="w_url" style="margin-left:18px;flex:1;height:34px;border-radius:17px;background:rgba(255,255,255,.14);color:#fff;font-size:22px;padding:0 18px;line-height:34px;font-weight:500"></div></div><div class="ig" id="w_h" style="left:30px;top:90px;width:820px;height:150px"></div>${[0,1,2].map(i=>`<div class="ig w_c" style="left:${30+i*280}px;top:268px;width:260px;height:210px"></div>`).join('')}<div class="ig" id="w_b" style="left:30px;top:510px;width:240px;height:70px;border-radius:35px"></div></div>`;
-mk('web',T('w_t','websites',110,420,120,'#fff','left')+browser);
+mk('web',T('w_t',X.web,110,420,120,'#fff','left')+browser);
 const phone=`<div class="glass" id="a_p" style="left:1060px;top:100px;width:440px;height:860px;border-radius:64px;transform:perspective(1800px) rotateY(-10deg) rotateX(2deg)">${[0,1,2,3,4].map(i=>`<div class="ig a_r" style="left:26px;top:${60+i*150}px;width:388px;height:122px;border-radius:26px"></div>`).join('')}</div>`;
-mk('app',T('a_t','apps',110,420,120,'#fff','left')+phone);
+mk('app',T('a_t',X.app,110,420,120,'#fff','left')+phone);
 const vid=`<div class="glass" id="v_p" style="left:260px;top:260px;width:1400px;height:640px;transform:perspective(2200px) rotateX(5deg)"><div class="ig" id="v_pv" style="left:36px;top:36px;width:560px;height:320px"></div>${[0,1,2,3,4,5,6].map(i=>`<div class="ig v_k" style="left:${36+i*185}px;top:${400+(i%2)*74}px;width:${158+(i%3)*14}px;height:50px;border-radius:10px"></div>`).join('')}<div id="v_h" style="position:absolute;left:36px;top:380px;width:5px;height:220px;background:#FFD66B;box-shadow:0 0 22px #FFD66B"></div></div>`;
-mk('vid',T('v_t','videos',110,130,120,'#fff','left')+vid);
-mk('hands',T('x1','but some ideas',110,420,100,'#fff','left')+T('x2','need hands.',110,540,140,'#FFE3A0','left'));
-mk('tee',T('te_l','T-shirts',110,90,56,'#fff','left'));
-mk('mug',T('mu_l','mugs',110,90,56,'#fff','left'));
-mk('d3',T('d3_l','3D prints',110,90,56,'#fff','left'));
-const words=['stickers','frames','keychains','3D prints','tees','banners','mugs'];
-mk('chal',T('c1a','name',110,400,100,'#BFD2FF','left',500)+T('c1b','anything.',110,500,150,'#fff','left')+`<div class="glass" style="left:1100px;top:190px;width:640px;height:700px;border-radius:36px;overflow:hidden"><div id="c1w">${words.map((w,i)=>`<div style="position:absolute;left:0;width:640px;top:${110+i*150}px;text-align:center;font-size:72px;font-weight:700;color:${w==='mugs'?'#FFE3A0':'rgba(255,255,255,.7)'}${w==='mugs'?';text-shadow:0 0 30px #FFB347':''}">${w}</div>`).join('')}</div><div style="position:absolute;left:20px;top:290px;width:600px;height:120px;border:3px solid rgba(255,214,107,.8);border-radius:24px"></div></div>`);
-mk('shrug',T('c2t',"we'll make it.",1220,460,110));
-mk('idea',`<svg style="position:absolute;left:1080px;top:150px;width:360px;height:420px" viewBox="0 0 360 420"><path id="bulb" d="M180 30 q-110 0 -110 110 q0 70 60 112 v52 h100 v-52 q60 -42 60 -112 q0 -110 -110 -110Z M130 330 h100 M142 362 h76" fill="none" stroke="#FFE3A0" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" style="filter:drop-shadow(0 0 14px #FFB347)"/></svg>`+T('c3t',"what's your idea?",960,860,100));
-mk('drop',T('w1t','follow the spark',960,120,100));
+mk('vid',T('v_t',X.vid,110,130,120,'#fff','left')+vid);
+mk('hands',T('x1',X.x1,110,420,100,'#fff','left')+T('x2',X.x2,110,540,140,'#FFE3A0','left'));
+mk('tee',T('te_l',X.lt,110,90,56,'#fff','left'));
+mk('mug',T('mu_l',X.lm,110,90,56,'#fff','left'));
+mk('d3',T('d3_l',X.l3,110,90,56,'#fff','left'));
+const words=X.words;
+mk('chal',T('c1a',X.c1a,110,400,100,'#BFD2FF','left',500)+T('c1b',X.c1b,110,500,150,'#fff','left')+`<div class="glass" style="left:1100px;top:190px;width:640px;height:700px;border-radius:36px;overflow:hidden"><div id="c1w">${words.map((w,i)=>`<div style="position:absolute;left:0;width:640px;top:${110+i*150}px;text-align:center;font-size:72px;font-weight:700;color:${w===words[6]?'#FFE3A0':'rgba(255,255,255,.7)'}${w===words[6]?';text-shadow:0 0 30px #FFB347':''}">${w}</div>`).join('')}</div><div style="position:absolute;left:20px;top:290px;width:600px;height:120px;border:3px solid rgba(255,214,107,.8);border-radius:24px"></div></div>`);
+mk('shrug',T('c2t',X.c2,1220,460,110));
+mk('idea',`<svg style="position:absolute;left:1080px;top:150px;width:360px;height:420px" viewBox="0 0 360 420"><path id="bulb" d="M180 30 q-110 0 -110 110 q0 70 60 112 v52 h100 v-52 q60 -42 60 -112 q0 -110 -110 -110Z M130 330 h100 M142 362 h76" fill="none" stroke="#FFE3A0" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" style="filter:drop-shadow(0 0 14px #FFB347)"/></svg>`+T('c3t',X.c3,960,860,100));
+mk('drop',T('w1t',X.w1,960,120,100));
 mk('shop','');mk('door','');
-mk('cta','<div style="position:absolute;left:300px;top:200px;width:1400px;height:400px;border-radius:34px;background:rgba(2,12,40,.62);backdrop-filter:blur(10px);box-shadow:0 0 80px rgba(120,160,255,.25)"></div>'+T('e1','Bring your idea.',1000,250,130)+T('e2',"We'll take it from here.",1000,420,104,'#FFE3A0'));
-mk('visit',`<div class="glass" style="left:700px;top:130px;width:1160px;height:760px"></div>`+T('v1','visit us',760,170,120,'#fff','left',800)+T('v2','+91 81047 17735',760,320,84,'#FFE3A0','left')+T('v3','Shop 12, Vastu, Lodha Heritage,',760,460,46,'#fff','left',500)+T('v4','Near Hanuman Mandir, Dombivli,',760,520,46,'#fff','left',500)+T('v4b','Maharashtra 421201',760,580,46,'#fff','left',500)+T('v5','Mon–Sat · 10 AM – 7 PM',760,690,54,'#BFD2FF','left',600)+T('v6','devdha.in',760,770,110,'#fff','left',800)+T('v7','scan to order',1690,640,36,'#BFD2FF','center',600));
-mk('end',`<svg id="lg" style="position:absolute;left:760px;top:140px" viewBox="170 80 320 495" width="400" height="620"><path id="n_a" d="${LT}" fill="#fff" style="filter:drop-shadow(0 0 28px #9ec0ffcc)"/><path id="n_b" d="${LT}" fill="#fff" transform="rotate(180 329 327.5)" style="filter:drop-shadow(0 0 28px #9ec0ffcc)"/></svg>`+T('n1','Devdha',960,720,170,'#fff','center',800)+T('n2','TECH · PRINT · MANUFACTURE',960,910,48,'#9FBEFF','center',500)+T('n3','devdha.in',960,975,60,'#fff','center',700));
+mk('cta','<div style="position:absolute;left:300px;top:200px;width:1400px;height:400px;border-radius:34px;background:rgba(2,12,40,.62);backdrop-filter:blur(10px);box-shadow:0 0 80px rgba(120,160,255,.25)"></div>'+T('e1',X.e1,1000,250,130)+T('e2',X.e2,1000,420,104,'#FFE3A0'));
+mk('visit',`<div class="glass" style="left:700px;top:130px;width:1160px;height:760px"></div>`+T('v1',X.v1,760,170,120,'#fff','left',800)+T('v2','+91 81047 17735',760,320,84,'#FFE3A0','left')+T('v3',X.a1,760,460,46,'#fff','left',500)+T('v4',X.a2,760,520,46,'#fff','left',500)+T('v4b',X.a3,760,580,46,'#fff','left',500)+T('v5',X.hrs,760,690,54,'#BFD2FF','left',600)+T('v6','devdha.in',760,770,110,'#fff','left',800)+T('v7',X.scan,1690,640,34,'#BFD2FF','center',600));
+mk('end',`<svg id="lg" style="position:absolute;left:760px;top:140px" viewBox="170 80 320 495" width="400" height="620"><path id="n_a" d="${LT}" fill="#fff" style="filter:drop-shadow(0 0 28px #9ec0ffcc)"/><path id="n_b" d="${LT}" fill="#fff" transform="rotate(180 329 327.5)" style="filter:drop-shadow(0 0 28px #9ec0ffcc)"/></svg>`+T('n1','Devdha',960,720,170,'#fff','center',800)+T('n2',X.tag,960,910,48,'#9FBEFF','center',500)+T('n3','devdha.in',960,975,60,'#fff','center',700));
 fetch('qr.svg').then(r=>r.text()).then(t=>{ID('vq').innerHTML=t.replace('<svg ','<svg viewBox="0 0 29 29" style="width:100%;height:100%" ');window.QR=1}).catch(()=>{window.QR=1});
 const cA=ID('cA').getContext('2d'),cP=ID('cP').getContext('2d'),cF=ID('cF').getContext('2d'),cV=ID('cV').getContext('2d');const GR=makeGrain();
 const wordF=(id,sl,a,b)=>{const e=ID(id);const p=eo((sl-a)/.45),q=b?eio((sl-b)/.35):0;e.style.opacity=p*(1-q);e.style.filter=`blur(${(1-p)*14+q*12}px)`};
@@ -103,7 +112,7 @@ function plate(key,sl,dur){
  const s=push(s0,s1);cA.fillStyle='#000';cA.fillRect(0,0,W,H);if(img)cA.drawImage(img,ox-(ox*s)+0,oy-(oy*s),W*s,H*s);
  cA.fillStyle=`rgba(${tint},${dark})`;cA.fillRect(0,0,W,H)}
 /* ---------- arrows ---------- */
-const ZN={tee:'T',mug:'R',d3:'B'},ZL={T:'look up',R:'look right',B:'look down'};
+const ZN={tee:'T',mug:'R',d3:'B'},ZL=X.zl;
 function point(z,pp){['#eT','#eR','#eB'].forEach(e=>$(e).style.opacity=0);$('#arr').style.opacity=0;$('#lbl').style.opacity=0;if(!z||pp<=0)return;const a=$('#arr'),lb=$('#lbl');const pulse=.55+.45*Math.sin(pp*Math.PI*6),bounce=Math.abs(Math.sin(pp*Math.PI*3))*30;lb.textContent=ZL[z];
  if(z==='T'){$('#eT').style.opacity=pulse;a.style.opacity=1;a.style.left='910px';a.style.top=(20+bounce)+'px';a.style.transform='rotate(0)';lb.style.opacity=1;lb.style.left='840px';lb.style.top='140px'}
  if(z==='R'){$('#eR').style.opacity=pulse;a.style.opacity=1;a.style.left=(1790-bounce)+'px';a.style.top='490px';a.style.transform='rotate(90deg)';lb.style.opacity=1;lb.style.left='1580px';lb.style.top='610px'}
@@ -123,7 +132,7 @@ function render(t){t=clamp(t,0,window.TOTAL-.001);window.CURT=t;
   cF2=null}
  const sp=route(t);
  // scene logic
- if(key==='hook'){const ps=ID('h_ps');ps.style.left=(sp.x+90)+'px';ps.style.top=(sp.y-60)+'px';const pt='psst… come closer';ps.textContent=pt.slice(0,Math.floor(clamp((sl-3.1)/.9)*pt.length));ps.style.opacity=sl>3.1&&sl<4.4?1:0;ps.style.transform='none';wordF('h1',sl,4.5,5.9);wordF('h2',sl,5.1,5.9);wordF('h3',sl,6.1,0);wordF('h4',sl,6.5,0);if(sl<6.1){ID('h3').style.opacity=0;ID('h4').style.opacity=0}if(sl>5.95||sl<4.5){ID('h1').style.opacity=0;ID('h2').style.opacity=0}
+ if(key==='hook'){const ps=ID('h_ps');ps.style.left=(sp.x+90)+'px';ps.style.top=(sp.y-60)+'px';const pt=X.psst;ps.textContent=pt.slice(0,Math.floor(clamp((sl-3.1)/.9)*pt.length));ps.style.opacity=sl>3.1&&sl<4.4?1:0;ps.style.transform='none';wordF('h1',sl,4.5,5.9);wordF('h2',sl,5.1,5.9);wordF('h3',sl,6.1,0);wordF('h4',sl,6.5,0);if(sl<6.1){ID('h3').style.opacity=0;ID('h4').style.opacity=0}if(sl>5.95||sl<4.5){ID('h1').style.opacity=0;ID('h2').style.opacity=0}
   const e=ID('eT');if(sl>6.5){e.style.opacity=.5+.4*Math.sin(sl*7)}else if(sl<6.5){e.style.opacity=0}}
  if(key==='web'){wordF('w_t',sl,.3,0);const p=bk(sl/.8),o=eio((sl-4.2)/.7);ID('w_p').style.transform=`perspective(1800px) rotateY(-9deg) rotateX(3deg) translateX(${(1-clamp(p))*1100+o*1200}px)`;ID('w_url').textContent='yourshop.in'.slice(0,Math.floor(clamp((sl-1.0)/1.0)*11));ignite('#w_h',1.7,0,t-8,{x:sp.x,y:sp.y,I:sp.I});ignite('.w_c',2.3,.45,t-8,sp);ignite('#w_b',3.7,0,t-8,sp)}
  if(key==='app'){wordF('a_t',sl,.3,0);const p=bk(sl/.7),o=eio((sl-3.7)/.6);ID('a_p').style.transform=`perspective(1800px) rotateY(-10deg) rotateX(2deg) translateY(${(1-clamp(p))*1000+o*1000}px)`;ignite('.a_r',1.0,.55,t-13,sp)}

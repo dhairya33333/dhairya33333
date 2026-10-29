@@ -2,3 +2,8 @@ frames/
 out/
 plates/
 *.png
+frames_*/
+out/
+*.png
+list.txt
+film_en_backup.html
