@@ -1,0 +1,2 @@
+const {chromium}=require('playwright');const path=require('path');
+(async()=>{const b=await chromium.launch({executablePath:'/opt/pw-browsers/chromium-1194/chrome-linux/chrome',args:['--disable-gpu','--allow-file-access-from-files']});const p=await b.newPage({viewport:{width:1800,height:1300}});await p.goto('file://'+path.join(__dirname,'vsheet.html'));await p.evaluate(()=>document.fonts.ready);await p.screenshot({path:'vsheet.png',fullPage:true});await b.close()})();
