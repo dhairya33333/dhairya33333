@@ -1,0 +1,7 @@
+<!doctype html><html><body style="margin:0;background:#000"><canvas id="cv" width="1920" height="1080"></canvas>
+<script src="fx.js"></script><script>
+const cv=document.getElementById('cv'),c=cv.getContext('2d');const plate=new Image();plate.src='plate_mug.png';const grain=makeGrain();
+const path=t=>({x:960+700*Math.sin(t*.55)+120*Math.sin(t*1.9),y:380+190*Math.sin(t*.83)+60*Math.sin(t*2.3)});
+window.render=t=>{c.globalCompositeOperation='source-over';c.drawImage(plate,0,0);const p=path(t);ambient(c,t,1920,1080,p,[[640,280,1330,820]]);steam(c,t,895,300,1);sparkFX(c,t,path,1);vignette(c,1920,1080,grain,t)};
+window.ready=new Promise(r=>{plate.onload=r});
+</script></body></html>
