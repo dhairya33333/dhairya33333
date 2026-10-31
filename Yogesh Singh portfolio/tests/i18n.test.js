@@ -15,6 +15,7 @@ test('the Hindi dictionary is well formed: every entry is non-empty Devanagari, 
   const run = (s) => PATTERNS.reduce((acc, [re, fn]) => acc ?? (re.test(s) ? s.replace(re, fn) : undefined), undefined);
   assert.equal(run('Hello, Ravi'), 'नमस्ते, Ravi'); assert.equal(run('First 30 min free'), 'पहले 30 मिनट मुफ़्त');
   assert.match(run('You are watching the free preview: the first 30 minutes. When it ends, a one-time payment of ₹299 unlocks the rest of the film.'), /पहले 30 मिनट.*₹299/);
+  assert.equal(run('Watch Dog'), undefined, 'film titles and captions that start with common words are left alone');
   assert.equal(run('Reels (3)'), 'रील (3)'); assert.equal(run('45 min watched of 150'), '45 मिनट देखा (कुल 150)');
 });
 

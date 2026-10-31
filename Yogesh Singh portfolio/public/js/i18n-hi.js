@@ -102,7 +102,6 @@ export const DICT = {
 const dur = (t) => t.replace(/(\d+) minutes?/, '$1 मिनट').replace(/(\d+) seconds?/, '$1 सेकंड');
 export const PATTERNS = [
   [/^Hello, (.+)$/, 'नमस्ते, $1'],
-  [/^Watch (.+)$/, '$1 देखें'],
   [/^First (\d+) min free$/, 'पहले $1 मिनट मुफ़्त'], [/^First (\d+) minutes always free$/, 'पहले $1 मिनट हमेशा मुफ़्त'], [/^▶ Watch the free (\d+) minutes$/, '▶ पहले $1 मिनट मुफ़्त देखें'],
   [/^(₹[\d,.]+) one-time$/, '$1 एक बार'],
   [/^You are watching the free preview: the first (.+?)\. When it ends, a one-time payment of (₹[\d,.]+) unlocks the rest of the film\.$/, (_m, a, b) => `आप मुफ़्त झलक देख रहे हैं: पहले ${dur(a)}। इसके ख़त्म होने पर ${b} का एक बार का भुगतान बाक़ी फ़िल्म अनलॉक कर देता है।`],
@@ -112,7 +111,6 @@ export const PATTERNS = [
   [/^All \((\d+)\)$/, 'सभी ($1)'], [/^Reels \((\d+)\)$/, 'रील ($1)'], [/^Posts \((\d+)\)$/, 'पोस्ट ($1)'],
   [/^(\d+) min watched( of (\d+))?$/, (_m, a, _b, c) => `${a} मिनट देखा${c ? ` (कुल ${c})` : ''}`],
   [/^© (\d{4}) (.+?)\. All rights reserved\.$/, '© $1 $2। सर्वाधिकार सुरक्षित।'], [/^© (.+)$/, '© $1'],
-  [/^Watch (.+) →$/, '$1 देखें →'],
   [/^Email and password ✓\s*·\s*(.+)$/, 'ईमेल और पासवर्ड ✓ · $1'],
   [/^Open photo (\d+)$/, 'तस्वीर $1 खोलें'],
 ];
