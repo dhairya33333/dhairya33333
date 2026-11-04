@@ -33,6 +33,7 @@ Notes: messages are always kept in the Inbox (unread badge). If email is set up 
 | [docs/VIDEO.md](docs/VIDEO.md) | Uploading a 10.8 GB film, FFmpeg/HLS, publishing, capacity |
 | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | VPS sizing, install, backups, restore, update, rollback |
 | [docs/EMAIL.md](docs/EMAIL.md) | Optional email: contact alerts, receipts, forgot-password |
+| [docs/RAILWAY.md](docs/RAILWAY.md) | Always-on client preview on Railway (Dockerfile included) |
 | [docs/GO_LIVE.md](docs/GO_LIVE.md) | Launch checklist |
 | [docs/SECURITY.md](docs/SECURITY.md) | Access policy, what is enforced, honest limitations (no DRM, etc.) |
 
@@ -47,7 +48,7 @@ Without payment keys (and outside production) checkout runs in clearly labelled 
 
 ## Test
 ```bash
-npm test          # 203 automated tests (needs ffmpeg), about 2 minutes, uses temp directories and simulated gateways. No real charges
+npm test          # 205 automated tests (needs ffmpeg), about 2 minutes, uses temp directories and simulated gateways. No real charges
 npm run check     # syntax check of every source file
 npm run verify-data   # payments, refunds and entitlements agree (read-only; run it on the server too)
 ```

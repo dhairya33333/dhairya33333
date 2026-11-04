@@ -72,7 +72,8 @@ export const config = {
   razorpay,
   cashfree,
   // provider name when configured, "demo" locally without keys (simulated, never in production), else "unconfigured"
-  paymentsMode: configured ? provider : (isProd ? 'unconfigured' : 'demo'),
+  // ALLOW_DEMO_PAYMENTS=true is an explicit opt-in for CLIENT PREVIEWS on a public https address: fake purchases, no money moves. Never set it on the live site.
+  paymentsMode: configured ? provider : (isProd && !/^(1|true|yes)$/i.test(env.ALLOW_DEMO_PAYMENTS || '') ? 'unconfigured' : 'demo'),
   rate: { auth: num(env.RATE_LIMIT_AUTH, 30), payments: num(env.RATE_LIMIT_PAYMENTS, 20), api: num(env.RATE_LIMIT_API, 1500), contact: num(env.RATE_LIMIT_CONTACT, 5) },   // requests per 15 min per IP
   limits: {
     maxUploadBytes: num(env.MAX_UPLOAD_BYTES, 16 * GB),   // 10.8 GB source fits with headroom
