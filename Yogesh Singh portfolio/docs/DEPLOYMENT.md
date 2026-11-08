@@ -102,3 +102,9 @@ Only ports 22, 80 and 443 open; SSH keys only (`PasswordAuthentication no` once 
 * **Backups:** `deploy/backup.sh` (03:15 nightly) backs up the database, then, if `BACKUP_REMOTE` is set, copies database, originals and uploads off the server with rsync, and writes `backups/status.json`. A failure raises an alert. Admin → Dashboard → System health shows the result. Test a restore at least once (`docs/DEPLOYMENT.md` restore section).
 * **Alerts:** put `ALERT_WEBHOOK_URL` (Slack/Discord incoming webhook, or an `https://ntfy.sh/your-topic` URL) and/or `ALERT_EMAIL` in `/etc/yogesh-portfolio/env`. `check-site.sh` (every 5 min) alerts once after two failed health checks and again on recovery; `check-disk.sh` (every 30 min) alerts above 85% disk. `setup-vps.sh` installs both cron jobs.
 * **Speed:** `deploy/nginx.conf` now gzips text, serves `/uploads/` with a 30-day immutable cache and sends `/media/` (video) uncompressed and unbuffered. After changing it run `nginx -t && systemctl reload nginx`. Measure pages with `BASE_URL=https://your-site npm run measure-pages`.
+
+## A staging server for client previews
+Same steps as above, with these differences:
+* Use a **subdomain** (for example `preview.yourdomain.com`) or a free name from duckdns.org, pointed at the staging VPS. `setup-vps.sh` adds `www.` to the certificate only if that name exists.
+* After `setup-vps.sh`, add `ALLOW_DEMO_PAYMENTS=true` to `/etc/yogesh-portfolio/env` (and leave the payment keys empty) so clients can click through a fake purchase. **Never set it on the live site.**
+* A 1 to 2 vCPU / 2 GB server is enough for a short test film. Delete the server when the preview is over.

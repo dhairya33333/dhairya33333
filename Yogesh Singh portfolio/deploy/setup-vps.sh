@@ -37,7 +37,9 @@ rm -f /etc/nginx/sites-enabled/default
 nginx -t && systemctl reload nginx
 
 systemctl daemon-reload && systemctl enable --now yogesh-portfolio
-certbot --nginx -d "$DOMAIN" -d "www.$DOMAIN" -m "$EMAIL" --agree-tos --non-interactive --redirect
+# Include www only if it really exists in DNS (a subdomain such as preview.example.com or a DuckDNS name has no www).
+WWW=(); getent hosts "www.$DOMAIN" >/dev/null 2>&1 && WWW=(-d "www.$DOMAIN")
+certbot --nginx -d "$DOMAIN" "${WWW[@]}" -m "$EMAIL" --agree-tos --non-interactive --redirect
 
 # cron: nightly backup (as portfolio) and disk check (as root)
 chmod +x deploy/*.sh
