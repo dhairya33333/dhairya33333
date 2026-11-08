@@ -7,7 +7,8 @@ try { process.loadEnvFile(process.env.ENV_FILE || path.join(ROOT, '.env')); } ca
 
 process.umask(0o077);   // everything this service creates (database, uploads, media) is private to the service user by default
 
-const env = process.env;
+const env = { ...process.env };
+if (!env.SITE_URL && env.RENDER_EXTERNAL_URL) env.SITE_URL = env.RENDER_EXTERNAL_URL;   // Render tells the service its own public address
 const isProd = env.NODE_ENV === 'production';
 const port = Number(env.PORT) || 3000;
 const num = (v, d) => (Number.isFinite(Number(v)) && v !== undefined && v !== '' ? Number(v) : d);

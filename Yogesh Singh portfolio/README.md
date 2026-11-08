@@ -34,6 +34,7 @@ Notes: messages are always kept in the Inbox (unread badge). If email is set up 
 | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | VPS sizing, install, backups, restore, update, rollback |
 | [docs/EMAIL.md](docs/EMAIL.md) | Optional email: contact alerts, receipts, forgot-password |
 | [docs/RAILWAY.md](docs/RAILWAY.md) | Always-on client preview on Railway (Dockerfile included) |
+| [docs/RENDER.md](docs/RENDER.md) | Free client preview on Render (sleeps when idle, data not permanent) |
 | [docs/GO_LIVE.md](docs/GO_LIVE.md) | Launch checklist |
 | [docs/SECURITY.md](docs/SECURITY.md) | Access policy, what is enforced, honest limitations (no DRM, etc.) |
 
