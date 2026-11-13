@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { db, allSettings } from '../db.js';
 import { SITE_DEFAULTS, EDITABLE_KEYS } from '../defaults.js';
 import { LEGAL_DEFAULTS, LEGAL_TITLES } from '../legal-defaults.js';
+import { PAGE_META, PAGE_DEFAULTS } from '../pages-defaults.js';
 import { getSetting } from '../db.js';
 import { config } from '../config.js';
 import { playlistInfo } from '../hls.js';
@@ -105,6 +106,13 @@ r.get('/legal/:slug', (req, res) => {
   res.set('Cache-Control', 'no-cache').json({ slug, title: LEGAL_TITLES[slug], body: legalText(slug), updated: legalVersion() });
 });
 
+export const pageText = (slug) => getSetting(`page_${slug}`, PAGE_DEFAULTS[slug]);
+r.get('/page/:slug', (req, res) => {
+  const slug = req.params.slug, m = Object.hasOwn(PAGE_META, slug) && PAGE_META[slug];
+  if (!m) return res.status(404).json({ error: 'Not found.' });
+  res.set('Cache-Control', 'no-cache').json({ slug, eyebrow: m.eyebrow, title: m.title, lede: m.lede, body: pageText(slug), pages: Object.entries(PAGE_META).map(([k, v]) => ({ slug: k, path: v.path, title: v.eyebrow })) });
+});
+
 r.get('/gallery', (_req, res) => {
   const set = publicSettings();
   res.json({ title: set.gallery_title, intro: set.gallery_intro, title_hi: set.gallery_title_hi, intro_hi: set.gallery_intro_hi, items: db.prepare('SELECT id, src, thumb, w, h, caption FROM gallery WHERE hidden = 0 ORDER BY sort, id').all() });
@@ -116,7 +124,7 @@ r.get('/social', (_req, res) => {
   const embeds = db.prepare("SELECT id, ext_id, media_type, caption, author, thumb FROM social_posts WHERE source = 'embed' AND hidden = 0 ORDER BY id DESC LIMIT 60").all()
     .map((p) => ({ id: p.id, code: p.ext_id, kind: p.media_type === 'REEL' ? 'reel' : 'p', caption: p.caption || '', author: p.author || '', thumb: p.thumb || '' }));
   const posts = db.prepare("SELECT id, caption, media_type, thumb, permalink FROM social_posts WHERE hidden = 0 AND thumb IS NOT NULL AND source <> 'embed' ORDER BY COALESCE(posted_at, '') DESC, id DESC LIMIT 24").all();
-  res.json({ title: set.social_title, intro: set.social_intro, title_hi: set.social_title_hi, intro_hi: set.social_intro_hi, profile: set.social_instagram || '', embeds, posts });
+  res.json({ title: set.social_title, intro: set.social_intro, title_hi: set.social_title_hi, intro_hi: set.social_intro_hi, profile: set.social_instagram || set.social_instagram_en || '', embeds, posts });
 });
 
 r.get('/my/purchases', (req, res) => {

@@ -4,6 +4,22 @@ Incremental changes to the existing codebase (no rewrite). Findings and fixes: [
 Round 1 added Google sign-in, Razorpay, resumable uploads and the validated HLS pipeline. **Round 2 (this report's focus) hardened payments, authentication, media access, uploads, data integrity, SEO and deployment, and measured performance.**
 
 
+## 000. Content round: "Website Inputs, 11 Nov 2026"
+The client's document was turned into the site. **211 tests, all pass.**
+* **Home:** new name/roles/subhead, and a "start here" band with the three links the document asked for: Movies, Instagram Motivation English, Instagram Motivation Hindi.
+* **About:** the one-paragraph pitch, key dates, and four cards (officer, lawyer, storyteller, motivational speaker).
+* **New text pages** (Admin → Pages): `/story` (Page 3), `/law` (Page 4), `/books` (Page 5), `/speaking` (Page 6), `/family` (Page 7).
+* **Contact (Page 8):** ypsinghfilms@gmail.com, WhatsApp +91 98210 08221 (opens wa.me), the Nariman Point office. Contact-form alerts go to that email.
+* **Journey timeline** replaced with the real career/books/films (migration 12, only if the old placeholder timeline was untouched). Navigation is now Films, About, Law, Books, Speaking, Contact (Story, Family, Gallery, Social are in the footer). Hindi starting text was rewritten for the new core content; the new text pages are English only.
+
+**Needs the client's confirmation before launch**
+* "[YouTube Link]" (About pitch): no link was supplied, so none is shown. Add it under Admin → Site content.
+* "Will provide photographs of old articles": the Speaking page shows a "will be added here" line until the photos arrive.
+* The Instagram handles were turned into links (`instagram.com/lifetainmentenglish`, `.../lifetainmenthindi`): please confirm they are correct and public.
+* Kya Yahi Sach Hai: the document says "international award (including California film award in contemporary reports)". It is worded as "recognition, including at the California Film Awards": confirm the exact award and year.
+* **Family page names a serving police officer's current posting (daughter, Delhi Police).** Confirm the client is happy for that to be public, or edit it out in Admin → Pages.
+* "Quote (his own, from public interviews, paraphrase if you prefer)" is used verbatim, attributed "On resignation, 2004": confirm the source.
+
 ## 00. Round 3: production extras (this section is the newest)
 Done in this order, each with tests. **203 automated tests, all pass** (was 157). The browser smoke test (real ffmpeg encode, upload, paywall, purchase, phone layout, keyboard) passes with the new consent box.
 

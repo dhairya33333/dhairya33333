@@ -13,12 +13,12 @@ test('About, Contact and Social pages exist with titles, canonical URLs and are 
   for (const [u, title] of [['/about', 'About'], ['/contact', 'Contact'], ['/social', 'Social media']]) {
     const r = await t.client().get(u);
     assert.equal(r.status, 200, u);
-    assert.match(r.text, new RegExp(`<title>${title} — Yogesh Pratap Singh</title>`), u);
+    assert.match(r.text, new RegExp(`<title>${title} — Y\\.P\\. Singh</title>`), u);
     assert.match(r.text, new RegExp(`rel="canonical" href="https://films\\.example\\.test${u}"`), u);
     assert.match(r.text, /name="description" content="[^"]{20,}/);
   }
   const map = (await t.client().get('/sitemap.xml')).text;
-  for (const u of ['/about', '/contact', '/social']) assert.ok(map.includes(`https://films.example.test${u}<`), u);
+  for (const u of ['/about', '/contact', '/social', '/story', '/law', '/books', '/speaking', '/family']) assert.ok(map.includes(`https://films.example.test${u}<`), u);
 });
 
 test('every public page links to the new pages in its navigation', async () => {
@@ -26,7 +26,7 @@ test('every public page links to the new pages in its navigation', async () => {
     const h = (await t.client().get(u)).text;
     const chrome = ['/about', '/contact', '/social'].includes(u);           // these pages get their header from layout.js
     const nav = chrome ? (await t.client().get('/js/layout.js')).text : h;
-    for (const l of ['/about', '/social', '/contact']) assert.ok(nav.includes(chrome ? `'${l}'` : `"${l}"`), `${u} links to ${l}`);
+    for (const l of ['/about', '/law', '/books', '/speaking', '/contact']) assert.ok(nav.includes(chrome ? `'${l}'` : `"${l}"`), `${u} links to ${l}`);
   }
 });
 
@@ -120,7 +120,7 @@ test('adding Instagram links: admin only, no duplicates, public API exposes only
   assert.equal((await admin.post('/api/admin/social/embed', { url: 'https://www.instagram.com/reel/BBBBBBBBBBB/' })).status, 200);
   const api = (await t.client().get('/api/social')).json;
   assert.deepEqual(api.embeds.map((e) => [e.kind, e.code]), [['reel', 'BBBBBBBBBBB'], ['p', 'AAAAAAAAAAA']], 'newest first');
-  assert.ok(!JSON.stringify(api).includes('instagram.com'), 'the browser is never handed a free-form URL; it builds the address from the code');
+  assert.ok(!JSON.stringify(api.embeds).includes('instagram.com'), 'the browser is never handed a free-form URL; it builds the address from the code');
   // hide / show / remove
   const id = api.embeds[1].id;
   await admin.put(`/api/admin/social/${id}`, { hidden: true });

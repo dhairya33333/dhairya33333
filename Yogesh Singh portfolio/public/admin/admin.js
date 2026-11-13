@@ -171,9 +171,9 @@ const views = {
     view.innerHTML = head('Site content', 'Everything visitors read on the homepage.') + `
       <div class="grid g2">
         <div class="panel"><h3>Hero</h3>${txt('hero_name', 'Name')}${txt('hero_roles', 'Roles (comma separated)')}${txt('hero_tagline', 'Tagline', 3)}</div>
-        <div class="panel"><h3>About</h3>${txt('about_title', 'Heading')}${txt('about_body', 'Biography (blank line = new paragraph)', 10)}${txt('stats', 'Stats: one per line as  number|label', 5)}</div>
+        <div class="panel"><h3>About</h3>${txt('about_title', 'Heading')}${txt('about_body', 'Biography (blank line = new paragraph)', 10)}${txt('stats', 'Stats: one per line as  number|label', 5)}${txt('pillars', 'Four cards on About: one per line as  Title|Text|/page-link', 5)}</div>
         <div class="panel"><h3>Quote</h3>${txt('quote', 'Pull quote', 3)}<h3 style="margin-top:20px">Speaking invitation</h3>${txt('speaking_title', 'Heading')}${txt('speaking_body', 'Text', 3)}</div>
-        <div class="panel"><h3>Contact page &amp; social links</h3>${txt('contact_intro', 'Contact page intro', 3)}${txt('contact_email', 'Contact email (shown on the Contact page)')}${txt('contact_phone', 'Phone (optional)')}${txt('contact_location', 'Based in (optional)')}${txt('social_instagram', 'Instagram URL')}${txt('social_youtube', 'YouTube URL')}${txt('social_x', 'X / Twitter URL')}${txt('social_facebook', 'Facebook URL')}${txt('social_linkedin', 'LinkedIn URL')}
+        <div class="panel"><h3>Contact page &amp; social links</h3>${txt('contact_intro', 'Contact page intro', 3)}${txt('contact_email', 'Contact email (shown on the Contact page)')}${txt('contact_whatsapp', 'WhatsApp number (with country code)')}${txt('contact_phone', 'Phone (optional)')}${txt('contact_location', 'Based in (optional)')}${txt('social_instagram_en', 'Instagram: Motivation (English) URL')}${txt('social_instagram_hi', 'Instagram: Motivation (Hindi) URL')}${txt('social_instagram', 'Instagram: other profile URL (optional)')}${txt('social_youtube', 'YouTube URL')}${txt('social_x', 'X / Twitter URL')}${txt('social_facebook', 'Facebook URL')}${txt('social_linkedin', 'LinkedIn URL')}
           <h3 style="margin-top:20px">Social page</h3>${txt('social_title', 'Heading')}${txt('social_intro', 'Intro text', 2)}<h3 style="margin-top:20px">SEO</h3>${txt('site_title', 'Browser title')}${txt('meta_description', 'Description for Google', 3)}</div>
       </div>
       <div class="panel" style="margin-top:16px"><h3>हिन्दी (Hindi) versions</h3><p class="muted small">Shown when a visitor switches the site to Hindi. Leave a box empty to show the English text. A starting translation is provided; please have a native Hindi speaker read it.</p>
@@ -183,6 +183,13 @@ const views = {
     $('#save').onclick = () => act(() => api('/admin/settings', { method: 'PUT', body: Object.fromEntries($$('[data-k]').map((e) => [e.dataset.k, e.value])) }), 'Content saved');
   },
 
+  async pages() {
+    const { pages } = await api('/admin/pages');
+    view.innerHTML = head('Pages', 'The Story, Law, Books, Speaking and Family pages. Short formatting: ## heading, - list item, > quote, **bold**, [text](https://link or /page). A blank line starts a new paragraph.') + pages.map((p) => `
+      <div class="panel" style="margin-bottom:16px"><h3>${esc(p.title)} <a class="muted small" href="${esc(p.path)}" target="_blank">${esc(p.path)} ↗</a> ${p.customised ? '<span class="pill pub">edited</span>' : ''}</h3>
+        <textarea data-page="${p.slug}" rows="12" style="width:100%;padding:12px;border:1px solid var(--line);border-radius:6px;font:13px/1.6 ui-monospace,Consolas,monospace;background:#fff;color:var(--ink)">${esc(p.body)}</textarea></div>`).join('') + '<button class="btn gold" id="save">Save pages</button>';
+    $('#save').onclick = () => act(async () => { await api('/admin/pages', { method: 'PUT', body: Object.fromEntries($$('[data-page]').map((t) => [t.dataset.page, t.value])) }); route(); }, 'Pages saved');
+  },
   async legal() {
     const { pages, updated } = await api('/admin/legal');
     view.innerHTML = head('Legal pages', 'Privacy Policy, Terms of Use and Refund Policy, shown on the website footer and agreed to at checkout. Payment providers ask for these before activating an account.') + `

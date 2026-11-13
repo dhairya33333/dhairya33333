@@ -40,8 +40,8 @@ test('admin sees placeholder counts and a dashboard warning until they are fille
 });
 
 test('legal page script escapes text before formatting (a hostile edit cannot inject HTML)', async () => {
-  const js = (await t.client().get('/js/legal.js')).text;
-  assert.match(js, /const inline = \(s\) => esc\(s\)/);
+  const js = (await t.client().get('/js/legal.js')).text, fmt = (await t.client().get('/js/format.js')).text;
+  assert.match(fmt, /const inline = \(s\) => esc\(s\)/); assert.match(js, /format\(d\.body\)/);
   assert.ok(!/innerHTML\s*=\s*d\.body/.test(js), 'raw text is never assigned as HTML');
 });
 

@@ -117,7 +117,9 @@ async function boot() {
     } else if (!$('#ig').children.length) { $('#ig').style.display = 'none'; $('#social').classList.add('compact'); }
   }).catch(() => {});
 
-  const socials = [['Instagram', s.social_instagram], ['YouTube', s.social_youtube], ['X', s.social_x], ['Facebook', s.social_facebook], ['LinkedIn', s.social_linkedin]].filter(([, u]) => u);
+  const handle = (u) => '@' + (String(u).replace(/\/+$/, '').split('/').pop() || '');
+  for (const [id, url] of [['en', s.social_instagram_en], ['hi', s.social_instagram_hi]]) { if (url) { $('#sl-' + id).href = url; $('#sl-' + id + '-h').textContent = handle(url); } else $('#sl-' + id).hidden = true; }
+  const socials = [['Instagram (English)', s.social_instagram_en], ['Instagram (Hindi)', s.social_instagram_hi], ['Instagram', s.social_instagram], ['YouTube', s.social_youtube], ['X', s.social_x], ['Facebook', s.social_facebook], ['LinkedIn', s.social_linkedin]].filter(([, u]) => u);
   $('#socials').innerHTML = socials.map(([n, u]) => `<a href="${esc(u)}" target="_blank" rel="noopener">${n}</a>`).join('');
   $('#copy').textContent = `© ${new Date().getFullYear()} ${s.hero_name}. All rights reserved.`;
 

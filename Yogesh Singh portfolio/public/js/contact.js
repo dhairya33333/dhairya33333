@@ -9,9 +9,10 @@ $('#intro').textContent = s.contact_intro;
 const row = (label, html) => `<div class="row"><span class="l">${label}</span>${html}</div>`;
 $('#info').innerHTML = [
   s.contact_email && row('Email', `<a href="mailto:${esc(s.contact_email)}">${esc(s.contact_email)}</a>`),
+  s.contact_whatsapp && row('WhatsApp', `<a href="https://wa.me/${esc(s.contact_whatsapp.replace(/\D/g, ''))}" target="_blank" rel="noopener">${esc(s.contact_whatsapp)}</a>`),
   s.contact_phone && row('Phone', `<a href="tel:${esc(s.contact_phone.replace(/[^+\d]/g, ''))}">${esc(s.contact_phone)}</a>`),
   s.contact_location && row('Based in', `<span class="v">${esc(s.contact_location)}</span>`),
-  row('Social', `<span class="v" style="font-size:22px">${[['Instagram', s.social_instagram], ['YouTube', s.social_youtube], ['X', s.social_x], ['Facebook', s.social_facebook], ['LinkedIn', s.social_linkedin]].filter(([, u]) => u).map(([n, u]) => `<a href="${esc(u)}" target="_blank" rel="noopener" style="font-size:22px;margin-right:16px">${n}</a>`).join('') || `<a href="/social" style="font-size:22px">See the social page</a>`}</span>`),
+  row('Social', `<span class="v" style="font-size:22px">${[['Instagram (English)', s.social_instagram_en], ['Instagram (Hindi)', s.social_instagram_hi], ['Instagram', s.social_instagram], ['YouTube', s.social_youtube], ['X', s.social_x], ['Facebook', s.social_facebook], ['LinkedIn', s.social_linkedin]].filter(([, u]) => u).map(([n, u]) => `<a href="${esc(u)}" target="_blank" rel="noopener" style="font-size:22px;margin-right:16px">${n}</a>`).join('') || `<a href="/social" style="font-size:22px">See the social page</a>`}</span>`),
 ].filter(Boolean).join('');
 
 $('#info').insertAdjacentHTML('afterend', `<div class="help-list" data-stagger>

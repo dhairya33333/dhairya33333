@@ -14,11 +14,12 @@ test('home page: absolute canonical, Open Graph, valid Person JSON-LD built only
   assert.match(h, /property="og:title"/); assert.match(h, /property="og:url" content="https:\/\/films\.example\.test\/"/); assert.match(h, /name="description"/);
   const [p] = jsonLd(h);
   assert.equal(p['@type'], 'Person'); assert.equal(p.name, 'Yogesh Pratap Singh');
-  assert.ok(!('sameAs' in p), 'no social links configured, so none are claimed');
+  assert.equal(p.alternateName, 'Y.P. Singh');
+  assert.deepEqual(p.sameAs, ['https://www.instagram.com/lifetainmentenglish/', 'https://www.instagram.com/lifetainmenthindi/'], 'only the accounts the owner configured are claimed');
   assert.ok(!('award' in p) && !('jobTitle' in p) && !('alumniOf' in p), 'no biography facts are invented');
   const admin = await signedInAdmin(t);
   await admin.put('/api/admin/settings', { social_instagram: 'https://instagram.com/example' });
-  assert.deepEqual(jsonLd((await t.client().get('/')).text)[0].sameAs, ['https://instagram.com/example']);
+  assert.ok(jsonLd((await t.client().get('/')).text)[0].sameAs.includes('https://instagram.com/example'));
 });
 
 test('film page: Movie JSON-LD with the real price/currency; hostile titles cannot break out of the script block', async () => {

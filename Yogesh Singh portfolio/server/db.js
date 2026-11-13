@@ -159,6 +159,15 @@ const MIGRATIONS = [
     for (const c of ['title_hi', 'tagline_hi', 'description_hi']) addColumn('movies', c, "TEXT NOT NULL DEFAULT ''");
     for (const c of ['title_hi', 'subtitle_hi']) addColumn('works', c, "TEXT NOT NULL DEFAULT ''");
   },
+  // 12: the original placeholder journey is replaced by the client's real one, but only if nobody has edited it
+  () => {
+    const OLD = ['Indian Police Service', 'Lawyer & activist, Mumbai', 'Carnage by Angels', 'Kya Yahi Sach Hai', 'Motivational speaking'];
+    const have = db.prepare('SELECT title FROM works ORDER BY id').all().map((w) => w.title);
+    if (have.length === OLD.length && OLD.every((t, i) => t === have[i])) {
+      db.exec('DELETE FROM works');                                          // the seeding step at start-up then inserts the new set
+      db.prepare("DELETE FROM settings WHERE key = 'works_seeded'").run();
+    }
+  },
 ];
 
 const current = db.prepare('PRAGMA user_version').get().user_version;

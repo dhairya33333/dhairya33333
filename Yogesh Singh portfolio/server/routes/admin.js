@@ -17,6 +17,7 @@ import { parseSubtitles, toVtt, LIMITS as SUB_LIMITS } from '../subtitles.js';
 import { SITE_DEFAULTS, EDITABLE_KEYS } from '../defaults.js';
 import uploadRoutes from './uploads.js';
 import { LEGAL_DEFAULTS, LEGAL_TITLES } from '../legal-defaults.js';
+import { PAGE_META, PAGE_DEFAULTS } from '../pages-defaults.js';
 
 import { adminRevoke } from '../payments/ledger.js';
 import { log } from '../log.js';
@@ -345,6 +346,20 @@ r.put('/works/:id', (req, res) => {
   res.json({ ok: true });
 });
 r.delete('/works/:id', (req, res) => { db.prepare('DELETE FROM works WHERE id = ?').run(Number(req.params.id)); res.json({ ok: true }); });
+
+// ---------- Extra pages (Story, Law, Books, Speaking, Family) ----------
+r.get('/pages', (_req, res) => res.json({ pages: Object.entries(PAGE_META).map(([slug, m]) => ({ slug, title: m.title, path: m.path, body: getSetting(`page_${slug}`, PAGE_DEFAULTS[slug]), customised: getSetting(`page_${slug}`, null) !== null })) }));
+r.put('/pages', (req, res) => {
+  const clean = {};
+  for (const slug of Object.keys(PAGE_META)) {
+    if (!(slug in req.body)) continue;
+    const v = String(req.body[slug] ?? '').replace(/\r\n/g, '\n').trim();
+    if (v.length < 20 || v.length > 30000) return bad(res, `"${PAGE_META[slug].title}" must be between 20 and 30,000 characters.`);
+    clean[slug] = v;
+  }
+  for (const [slug, v] of Object.entries(clean)) setSetting(`page_${slug}`, v);
+  res.json({ ok: true });
+});
 
 // Sends one test message to the owner's notification address so email setup can be checked without waiting for a real sale.
 r.post('/email/test', asyncHandler(async (_req, res) => {

@@ -449,3 +449,27 @@ html[lang="hi"] .eyebrow, html[lang="hi"] .chip, html[lang="hi"] .stat span, htm
 html[lang="hi"] em { font-style: normal; }
 @media (max-width: 860px) { .nav-links .lang-btn { align-self: flex-start; margin: 6px 0; } }
 html[lang="hi"] .prose p:first-child::first-letter, html[lang="hi"] .about .body p:first-child::first-letter { float: none; font-size: inherit; font-family: inherit; line-height: inherit; color: inherit; padding: 0; }
+
+/* ---------- Start-here links, pillars, text pages ---------- */
+.startlinks { padding: 34px 0 6px; }
+.startlinks .wrap { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.slink { position: relative; display: block; padding: 26px 26px 24px; border: 1px solid var(--line); border-radius: 12px; background: #fff; transition: transform .5s var(--ease), box-shadow .5s var(--ease), border-color .3s; }
+.slink:hover { transform: translateY(-4px); box-shadow: 0 18px 40px rgba(0,0,0,.08); border-color: var(--gold); }
+.slink .k { display: block; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--gold); }
+.slink b { display: block; font: 400 clamp(26px, 2.6vw, 34px) var(--serif); margin: 8px 0 6px; }
+.slink .s { color: var(--muted); font-size: 14px; }
+.slink i { position: absolute; right: 22px; top: 22px; font-style: normal; font-size: 20px; transition: transform .4s var(--ease); }
+.slink:hover i { transform: translate(4px, -4px); }
+.pcards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 16px; margin-top: 24px; }
+.pcard { position: relative; display: block; padding: 28px 24px 26px; border: 1px solid var(--line); border-radius: 12px; background: #fff; transition: transform .5s var(--ease), box-shadow .5s var(--ease), border-color .3s; }
+a.pcard:hover { transform: translateY(-4px); box-shadow: 0 18px 40px rgba(0,0,0,.08); border-color: var(--gold); }
+.pcard .n { font-size: 12px; letter-spacing: .16em; color: var(--gold); }
+.pcard h3 { font: 400 28px/1.1 var(--serif); margin: 14px 0 10px; }
+.pcard p { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.6; }
+.pcard i { position: absolute; right: 20px; bottom: 18px; font-style: normal; opacity: 0; transition: opacity .3s, transform .4s var(--ease); }
+a.pcard:hover i { opacity: 1; transform: translateX(4px); }
+.prose-page blockquote, .legal blockquote { margin: 1.6em 0; padding: 4px 0 4px 22px; border-left: 3px solid var(--gold); }
+.legal blockquote p { font: 400 clamp(22px, 2.4vw, 28px)/1.35 var(--serif); color: var(--ink); margin: 0 0 .4em; }
+.legal blockquote cite { display: block; font-style: normal; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.legal a { color: var(--gold); border-bottom: 1px solid currentColor; }
+@media (max-width: 860px) { .startlinks .wrap { grid-template-columns: 1fr; } }

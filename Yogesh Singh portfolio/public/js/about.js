@@ -12,6 +12,8 @@ $('#title').innerHTML = words.map((w, i) => `<span style="display:inline-block;m
 $('#roles').textContent = s.hero_roles.split(',').map((r) => r.trim()).filter(Boolean).join('  ·  ');
 $('#body').innerHTML = s.about_body.split(/\n{2,}/).filter(Boolean).map((p) => `<p>${esc(p).replace(/\n/g, '<br>')}</p>`).join('');
 $('#stats').innerHTML = s.stats.split('\n').map((l) => l.split('|')).filter((p) => p[1]).map(([n, label]) => `<div class="stat"><b data-count="${esc(n.trim())}">${esc(n.trim())}</b><span>${esc(label.trim())}</span></div>`).join('');
+const pillars = s.pillars.split('\n').map((l) => l.split('|').map((x) => x.trim())).filter((p) => p[0] && p[1]);
+if (pillars.length) { $('#pillars-sec').hidden = false; $('#pillars').innerHTML = pillars.map(([t, d, href], i) => `<a class="pcard" ${href && /^(\/(?!\/)|https?:)/.test(href) ? `href="${esc(href)}"` : ''} data-reveal style="--i:${i}"><span class="n">${String(i + 1).padStart(2, '0')}</span><h3>${esc(t)}</h3><p>${esc(d)}</p><i aria-hidden="true">→</i></a>`).join(''); }
 if (s.quote.trim()) { $('#quote').textContent = s.quote; $('#quote-sec').hidden = false; }
 $('#timeline').innerHTML = site.works.filter((w) => w.kind !== 'article').map((w) => `
   <div class="tl"><div class="when">${esc(w.period || KIND[w.kind] || '')}${w.period ? ` · ${esc(KIND[w.kind] || '')}` : ''}</div>

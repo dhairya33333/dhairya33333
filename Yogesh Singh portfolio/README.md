@@ -11,6 +11,7 @@ Self-hosted website for Yogesh Pratap Singh (former IPS officer, author, film di
 | `/films` and `/film/<name>` | Film library, free preview, payment | Admin → Films |
 | `/about` | Biography, stats, timeline, speaking invitation | Admin → Site content (About, Stats) and Journey |
 | `/contact` | Contact details + message form (spam-protected) | Details: Admin → Site content. **Messages arrive in Admin → Inbox** (with an unread count); reply with the "Reply by email" button |
+| `/story`, `/law`, `/books`, `/speaking`, `/family` | The client's text pages: more about Y.P. Singh, law practice, books and film, speaking and media, family | **Admin → Pages** (one box per page; `## heading`, `- list`, `> quote`, `[link](url)`) |
 | `/gallery` | Photograph gallery with a full-screen viewer; the portrait on About | **Admin → Photos** (photos are resized, converted to WebP and stripped of location data automatically) |
 | `/privacy`, `/terms`, `/refunds` | Legal pages; checkout needs the buyer to tick agreement | **Admin → Legal pages** (starting templates with [placeholders]: fill in and have a lawyer review) |
 | `/social` | Instagram posts and reels exactly as on Instagram | **Admin → Social feed → paste the post/reel link → "Add to website"** (no token needed). The site fetches the cover and caption and shows a designed card grid with Reels/Posts filters; clicking a card plays the post in a viewer. If Instagram withholds a cover, upload one (Upload cover) and edit the caption. Optional: connect an Instagram token for hands-free sync |
@@ -49,7 +50,7 @@ Without payment keys (and outside production) checkout runs in clearly labelled 
 
 ## Test
 ```bash
-npm test          # 205 automated tests (needs ffmpeg), about 2 minutes, uses temp directories and simulated gateways. No real charges
+npm test          # 211 automated tests (needs ffmpeg), about 2 minutes, uses temp directories and simulated gateways. No real charges
 npm run check     # syntax check of every source file
 npm run verify-data   # payments, refunds and entitlements agree (read-only; run it on the server too)
 ```

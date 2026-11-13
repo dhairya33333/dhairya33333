@@ -27,7 +27,7 @@ test('every Hindi content field has a starting translation and the English field
 
 test('admin can save Hindi text for site content, films and journey entries; it is returned to the public API', async () => {
   assert.equal((await admin.put('/api/admin/settings', { about_title_hi: 'नया शीर्षक', quote_hi: 'एक उद्धरण' })).status, 200);
-  const s = (await t.client().get('/api/site')).json.settings; assert.equal(s.about_title_hi, 'नया शीर्षक'); assert.equal(s.about_title, 'A career in service. A voice for the truth.');
+  const s = (await t.client().get('/api/site')).json.settings; assert.equal(s.about_title_hi, 'नया शीर्षक'); assert.equal(s.about_title, 'Same fight: integrity in public life.');
   const id = (await admin.post('/api/admin/movies', { title: 'Hin Film' })).json.id;
   assert.equal((await admin.put(`/api/admin/movies/${id}`, { title: 'Hin Film', title_hi: 'हिन फ़िल्म', description_hi: 'विवरण' })).status, 200);
   assert.equal((await admin.put(`/api/admin/movies/${id}`, { title: 'Hin Film', tagline: 'x' })).status, 200);
