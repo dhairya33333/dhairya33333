@@ -94,6 +94,7 @@ export const DICT = {
   '1985 onwards · Service': '1985 से · सेवा', '2003 · Book': '2003 · पुस्तक', '2010–2011 · Cinema': '2010–2011 · सिनेमा', 'After IPS · Service': 'आईपीएस के बाद · सेवा', 'Ongoing · Speaking': 'जारी · वक्तव्य',
   'IPS batch, Maharashtra cadre': 'आईपीएस बैच, महाराष्ट्र कैडर', 'Novel “Carnage by Angels”': 'उपन्यास “कार्नेज बाय एंजल्स”', 'Silver Award, California Film Awards': 'सिल्वर अवॉर्ड, कैलिफ़ोर्निया फ़िल्म अवॉर्ड्स', 'Cinema release of Kya Yahi Sach Hai': 'क्या यही सच है का सिनेमा में प्रदर्शन',
   'Legal pages': 'क़ानूनी पेज', 'Lost the reel.': 'रील खो गई।', 'The story continues.': 'कहानी जारी है।', or: 'या', 'Yogesh Pratap Singh': 'योगेश प्रताप सिंह', '© Yogesh Pratap Singh': '© योगेश प्रताप सिंह',
+  'Instagram · English': 'इंस्टाग्राम · अंग्रेज़ी', 'Instagram · Hindi': 'इंस्टाग्राम · हिंदी', 'Instagram (English)': 'इंस्टाग्राम (अंग्रेज़ी)', 'Instagram (Hindi)': 'इंस्टाग्राम (हिंदी)',
   // aria labels
   'Open photo': 'तस्वीर खोलें',
 };

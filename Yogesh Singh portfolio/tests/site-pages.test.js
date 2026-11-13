@@ -62,3 +62,13 @@ test('an unedited placeholder journey from an older install is replaced once; an
   const untouched = fs.mkdtempSync(path.join(os.tmpdir(), 'yp-mig-')); run(untouched, prep(OLD)); assert.deepEqual(JSON.parse(run(untouched, count)), [0, false, 12], 'old seed removed, flag cleared so the new journey is seeded at start-up');
   const edited = fs.mkdtempSync(path.join(os.tmpdir(), 'yp-mig-')); run(edited, prep([...OLD.slice(0, 4), 'My own entry'])); assert.deepEqual(JSON.parse(run(edited, count)), [5, true, 12], 'owner\'s edits are never touched');
 });
+
+test('About carries the subhead and the four pillars (the last with both Instagram accounts); the header has both Instagram links and the mobile menu is not a blurred box', async () => {
+  const about = (await t.client().get('/js/about.js')).text; assert.match(about, /#subhead/); assert.match(about, /hero_tagline/); assert.match(about, /instagram/);
+  assert.match((await t.client().get('/about')).text, /id="subhead"/);
+  const { SITE_DEFAULTS } = await import('../server/defaults.js'); assert.ok(SITE_DEFAULTS.pillars.split('\n')[3].endsWith('|instagram'));
+  const common = (await t.client().get('/js/common.js')).text; assert.match(common, /mountInstagram/); assert.match(common, /social_instagram_en/); assert.match(common, /social_instagram_hi/);
+  const css = (await t.client().get('/css/site.css')).text;
+  assert.match(css, /\.nav\.open \{[^}]*backdrop-filter: none/, 'blur is off while the menu is open, otherwise the fixed menu shrinks to the header box');
+  assert.match(css, /@media \(max-width: 1100px\) \{\s*\.burger/, 'the menu switches to the burger before the header runs out of room');
+});

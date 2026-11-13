@@ -12,6 +12,8 @@ The client's document was turned into the site. **211 tests, all pass.**
 * **Contact (Page 8):** ypsinghfilms@gmail.com, WhatsApp +91 98210 08221 (opens wa.me), the Nariman Point office. Contact-form alerts go to that email.
 * **Journey timeline** replaced with the real career/books/films (migration 12, only if the old placeholder timeline was untouched). Navigation is now Films, About, Law, Books, Speaking, Contact (Story, Family, Gallery, Social are in the footer). Hindi starting text was rewritten for the new core content; the new text pages are English only.
 
+**Follow-up fixes:** About now shows the document's Page 2 in order (name, roles, subhead, pitch, dates, four pillars; the fourth carries both Instagram links). Both Instagram accounts are in the header of every page (icon + EN + HI on wide screens, two full rows in the phone menu). **Mobile menu bug fixed:** the header's blur effect had shrunk the full-screen menu into a header-sized box, so page content showed through and the language button sat at the left edge. The burger menu now starts at 1100px wide instead of 860px so the header never runs out of room. Checked at 10 widths (320 to 1920) on 14 pages: no sideways scrolling, no wrapped header.
+
 **Needs the client's confirmation before launch**
 * "[YouTube Link]" (About pitch): no link was supplied, so none is shown. Add it under Admin → Site content.
 * "Will provide photographs of old articles": the Speaking page shows a "will be added here" line until the photos arrive.

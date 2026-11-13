@@ -1,6 +1,11 @@
 import { initI18n, localise } from './i18n.js';
 // Shared helpers: API calls, nav/auth state, formatting, scroll + motion effects.
-export async function api(path, { method = 'GET', body, form } = {}) {
+const memo = new Map();   // /site is asked for by the page and by the header: one request, shared
+export function api(path, opts = {}) {
+  if (path === '/site' && !opts.method && !opts.body && !opts.form) { if (!memo.has(path)) memo.set(path, request(path, opts).catch((e) => { memo.delete(path); throw e; })); return memo.get(path); }
+  return request(path, opts);
+}
+async function request(path, { method = 'GET', body, form } = {}) {
   const res = await fetch('/api' + path, {
     method,
     headers: body ? { 'Content-Type': 'application/json' } : undefined,
@@ -23,6 +28,19 @@ export async function getUser() {
   try { return (await api('/auth/me')).user; } catch { return null; }
 }
 
+const IG_ICON = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r=".9" fill="currentColor" stroke="none"/></svg>';
+// The two Instagram accounts (Motivation English / Hindi) sit in every header. Wide screens: icon + EN + HI. Phone menu: two full rows.
+async function mountInstagram(nav) {
+  const links = $('.nav-links');
+  if (!links || $('.ig-nav', nav)) return;
+  let s; try { s = (await api('/site')).settings; } catch { return; }
+  const items = [[s.social_instagram_en, 'EN', 'Instagram · English'], [s.social_instagram_hi, 'HI', 'Instagram · Hindi']].filter(([u]) => /^https?:\/\//.test(u || ''));
+  if (!items.length || $('.ig-nav', nav)) return;
+  const wrap = document.createElement('span'); wrap.className = 'ig-nav';
+  wrap.innerHTML = items.map(([u, short, full]) => `<a href="${esc(u)}" target="_blank" rel="noopener" aria-label="${esc(full)}" title="${esc(full)}">${IG_ICON}<span class="short">${short}</span><span class="full">${full}</span></a>`).join('');
+  links.insertBefore(wrap, $('.lang-btn', links) || $('#nav-auth', links));
+}
+
 export async function mountNav(user) {
   const nav = $('.nav');
   if (!nav) return;
@@ -32,6 +50,7 @@ export async function mountNav(user) {
       ? `${user.role === 'admin' ? '<a href="/admin">Admin</a>' : ''}<a href="/account.html" class="btn">${esc(user.name.split(' ')[0])}</a>`
       : `<a href="/login.html" class="btn">Sign in</a>`;
   }
+  mountInstagram(nav);
   initI18n();
   const onScroll = () => nav.classList.toggle('stuck', scrollY > 40);
   onScroll(); addEventListener('scroll', onScroll, { passive: true });

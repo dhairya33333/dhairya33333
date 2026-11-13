@@ -9,7 +9,7 @@ export const SITE_DEFAULTS = {
   about_title: 'Same fight: integrity in public life.',
   about_body: 'Yogesh Pratap Singh is a 1985-batch officer of the Indian Police Service (Maharashtra cadre). After district policing, FDA vigilance, CBI work, and command of a State Reserve Police Force group, he left service mid-way in 2004 and built a second career as a Mumbai lawyer and public-interest campaigner. He is the author of Carnage by Angels and Vultures in Love, and director of the internationally awarded film Kya Yahi Sach Hai (2010).',
   stats: '1985|IPS batch, Maharashtra cadre\n2001|Gold Medal, University of Mumbai (law)\n2004|Left the IPS\n2010|Kya Yahi Sach Hai',
-  pillars: 'The officer|Akola, Wardha, State Police Headquarters, Mumbai, FDA, CBI and the SRPF.|/story\nThe lawyer|Mainly land, environment, criminal, corporate and governance cases.|/law\nThe storyteller|Novels, film and talks.|/books\nThe motivational speaker|Hear him on Instagram, in English and in Hindi.|/speaking',
+  pillars: 'The officer|Akola, Wardha, State Police Headquarters, Mumbai, FDA, CBI and the SRPF.|/story\nThe lawyer|Mainly land, environment, criminal, corporate and governance cases.|/law\nThe storyteller|Novels, film and talks.|/books\nThe motivational speaker|Hear him on Instagram, in English and in Hindi.|instagram',
   quote: '“The rot in the police machinery had suffocated me… my crusade against corruption will continue.” On resignation, 2004.',
   portrait: '',
   gallery_title: 'Gallery',
